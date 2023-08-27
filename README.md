@@ -1,16 +1,16 @@
 ## Hello world, My name is Akash Panchal
-### Software Engineer, Blogger, Reader and an all time Learner!
+#### Software Engineer, Blogger, Reader and an all time Learner!
 
-## Website: [akashpanchal.com](https://akashpanchal.com)
-## Building [lessentext](https://yep.so/p/lessentextai?source=github) - A Text summarizaton micro-saas 
+### Website: [akashpanchal.com](https://akashpanchal.com)
+#### Building [lessentext](https://yep.so/p/lessentextai?source=github) - A Text summarizaton tools
 
 
 ### About Me
 
-- 🔭 I’m currently learning about **frontend** and **backend engineering** using javascript & python.
-- 🌱 I love to know and learn more about **Large scale system design, Web development, Applied Natural Language Processing**.
+- 🔭 Worked at Amazon, McAfee & Intel.
+- 🌱 I love to learn and code  **Web apps, Android Apps & Natural Language Processing**.
 - 👯 I’m looking to collaborate with other content creators, open source contirbuters and avid learners.
-- 💬 Ask me about Software Engineering, NLP and TimeTravel: **contact@akashpanchal.com**
+- 💬 Ask me about Software Engineering, NLP and TimeTravel: **akashp1712@gmail.com**
 - 📫 How about LinkedIn? [Connect with me on Linkedin][linkedin]
 
 
@@ -29,7 +29,7 @@
 <br />
 
 ### Side Projects
-- [Bootstrapping] [Abstractive text summarization tool - LessenText](https://yep.so/stats/lessentextai)
+- [Building micro-saas] [LessenText](https://yep.so/p/lessentextai?source=github)
 - [OpenSource] [Pythonizr - A mcahine learning boilerplate generator](https://pythonizr.com)
 - [OpenSource] [Extractive Text Summarization](https://github.com/akashp1712/streamlit-text-summarization) [![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://share.streamlit.io/akashp1712/streamlit-text-summarization/main/app.py)
 - [OpenSource] [Python Cheat Sheets](https://github.com/akashp1712/awesome-python-cheatsheets)
@@ -41,10 +41,6 @@
 <img
   src="https://cr-ss-service.azurewebsites.net/api/ScreenShot?widget=activity&username=akashp1712&labels=true&branding=false"
 />
-
-### <summary>GitHub Stats</summary>
-<img align="left" alt="Akash's GitHub Stats" src="https://github-readme-stats.codestackr.vercel.app/api?username=akashp1712&show_icons=true&hide_border=true" />
-
 
 [website]: https://akashpanchal.com
 [pythonizr]: https://pythonizr.com
