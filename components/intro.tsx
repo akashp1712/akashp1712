@@ -33,7 +33,7 @@ export default function Intro() {
           >
             <Image
               src="/profile-pic.jpeg"
-              alt="Ricardo portrait"
+              alt="Akash Panchal portrait"
               width="192"
               height="192"
               quality="95"
