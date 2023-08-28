@@ -71,6 +71,7 @@ export const projectsData = [
     title: "LessenText",
     description:
       "LessenText is an advanced text summarization app that utilizes natural language processing techniques to generate concise and coherent summaries of lengthy texts.",
+    hyperlink: "https://lessentext.com",
     tags: ["ReactJS", "NextJS", "Vercel", "Supabase", "FastAPI"],
     imageUrl: lessentextImg,
   },
