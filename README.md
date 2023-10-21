@@ -2,7 +2,7 @@
 #### Software Engineer, Blogger, Reader and an all time Learner!
 
 ### Website: [akashpanchal.com](https://akashpanchal.com)
-#### Building [lessentext](https://yep.so/p/lessentextai?source=github) - A Text summarizaton tools
+#### Building [lessentext](https://lessentext.com) - An intutive text summarizaton saas
 
 
 ### About Me
@@ -29,7 +29,7 @@
 <br />
 
 ### Side Projects
-- [Building micro-saas] [LessenText](https://yep.so/p/lessentextai?source=github)
+- [Building micro-saas] [LessenText](https://lessentext.com)
 - [OpenSource] [Pythonizr - A mcahine learning boilerplate generator](https://pythonizr.com)
 - [OpenSource] [Extractive Text Summarization](https://github.com/akashp1712/streamlit-text-summarization) [![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://share.streamlit.io/akashp1712/streamlit-text-summarization/main/app.py)
 - [OpenSource] [Python Cheat Sheets](https://github.com/akashp1712/awesome-python-cheatsheets)
@@ -37,10 +37,6 @@
 - [OpenSource] [Awesome Python Tricks](https://akashp1712.github.io/awesome-python-tricks/)
 
 ---
-### <summary>GitHub Activity</summary>
-<img
-  src="https://cr-ss-service.azurewebsites.net/api/ScreenShot?widget=activity&username=akashp1712&labels=true&branding=false"
-/>
 
 [website]: https://akashpanchal.com
 [pythonizr]: https://pythonizr.com
