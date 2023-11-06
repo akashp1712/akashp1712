@@ -1,8 +1,8 @@
 import React from "react";
 import { CgWorkAlt } from "react-icons/cg";
-import { FaReact } from "react-icons/fa";
-import { LuGraduationCap } from "react-icons/lu";
 import lessentextImg from "@/public/lessentext.jpeg";
+import summarizeWebpageImg from "@/public/summarize-webpage.png"
+import pythonCheatsheetImg from "@/public/python-for-java.png";
 
 export const links = [
   {
@@ -74,6 +74,20 @@ export const projectsData = [
     hyperlink: "https://lessentext.com",
     tags: ["ReactJS", "NextJS", "Vercel", "Supabase", "FastAPI"],
     imageUrl: lessentextImg,
+  },
+  {
+    title: "Summarize webapge - Python Flask Application",
+    description: "A Flask application that extract and summarize webpage using Natural Language Processing",
+    hyperlink: "https://github.com/akashp1712/summarize-webpage",
+    tags: ["Python", "Flask", "NLTK"],
+    imageUrl: summarizeWebpageImg,
+  },
+  {
+    title: "Awesome Python CheatSheets",
+    description: "Python cheatsheets for developers that help them in study and in work.",
+    hyperlink: "https://github.com/akashp1712/awesome-python-cheatsheets",
+    tags: ["Python3", "Java", "DSA", "Problem Solving"],
+    imageUrl: pythonCheatsheetImg,
   },
 ] as const;
 
