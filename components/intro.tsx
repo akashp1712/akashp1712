@@ -4,12 +4,13 @@ import Image from "next/image";
 import React from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { BsArrowRight, BsLinkedin, BsMedium, BsTwitter} from "react-icons/bs";
+import { BsArrowRight, BsLinkedin, BsMedium, BsTwitter } from "react-icons/bs";
 import { PiReadCvLogoFill } from "react-icons/pi";
 import { HiDownload } from "react-icons/hi";
 import { FaGithubSquare } from "react-icons/fa";
 import { useSectionInView } from "@/lib/hooks";
 import { useActiveSectionContext } from "@/context/active-section-context";
+import Typewriter from "typewriter-effect";
 
 export default function Intro() {
   const { ref } = useSectionInView("Home", 0.5);
@@ -63,7 +64,7 @@ export default function Intro() {
         initial={{ opacity: 0, y: 100 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <span className="font-bold">Hello World, I'm Akash.</span> {" "}
+        <span className="font-bold">Hello World, I'm Akash.</span>{" "}
       </motion.h1>
 
       <motion.h1
@@ -72,7 +73,15 @@ export default function Intro() {
         animate={{ opacity: 1, y: 0 }}
       >
         <span className="font-bold">Software Engineer</span> with{" "}
-        <span className="font-bold">8 years</span> of experience. I enjoy building <span className="italic">web and android apps</span>.
+        <span className="font-bold">8 years</span> of experience. I enjoy
+        solving problems using
+        <Typewriter
+          options={{
+            strings: ["Software Engineering", "Algorithms", "Web App", "Mobile App"],
+            autoStart: true,
+            loop: true,
+          }}
+        />
       </motion.h1>
 
       <motion.div
@@ -133,7 +142,7 @@ export default function Intro() {
           href="https://medium.com/@akashp1712"
           target="_blank"
         >
-        <BsMedium />
+          <BsMedium />
         </a>
 
         <a
@@ -141,9 +150,8 @@ export default function Intro() {
           href="https://twitter.com/akashp1712"
           target="_blank"
         >
-        <BsTwitter />
+          <BsTwitter />
         </a>
-
       </motion.div>
     </section>
   );
