@@ -11,7 +11,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
   title: "Akash Panchal | Personal Portfolio",
-  description: "Akash Panchal is a Software Engineer with 8 years of experience.",
+  description: "Akash Panchal is a Software Engineer with 7 years of experience.",
 };
 
 export default function RootLayout({
