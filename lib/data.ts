@@ -33,20 +33,12 @@ export const links = [
 
 export const experiencesData = [
   {
-    title: "SDE I - Apps Scanner, IntelSecurity (McAfee)",
+    title: "SDE II - Dev experience, Appstore, Amazon",
     location: "Bangalore, India",
     description:
-      "I worked as a backend developer for Mobile Apps scanner services.",
+      "Worked as a Software Engineer in Appstore, improving certification process for devlopers and increasing visibility through promotion portal.",
     icon: React.createElement(CgWorkAlt),
-    date: "June 2016 – Sep 2017",
-  },
-  {
-    title: "SDE I - VPN client App, McAfee",
-    location: "Bangalore, India",
-    description:
-      "I worked as an Android developer for 1 year.",
-    icon: React.createElement(CgWorkAlt),
-    date: "Oct 2017 – Dec 2018",
+    date: "Oct 2021 - Aug 2023",
   },
   {
     title: "SDE II - Secure Home Platform, McAfee",
@@ -57,12 +49,20 @@ export const experiencesData = [
     date: "Jan 2019 – Sep 2021",
   },
   {
-    title: "SDE II - Dev experience, Appstore, Amazon",
+    title: "SDE I - VPN client App, McAfee",
     location: "Bangalore, India",
     description:
-      "Worked as a Software Engineer in Appstore, improving certification process for devlopers and increasing visibility through promotion portal.",
+      "I worked as an Android developer for 1 year.",
     icon: React.createElement(CgWorkAlt),
-    date: "Oct 2021 - Aug 2023",
+    date: "Oct 2017 – Dec 2018",
+  },
+  {
+    title: "SDE I - Apps Scanner, IntelSecurity (McAfee)",
+    location: "Bangalore, India",
+    description:
+      "I worked as a backend developer for Mobile Apps scanner services.",
+    icon: React.createElement(CgWorkAlt),
+    date: "June 2016 – Sep 2017",
   },
 ] as const;
 
