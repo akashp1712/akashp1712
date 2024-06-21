@@ -73,11 +73,11 @@ export default function Intro() {
         animate={{ opacity: 1, y: 0 }}
       >
         <span className="font-bold">Software Engineer</span> with{" "}
-        <span className="font-bold">7 years</span> of experience. I enjoy
+        <span className="font-bold">8 years</span> of experience. I enjoy
         solving problems using
         <Typewriter
           options={{
-            strings: ["Software Engineering", "Algorithms", "Web App", "Mobile App"],
+            strings: ["Software Engineering", "Algorithms", "Distributed Systems", "Web App", "Mobile App",],
             autoStart: true,
             loop: true,
           }}

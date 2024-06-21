@@ -33,10 +33,18 @@ export const links = [
 
 export const experiencesData = [
   {
+    title: "SMTS, Salesforce Marketing Cloud",
+    location: "Bangalore, India",
+    description:
+      "Part of SMS Last Mile Team, building SMS platform for serving billions of messages for Marketing Cloud customers",
+    icon: React.createElement(CgWorkAlt),
+    date: "Feb 2024 - Current",
+  },
+  {
     title: "SDE II - Dev experience, Appstore, Amazon",
     location: "Bangalore, India",
     description:
-      "Worked as a Software Engineer in Appstore, improving certification process for devlopers and increasing visibility through promotion portal.",
+      "Part of Appstore Org, improving certification process for devlopers and increasing visibility through promotion portal.",
     icon: React.createElement(CgWorkAlt),
     date: "Oct 2021 - Aug 2023",
   },
@@ -44,7 +52,7 @@ export const experiencesData = [
     title: "SDE II - Secure Home Platform, McAfee",
     location: "Bangalore, India",
     description:
-      "I worked as a Software Engineer in Cloud and Android for the Secure Home Platform for the customer.",
+      " OEM Partner Team: Cloud and Android development for the Secure Home Platform for the customer.",
     icon: React.createElement(CgWorkAlt),
     date: "Jan 2019 – Sep 2021",
   },
@@ -52,7 +60,7 @@ export const experiencesData = [
     title: "SDE I - VPN client App, McAfee",
     location: "Bangalore, India",
     description:
-      "I worked as an Android developer for 1 year.",
+      "Android development for VPN SDK and Mobile App",
     icon: React.createElement(CgWorkAlt),
     date: "Oct 2017 – Dec 2018",
   },
@@ -60,7 +68,7 @@ export const experiencesData = [
     title: "SDE I - Apps Scanner, IntelSecurity (McAfee)",
     location: "Bangalore, India",
     description:
-      "I worked as a backend developer for Mobile Apps scanner services.",
+      "Backend development for Mobile Apps scanner services.",
     icon: React.createElement(CgWorkAlt),
     date: "June 2016 – Sep 2017",
   },
@@ -92,19 +100,13 @@ export const projectsData = [
 ] as const;
 
 export const skillsData = [
-  "HTML",
-  "CSS",
-  "JavaScript",
-  // "TypeScript",
-  "ReactJS",
-  "NextJS",
-  "Git",
-  // "Tailwind",
-  //"Prisma",
-  "PostgreSQL",
+  "Dive deep",
+  "System Design",
+  "AWS",
   "Python",
-  "FastAPI",
-  //"Framer Motion",
   "Java",
-  "AWS"
+  "JavaScript",
+  "PostgreSQL",
+  "DynamoDB",
+  "ReactJS"
 ] as const;
