@@ -86,7 +86,7 @@ export const experiencesData = [
       "Implemented security enhancements that improved threat detection by 30%",
       "Collaborated with OEM partners to integrate solutions across diverse hardware platforms"
     ],
-    technologies: ["Android", "Java", "Kotlin", "Cloud Services", "RESTful APIs", "Security Protocols"]
+    technologies: ["Android", "Java", "Cloud Services", "RESTful APIs", "Security Protocols"]
   },
   {
     title: "SDE I - VPN client App, McAfee",
@@ -103,7 +103,7 @@ export const experiencesData = [
       "Reduced app size by 20% while maintaining full functionality",
       "Implemented battery optimization techniques reducing power consumption by 15%"
     ],
-    technologies: ["Android", "Java", "VPN Protocols", "OpenVPN", "Network Security"]
+    technologies: ["Android", "Java", "VPN Protocols", "Network Security"]
   },
   {
     title: "SDE I - Apps Scanner, IntelSecurity (McAfee)",
@@ -120,7 +120,7 @@ export const experiencesData = [
       "Developed APIs consumed by multiple client applications with 99.9% uptime",
       "Optimized database queries reducing response time by 40%"
     ],
-    technologies: ["Python", "Java", "RESTful APIs", "PostgreSQL", "Machine Learning", "Security Analysis"]
+    technologies: ["Python", "Java", "RESTful APIs", "PostgreSQL", "Machine Learning", "App Analysis"]
   },
 ] as const;
 
