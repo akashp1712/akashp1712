@@ -1,45 +1,56 @@
-## Hello world, My name is Akash Panchal
-#### Software Engineer, Blogger, Reader and an all time Learner!
+# Hello World, I'm Akash Panchal 👋
+### Software Engineer | AI Enthusiast | Problem Solver
 
-### Website: [akashpanchal.com](https://akashpanchal.com)
-#### Building [lessentext](https://lessentext.com) - An intutive text summarizaton saas
+[![Website](https://img.shields.io/badge/Website-akashpanchal.com-blue?style=flat-square&logo=google-chrome)](https://akashpanchal.com)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-akashpanchal-0077B5?style=flat-square&logo=linkedin)](https://linkedin.com/in/akashpanchal)
+[![Twitter](https://img.shields.io/badge/Twitter-akashp1712-1DA1F2?style=flat-square&logo=twitter)](https://twitter.com/akashp1712)
+[![Medium](https://img.shields.io/badge/Medium-akashp1712-black?style=flat-square&logo=medium)](https://medium.com/@akashp1712)
 
+## 🚀 About Me
 
-### About Me
+Senior Software Engineer with 8+ years of experience building scalable systems and solving complex problems. Currently working at Salesforce Marketing Cloud, previously at Amazon and McAfee.
 
-- 🔭 Worked at Amazon, McAfee & Intel.
-- 🌱 I love to learn and code  **Web apps, Android Apps & Natural Language Processing**.
-- 👯 I’m looking to collaborate with other content creators, open source contirbuters and avid learners.
-- 💬 Ask me about Software Engineering, NLP and TimeTravel: **akashp1712@gmail.com**
-- 📫 How about LinkedIn? [Connect with me on Linkedin][linkedin]
+- 🔭 **Current Role:** SMTS at Salesforce Marketing Cloud, building SMS platform serving billions of messages
+- 🌱 **Passionate about:** Web Apps, AI/ML, Distributed Systems, and Natural Language Processing
+- 💼 **Experience:** Salesforce, Amazon, McAfee & Intel
+- 👯 **Looking to collaborate on:** AI projects, open source contributions, and innovative tech solutions
+- 📫 **Reach me at:** akashp1712@gmail.com
 
+## 🛠️ Projects
 
-### Languages and Tools
+### [LessenText](https://lessentext.com)
+An intuitive text summarization SaaS platform using advanced NLP techniques to generate concise summaries.
 
-<img align="left" alt="Python" width="26px" src="https://raw.githubusercontent.com/github/explore/80688e429a7d4ef2fca1e82350fe8e3517d3494d/topics/python/python.png" />
-<img align="left" alt="Android" width="26px" src="https://raw.githubusercontent.com/github/explore/80688e429a7d4ef2fca1e82350fe8e3517d3494d/topics/android/android.png" />
-<img align="left" alt="HTML5" width="26px" src="https://raw.githubusercontent.com/github/explore/80688e429a7d4ef2fca1e82350fe8e3517d3494d/topics/html/html.png" />
-<img align="left" alt="JavaScript" width="26px" src="https://raw.githubusercontent.com/github/explore/80688e429a7d4ef2fca1e82350fe8e3517d3494d/topics/javascript/javascript.png" />
-<img align="left" alt="Git" width="26px" src="https://raw.githubusercontent.com/github/explore/80688e429a7d4ef2fca1e82350fe8e3517d3494d/topics/git/git.png" />
-<img align="left" alt="GitHub" width="26px" src="https://raw.githubusercontent.com/github/explore/78df643247d429f6cc873026c0622819ad797942/topics/github/github.png" />
-<img align="left" alt="Terminal" width="26px" src="https://raw.githubusercontent.com/github/explore/80688e429a7d4ef2fca1e82350fe8e3517d3494d/topics/terminal/terminal.png" />
+### [Pythonizr](https://pythonizr.com)
+A machine learning boilerplate generator to jumpstart ML projects.
 
+### [Extractive Text Summarization](https://github.com/akashp1712/streamlit-text-summarization)
+[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://share.streamlit.io/akashp1712/streamlit-text-summarization/main/app.py)
 
-<br />
-<br />
+### [Python Cheat Sheets](https://github.com/akashp1712/awesome-python-cheatsheets)
+Comprehensive collection of Python cheatsheets for developers.
 
-### Side Projects
-- [Building micro-saas] [LessenText](https://lessentext.com)
-- [OpenSource] [Pythonizr - A mcahine learning boilerplate generator](https://pythonizr.com)
-- [OpenSource] [Extractive Text Summarization](https://github.com/akashp1712/streamlit-text-summarization) [![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://share.streamlit.io/akashp1712/streamlit-text-summarization/main/app.py)
-- [OpenSource] [Python Cheat Sheets](https://github.com/akashp1712/awesome-python-cheatsheets)
-- [OpenSource] [Summarize the webpage from the URL](https://github.com/akashp1712/summarize-webpage)
-- [OpenSource] [Awesome Python Tricks](https://akashp1712.github.io/awesome-python-tricks/)
+### [Summarize Webpage](https://github.com/akashp1712/summarize-webpage)
+Extract and summarize content from any webpage using NLP.
 
----
+### [Awesome Python Tricks](https://akashp1712.github.io/awesome-python-tricks/)
+Collection of Python tips and tricks for efficient coding.
 
-[website]: https://akashpanchal.com
-[pythonizr]: https://pythonizr.com
-[twitter]: https://twitter.com/akashp1712
-[linkedin]: https://linkedin.com/in/akashpanchal
-[medium]: https://medium.com/@akashp1712
+## 💻 Tech Stack
+
+![Python](https://img.shields.io/badge/-Python-3776AB?style=flat-square&logo=python&logoColor=white)
+![Java](https://img.shields.io/badge/-Java-007396?style=flat-square&logo=java&logoColor=white)
+![JavaScript](https://img.shields.io/badge/-JavaScript-F7DF1E?style=flat-square&logo=javascript&logoColor=black)
+![React](https://img.shields.io/badge/-React-61DAFB?style=flat-square&logo=react&logoColor=black)
+![AWS](https://img.shields.io/badge/-AWS-232F3E?style=flat-square&logo=amazon-aws&logoColor=white)
+![Microservices](https://img.shields.io/badge/-Microservices-0078D4?style=flat-square&logo=azure-devops&logoColor=white)
+![Kafka](https://img.shields.io/badge/-Kafka-231F20?style=flat-square&logo=apache-kafka&logoColor=white)
+![Redis](https://img.shields.io/badge/-Redis-DC382D?style=flat-square&logo=redis&logoColor=white)
+![Android](https://img.shields.io/badge/-Android-3DDC84?style=flat-square&logo=android&logoColor=white)
+![Git](https://img.shields.io/badge/-Git-F05032?style=flat-square&logo=git&logoColor=white)
+
+## 🌟 Looking for AI or Voice AI expertise?
+
+I'm available for consulting and development projects in AI and Voice AI technologies. Let's build something amazing together!
+
+[![Contact Me](https://img.shields.io/badge/Contact_Me-Let's_Talk-blue?style=for-the-badge)](https://akashpanchal.com/#contact)

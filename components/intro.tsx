@@ -84,6 +84,31 @@ export default function Intro() {
         />
       </motion.h1>
 
+      {/* AI/Voice AI Call-to-Action */}
+      <motion.div
+        className="mb-8 px-4"
+        initial={{ opacity: 0, y: 100 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+      >
+        <div className="p-4 rounded-lg bg-gray-100 dark:bg-white/10 border border-black/10 dark:border-white/10 text-gray-800 dark:text-white/90 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div>
+            <h3 className="text-lg font-semibold mb-1">Looking for AI or Voice AI expertise?</h3>
+            <p className="text-gray-600 dark:text-white/70">I'm available for consulting and development projects in AI and Voice AI technologies.</p>
+          </div>
+          <Link
+            href="#contact"
+            className="px-5 py-2 bg-gray-900 text-white dark:bg-white dark:text-gray-900 font-medium rounded-full hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors whitespace-nowrap mt-3 sm:mt-0"
+            onClick={() => {
+              setActiveSection("Contact");
+              setTimeOfLastClick(Date.now());
+            }}
+          >
+            Let's Talk
+          </Link>
+        </div>
+      </motion.div>
+
       <motion.div
         className="flex flex-col sm:flex-row items-center justify-center gap-2 px-4 text-lg font-medium"
         initial={{ opacity: 0, y: 100 }}
