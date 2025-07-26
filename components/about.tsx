@@ -19,21 +19,13 @@ export default function About() {
     >
       <SectionHeading>About me</SectionHeading>
       <p className="mb-3">
-        After graduating with a Masters degree in{" "}
-        <span className="font-medium">Computer Science</span>, I pursued the Software Engineer career at Intel. However, I learned{" "}
-        <span className="font-medium">full-stack web development by doing passion-projects</span>.{" "}
-        <span className="italic">My favorite part of software enginnering</span> is the
-        problem-solving aspect. I <span className="underline">love</span> the
-        feeling of finally figuring out a solution to a problem.</p>
-        
-      <p className="mb-3">I am currently building{" "}
-        <span className="font-medium">LessenText</span> - a text summarization saas.
+        I'm a passionate <span className="font-medium">Software Engineer</span> with a strong background in building scalable platforms and impactful products. With experience at <span className="font-semibold">Salesforce</span>, <span className="font-semibold">Amazon</span>, <span className="font-semibold">McAfee</span>, and <span className="font-semibold">Broadcom</span>, I've led and contributed to projects that serve <span className="font-bold">millions of users</span> and process <span className="font-bold">billions of messages</span>.
       </p>
-
-      <p>
-        <span className="italic">When I'm not coding</span>, I enjoy playing
-        video games, watching thriller movies. I also enjoy{" "}
-        <span className="font-medium">learning history of the old worlds</span>.
+      <p className="mb-3">
+        My expertise spans <span className="font-medium">cloud infrastructure, backend and Android development, distributed systems, and automation</span>. I thrive on solving complex problems, driving innovation, and mentoring the next generation of engineers. I believe in the power of <span className="font-medium">collaboration</span> and <span className="font-medium">continuous learning</span> to deliver exceptional results.
+      </p>
+      <p className="mb-3">
+        Currently, I'm building agentic AI for <span className="font-medium">voice and video support</span>, pushing the boundaries of conversational and multimodal AI.
       </p>
     </motion.section>
   );
