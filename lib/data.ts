@@ -3,6 +3,7 @@ import { CgWorkAlt } from "react-icons/cg";
 import lessentextImg from "@/public/lessentext.jpeg";
 import summarizeWebpageImg from "@/public/summarize-webpage.png"
 import pythonCheatsheetImg from "@/public/python-for-java.png";
+import callGptImg from "@/public/call-gpt.png";
 
 export const links = [
   {
@@ -157,6 +158,13 @@ export const projectsData = [
     hyperlink: "https://lessentext.com",
     tags: ["ReactJS", "NextJS", "Vercel", "Supabase", "FastAPI"],
     imageUrl: lessentextImg,
+  },
+  {
+    title: "Call GPT: Generative AI Phone Calling",
+    description: "A toolkit for building agentic phone call experiences using Twilio Media Streams, LLMs, and real-time speech-to-text and text-to-speech. Enables voice and video support with AI.",
+    hyperlink: "https://github.com/akashp1712/call-gpt",
+    tags: ["Node.js", "Twilio", "OpenAI", "Voice AI", "Real-time"],
+    imageUrl: callGptImg,
   },
   {
     title: "Summarize webapge - Python Flask Application",
