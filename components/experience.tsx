@@ -7,6 +7,23 @@ import { useSectionInView } from "@/lib/hooks";
 import { useTheme } from "@/context/theme-context";
 import { motion } from "framer-motion";
 
+// Helper function to bold numbers and impactful words
+function highlightImpact(text: string) {
+  // Bold numbers, percentages, and impactful words
+  const impactWords = [
+    "improved", "reduced", "increased", "optimized", "led", "architected", "designed", "developed", "successfully", "streamlined", "resolved", "spearheaded", "enhanced", "automate", "mentored", "earned", "proposed", "implemented", "collaborated", "engineered", "provided", "achieved", "built", "created", "launched", "delivered", "initiated", "drove", "resulting", "remarkable", "significantly", "exceptional", "key", "core", "critical", "robust", "scalable", "efficient", "seamless", "remarkable", "notable", "notably", "noteworthy", "outstanding", "award", "star", "playbook", "automation", "innovation"
+  ];
+  // Regex for numbers, percentages, and years
+  const numberRegex = /(\b\d+[,.]?\d*\b|\b\d+%|\b\d+\s?(?:years?|months?|weeks?|days?)|\bQ\d{1,2}\s?\d{4})/gi;
+  // Regex for impact words
+  const impactRegex = new RegExp(`\\b(${impactWords.join("|")})\\b`, "gi");
+  // First, bold numbers
+  let result = text.replace(numberRegex, (match) => `<strong>${match}</strong>`);
+  // Then, bold impact words
+  result = result.replace(impactRegex, (match) => `<strong>${match}</strong>`);
+  return result;
+}
+
 export default function Experience() {
   const { ref } = useSectionInView("Experience");
   const { theme } = useTheme();
@@ -26,8 +43,8 @@ export default function Experience() {
           >
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="text-4xl" style={{ color: experience.brandColor }}>
+                <div className="flex items-center gap-4 mb-2">
+                  <div className="text-6xl" style={{ color: experience.brandColor }}>
                     {experience.logo}
                   </div>
                   <h3 className="font-semibold text-lg">{experience.title}</h3>
@@ -42,7 +59,7 @@ export default function Experience() {
                     <h4 className="text-sm font-medium text-gray-900 dark:text-white/90 mb-2">Key Achievements:</h4>
                     <ul className="list-disc pl-5 text-sm text-gray-700 dark:text-white/75 space-y-1">
                       {experience.achievements.map((achievement, i) => (
-                        <li key={i}>{achievement}</li>
+                        <li key={i} dangerouslySetInnerHTML={{ __html: highlightImpact(achievement) }} />
                       ))}
                     </ul>
                   </div>
