@@ -1,40 +1,52 @@
-# Hello World, I'm Akash Panchal 👋
-### Software Engineer | AI Enthusiast | Problem Solver
+# 👋 Hi, I'm Akash Panchal
+### Senior Software Engineer | AI & Voice AI Specialist | Problem Solver
 
 [![Website](https://img.shields.io/badge/Website-akashpanchal.com-blue?style=flat-square&logo=google-chrome)](https://akashpanchal.com)
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-akashpanchal-0077B5?style=flat-square&logo=linkedin)](https://linkedin.com/in/akashpanchal)
 [![Twitter](https://img.shields.io/badge/Twitter-akashp1712-1DA1F2?style=flat-square&logo=twitter)](https://twitter.com/akashp1712)
 [![Medium](https://img.shields.io/badge/Medium-akashp1712-black?style=flat-square&logo=medium)](https://medium.com/@akashp1712)
 
+---
+
 ## 🚀 About Me
 
-Senior Software Engineer with 8+ years of experience building scalable systems and solving complex problems. Currently working at Salesforce Marketing Cloud, previously at Amazon and McAfee.
+🔹 **Current:** Senior Member of Technical Staff at Salesforce Marketing Cloud  
+🔹 **Experience:** 9+ years at Salesforce, Amazon, McAfee, Broadcom  
+🔹 **Expertise:** Scalable platforms, distributed systems, cloud, backend, Android, AI/ML, Voice AI  
+🔹 **Impact:** Led projects serving millions of users & billions of messages  
+🔹 **Awards:** Star Performer of the Quarter (Q3 2024), multiple innovation initiatives
 
-- 🔭 **Current Role:** SMTS at Salesforce Marketing Cloud, building SMS platform serving billions of messages
-- 🌱 **Passionate about:** Web Apps, AI/ML, Distributed Systems, and Natural Language Processing
-- 💼 **Experience:** Salesforce, Amazon, McAfee & Intel
-- 👯 **Looking to collaborate on:** AI projects, open source contributions, and innovative tech solutions
-- 📫 **Reach me at:** akashp1712@gmail.com
+I thrive on solving complex problems, driving innovation, and mentoring engineers. Collaboration and continuous learning are my core values.
 
-## 🛠️ Projects
+---
+
+## 🌟 What I Do
+
+- **AI/Voice AI Consulting:** Available for freelance, contract, and consulting projects  
+- **Open Source:** Contributor and maintainer of several popular repositories  
+- **Mentorship:** Helping engineers grow and succeed  
+- **Speaking:** Available for podcasts, webinars, and tech talks
+
+---
+
+## 🛠️ Featured Projects
+
+### [Paymint](https://paymint.dev)
+> The easiest way to integrate Paddle payments. Stop wrestling with complex payment APIs. Get Paddle working in your app in minutes, not days.
 
 ### [LessenText](https://lessentext.com)
-An intuitive text summarization SaaS platform using advanced NLP techniques to generate concise summaries.
+> SaaS platform for advanced text summarization using NLP.
 
-### [Pythonizr](https://pythonizr.com)
-A machine learning boilerplate generator to jumpstart ML projects.
-
-### [Extractive Text Summarization](https://github.com/akashp1712/streamlit-text-summarization)
-[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://share.streamlit.io/akashp1712/streamlit-text-summarization/main/app.py)
-
-### [Python Cheat Sheets](https://github.com/akashp1712/awesome-python-cheatsheets)
-Comprehensive collection of Python cheatsheets for developers.
+### [Call GPT: Generative AI Phone Calling](https://github.com/akashp1712/call-gpt)
+> Toolkit for building agentic phone call experiences with Twilio, LLMs, and real-time voice AI.
 
 ### [Summarize Webpage](https://github.com/akashp1712/summarize-webpage)
-Extract and summarize content from any webpage using NLP.
+> Flask app to extract and summarize web content using NLP.
 
-### [Awesome Python Tricks](https://akashp1712.github.io/awesome-python-tricks/)
-Collection of Python tips and tricks for efficient coding.
+### [Awesome Python CheatSheets](https://github.com/akashp1712/awesome-python-cheatsheets)
+> Comprehensive Python cheatsheets for developers.
+
+---
 
 ## 💻 Tech Stack
 
@@ -49,8 +61,18 @@ Collection of Python tips and tricks for efficient coding.
 ![Android](https://img.shields.io/badge/-Android-3DDC84?style=flat-square&logo=android&logoColor=white)
 ![Git](https://img.shields.io/badge/-Git-F05032?style=flat-square&logo=git&logoColor=white)
 
-## 🌟 Looking for AI or Voice AI expertise?
+---
 
-I'm available for consulting and development projects in AI and Voice AI technologies. Let's build something amazing together!
+## 📫 Let's Connect!
 
-[![Contact Me](https://img.shields.io/badge/Contact_Me-Let's_Talk-blue?style=for-the-badge)](https://akashpanchal.com/#contact)
+- **Email:** akashp1712@gmail.com  
+- **Portfolio:** [akashpanchal.com](https://akashpanchal.com)
+- **LinkedIn:** [akashpanchal](https://linkedin.com/in/akashpanchal)
+- **Twitter:** [@akashp1712](https://twitter.com/akashp1712)
+
+---
+
+## 🤝 Looking for Collaborations or New Opportunities?
+
+I'm open to new roles, collaborations, and consulting in AI, Voice AI, and scalable systems.  
+**Let's build something amazing together!**

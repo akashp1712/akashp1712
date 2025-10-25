@@ -4,6 +4,7 @@ import lessentextImg from "@/public/lessentext.jpeg";
 import summarizeWebpageImg from "@/public/summarize-webpage.png"
 import pythonCheatsheetImg from "@/public/python-for-java.png";
 import callGptImg from "@/public/call-gpt.png";
+import paymintImg from "@/public/paymint.png";
 
 export const links = [
   {
@@ -151,6 +152,14 @@ export const experiencesData = [
 ] as const;
 
 export const projectsData = [
+  {
+    title: "Paymint",
+    description:
+      "The easiest way to integrate Paddle payments. Stop wrestling with complex payment APIs. Get Paddle working in your app in minutes, not days.",
+    hyperlink: "https://paymint.dev",
+    tags: ["Paddle", "Payment Integration", "API", "Developer Tools", "SaaS"],
+    imageUrl: paymintImg,
+  },
   {
     title: "LessenText",
     description:
