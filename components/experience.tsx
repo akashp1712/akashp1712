@@ -29,7 +29,7 @@ export default function Experience() {
   const { theme } = useTheme();
 
   return (
-    <section id="experience" ref={ref} className="scroll-mt-28 mb-28 max-w-[53rem] mx-auto px-4 sm:px-6">
+    <section id="experience" ref={ref} className="scroll-mt-28 mb-28 max-w-[60rem] mx-auto px-4 sm:px-6">
       <SectionHeading>Professional Experience</SectionHeading>
       
       <div className="grid grid-cols-1 gap-6">

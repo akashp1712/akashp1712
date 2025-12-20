@@ -1,7 +1,8 @@
 # 👋 Hi, I'm Akash Panchal
-### Senior Software Engineer | AI & Voice AI Specialist | Problem Solver
+### Senior Software Engineer | Node.js | Typescript | Python | AI 
 
 [![Website](https://img.shields.io/badge/Website-akashpanchal.com-blue?style=flat-square&logo=google-chrome)](https://akashpanchal.com)
+[![Blog](https://img.shields.io/badge/Blog-blog.akashpanchal.com-FF5700?style=flat-square&logo=hashnode&logoColor=white)](https://blog.akashpanchal.com)
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-akashpanchal-0077B5?style=flat-square&logo=linkedin)](https://linkedin.com/in/akashpanchal)
 [![Twitter](https://img.shields.io/badge/Twitter-akashp1712-1DA1F2?style=flat-square&logo=twitter)](https://twitter.com/akashp1712)
 [![Medium](https://img.shields.io/badge/Medium-akashp1712-black?style=flat-square&logo=medium)](https://medium.com/@akashp1712)
@@ -67,6 +68,7 @@ I thrive on solving complex problems, driving innovation, and mentoring engineer
 
 - **Email:** akashp1712@gmail.com  
 - **Portfolio:** [akashpanchal.com](https://akashpanchal.com)
+- **Blog:** [blog.akashpanchal.com](https://blog.akashpanchal.com)
 - **LinkedIn:** [akashpanchal](https://linkedin.com/in/akashpanchal)
 - **Twitter:** [@akashp1712](https://twitter.com/akashp1712)
 
