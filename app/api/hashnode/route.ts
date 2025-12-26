@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 
 const HASHNODE_API = 'https://gql.hashnode.com';
-const PUBLICATION_HOST = 'blog.akashpanchal.com'; // Your Hashnode publication hostname
-const HASHNODE_ACCESS_TOKEN = process.env.HASHNODE_ACCESS_TOKEN || 'a8d4bc10-aa17-4a7d-b943-8dd097627e2c';
+const PUBLICATION_HOST = 'blog.akashpanchal.com';
+const HASHNODE_ACCESS_TOKEN = process.env.HASHNODE_ACCESS_TOKEN || '';
 
 interface HashnodePost {
   title: string;
