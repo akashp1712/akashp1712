@@ -32,6 +32,9 @@ I thrive on solving complex problems, driving innovation, and mentoring engineer
 
 ## 🛠️ Featured Projects
 
+### [Crux (Claude Code plugin)](https://github.com/akashp1712/claude-crux)
+> Every memory tool remembers *what*. Only Crux remembers *why*. A session-scoped memory plugin for Claude Code that builds a causal graph to protect your architectural decisions during context compaction.
+
 ### [Paymint](https://paymint.dev)
 > The easiest way to integrate Paddle payments. Stop wrestling with complex payment APIs. Get Paddle working in your app in minutes, not days.
 
