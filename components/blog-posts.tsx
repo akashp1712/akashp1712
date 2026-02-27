@@ -69,7 +69,7 @@ export default function BlogPosts() {
       <SectionHeading>Latest Articles</SectionHeading>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {posts.map((post, index) => (
+        {posts.slice(0, 4).map((post, index) => (
           <motion.article
             key={post.slug}
             className="bg-gray-100 dark:bg-white/10 rounded-lg overflow-hidden border border-black/5 hover:bg-gray-200 dark:hover:bg-white/20 transition group"

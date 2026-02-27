@@ -4,12 +4,15 @@ import React from "react";
 import { motion } from "framer-motion";
 import { links } from "@/lib/data";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import clsx from "clsx";
 import { useActiveSectionContext } from "@/context/active-section-context";
 
 export default function Header() {
   const { activeSection, setActiveSection, setTimeOfLastClick } =
     useActiveSectionContext();
+  const pathname = usePathname();
+  const isHomePage = pathname === "/";
 
   return (
     <header className="z-[999] relative">
@@ -36,7 +39,7 @@ export default function Header() {
                       activeSection === link.name,
                   }
                 )}
-                href={link.hash}
+                href={isHomePage ? link.hash : `/${link.hash}`}
                 onClick={() => {
                   setActiveSection(link.name);
                   setTimeOfLastClick(Date.now());

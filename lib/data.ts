@@ -5,6 +5,9 @@ import summarizeWebpageImg from "@/public/summarize-webpage.png"
 import pythonCheatsheetImg from "@/public/python-for-java.png";
 import callGptImg from "@/public/call-gpt.png";
 import paymintImg from "@/public/paymint.png";
+import claudeCruxImg from "@/public/claude-crux.png";
+import jsonDiffImg from "@/public/jsondiff.png";
+import jsonLintImg from "@/public/jsonlint.png";
 
 export const links = [
   {
@@ -28,12 +31,12 @@ export const links = [
     hash: "#projects",
   },
   {
-    name: "Blog",
-    hash: "#blog",
+    name: "Tools",
+    hash: "#tools",
   },
   {
-    name: "Contact",
-    hash: "#contact",
+    name: "Blog",
+    hash: "#blog",
   },
 ] as const;
 
@@ -165,6 +168,14 @@ export const projectsData = [
     imageUrl: paymintImg,
   },
   {
+    title: "Crux (Claude Code Plugin)",
+    description:
+      "AI context management system that builds causal graphs to protect architectural decisions during long conversations. Addresses the context compaction problem in extended AI interactions.",
+    hyperlink: "https://github.com/akashp1712/claude-crux",
+    tags: ["AI", "Context Management", "Claude Code", "Developer Tools", "Open Source"],
+    imageUrl: claudeCruxImg,
+  },
+  {
     title: "LessenText",
     description:
       "LessenText is an advanced text summarization app that utilizes natural language processing techniques to generate concise and coherent summaries of lengthy texts.",
@@ -206,4 +217,23 @@ export const skillsData = [
   { name: "Redis", icon: React.createElement(SiRedis) },
   { name: "Voice AI", icon: React.createElement(FaMicrophone) },
   { name: "NextJS", icon: React.createElement(SiNextdotjs) },
+] as const;
+
+export const toolsData = [
+  {
+    title: "JSON Diff",
+    description: "Compare and visualize differences between JSON objects. Perfect for debugging API responses and configuration files.",
+    url: "/tools/jsondiff",
+    tags: ["JSON", "Diff", "Comparison", "Developer Tools"],
+    imageUrl: jsonDiffImg,
+    status: "Live",
+  },
+  {
+    title: "JSON Lint",
+    description: "Validate and format JSON files with detailed error reporting. Fix syntax errors and beautify your JSON data.",
+    url: "/tools/jsonlint",
+    tags: ["JSON", "Validation", "Formatter", "Developer Tools"],
+    imageUrl: jsonLintImg,
+    status: "Live",
+  },
 ] as const;
