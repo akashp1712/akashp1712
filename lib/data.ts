@@ -38,6 +38,10 @@ export const links = [
     name: "Blog",
     hash: "#blog",
   },
+  {
+    name: "Contact",
+    hash: "#contact",
+  },
 ] as const;
 
 // Add these imports at the top of your file
