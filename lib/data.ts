@@ -1,8 +1,6 @@
 import React from "react";
 import { CgWorkAlt } from "react-icons/cg";
-import lessentextImg from "@/public/lessentext.jpeg";
-import summarizeWebpageImg from "@/public/summarize-webpage.png"
-import pythonCheatsheetImg from "@/public/python-for-java.png";
+import aiSdkPatternsImg from "@/public/api-sdk-patterns.png";
 import callGptImg from "@/public/call-gpt.png";
 import paymintImg from "@/public/paymint.png";
 import claudeCruxImg from "@/public/claude-crux.png";
@@ -180,12 +178,11 @@ export const projectsData = [
     imageUrl: claudeCruxImg,
   },
   {
-    title: "LessenText",
-    description:
-      "LessenText is an advanced text summarization app that utilizes natural language processing techniques to generate concise and coherent summaries of lengthy texts.",
-    hyperlink: "https://lessentext.com",
-    tags: ["ReactJS", "NextJS", "Vercel", "Supabase", "FastAPI"],
-    imageUrl: lessentextImg,
+    title: "AI SDK Patterns",
+    description: "Comprehensive resource for AI SDK patterns, architectures, and best practices.",
+    hyperlink: "https://ai-sdk-patterns.dev",
+    tags: ["AI", "SDK", "Patterns", "Best Practices"],
+    imageUrl: aiSdkPatternsImg,
   },
   {
     title: "Call GPT: Generative AI Phone Calling",
@@ -193,20 +190,6 @@ export const projectsData = [
     hyperlink: "https://github.com/akashp1712/call-gpt",
     tags: ["Node.js", "Twilio", "OpenAI", "Voice AI", "Real-time"],
     imageUrl: callGptImg,
-  },
-  {
-    title: "Summarize webapge - Python Flask Application",
-    description: "A Flask application that extract and summarize webpage using Natural Language Processing",
-    hyperlink: "https://github.com/akashp1712/summarize-webpage",
-    tags: ["Python", "Flask", "NLTK"],
-    imageUrl: summarizeWebpageImg,
-  },
-  {
-    title: "Awesome Python CheatSheets",
-    description: "Python cheatsheets for developers that help them in study and in work.",
-    hyperlink: "https://github.com/akashp1712/awesome-python-cheatsheets",
-    tags: ["Python3", "Java", "DSA", "Problem Solving"],
-    imageUrl: pythonCheatsheetImg,
   },
 ] as const;
 
