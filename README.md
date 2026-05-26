@@ -19,14 +19,22 @@
 
 🔹 **Current:** Senior Member of Technical Staff at Salesforce Marketing Cloud  
 🔹 **Experience:** 9+ years building enterprise solutions at Salesforce, Amazon, McAfee, Broadcom  
-🔹 **Expertise:** Distributed Systems, LLMs, Voice AI, Backend Development  
+🔹 **Expertise:** Distributed Systems, Mastra.ai Agentic Development, LLMs, Voice AI  
 🔹 **Recognition:** Salesforce - Star Performer of the Quarter (Q3 2024)  
 
-I'm passionate about solving complex problems at scale and building developer tools that make a difference.
+I'm passionate about solving complex problems at scale, building developer tools, and engineering advanced multi-agent workflows using Mastra.ai.
 
 ---
 
 ## 🚀 Projects
+
+### 🎬 [**VibeFrames**](https://github.com/akashp1712/vibeframes)
+
+**Mastra-powered collaborative harness agent** that allows users to compose, slice, and edit videos through natural language dialogue, rendering real-time timelines and HTML-native video player trees via Server-Sent Events (SSE).
+
+<img src="https://raw.githubusercontent.com/akashp1712/vibeframes/main/assets/vibeframes_banner.png" alt="VibeFrames" style="border: 2px solid #e1e4e8; border-radius: 8px;">
+
+---
 
 ### 💳 [**Paymint**](https://paymint.dev)
 
