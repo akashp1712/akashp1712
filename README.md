@@ -56,7 +56,7 @@ I'm passionate about solving complex problems at scale, building developer tools
 
 **AI context management system** that builds causal graphs to protect architectural decisions during long conversations.
 
-<img src="public/crux-cover.jpg" alt="Crux" style="border: 2px solid #e1e4e8; border-radius: 8px;">
+<img src="public/crux-cover.png" alt="Crux" style="border: 2px solid #e1e4e8; border-radius: 8px;">
 
 ---
 
