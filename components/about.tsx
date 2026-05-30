@@ -19,13 +19,7 @@ export default function About() {
     >
       <SectionHeading>About me</SectionHeading>
       <p className="mb-3">
-        I'm a passionate <span className="font-medium">Software Engineer</span> with a strong background in building scalable platforms and impactful products. With experience at <span className="font-semibold">Salesforce</span>, <span className="font-semibold">Amazon</span>, <span className="font-semibold">McAfee</span>, and <span className="font-semibold">Broadcom</span>, I've led and contributed to projects that serve <span className="font-bold">millions of users</span> and process <span className="font-bold">billions of messages</span>.
-      </p>
-      <p className="mb-3">
-        My expertise spans <span className="font-medium">cloud infrastructure, backend and Android development, distributed systems, and automation</span>. I thrive on solving complex problems, driving innovation, and mentoring the next generation of engineers. I believe in the power of <span className="font-medium">collaboration</span> and <span className="font-medium">continuous learning</span> to deliver exceptional results.
-      </p>
-      <p className="mb-3">
-        Currently, I'm building agentic AI for <span className="font-medium">voice and video support</span>, pushing the boundaries of conversational and multimodal AI.
+        I'm a <span className="font-medium">Senior Software Engineer</span> specializing in <span className="font-bold">Agentic AI</span> and <span className="font-medium">scalable platforms</span>. With 9+ years of experience across Salesforce, Amazon, and McAfee, I architect systems that serve billions of users. Currently, I am leading the development of multi-turn agent platforms using <span className="font-semibold">Mastra Harness, Python, and React</span>, pushing the boundaries of conversational AI and real-time inference.
       </p>
     </motion.section>
   );

@@ -167,6 +167,7 @@ export const projectsData = [
     description:
       "Agentic video composition engine powered by a custom Mastra Harness — orchestrates LLM tools and skills to manage complex state mutations and stream real-time UI updates via the Vercel AI SDK.",
     hyperlink: "https://vibeframes.vercel.app",
+    githubUrl: "https://github.com/akashp1712/vibeframes",
     tags: ["Next.js", "AI", "Agentic", "Mastra", "Vercel AI SDK", "React"],
     imageUrl: vibeframesImg,
   },
@@ -178,14 +179,7 @@ export const projectsData = [
     tags: ["Paddle", "Payment Integration", "API", "Developer Tools", "SaaS"],
     imageUrl: paymintImg,
   },
-  {
-    title: "Crux (Claude Code Plugin)",
-    description:
-      "AI context management system that builds causal graphs to protect architectural decisions during long conversations. Addresses the context compaction problem in extended AI interactions.",
-    hyperlink: "https://github.com/akashp1712/claude-crux",
-    tags: ["AI", "Context Management", "Claude Code", "Developer Tools", "Open Source"],
-    imageUrl: claudeCruxImg,
-  },
+
   {
     title: "AI SDK Patterns",
     description: "Comprehensive resource for AI SDK patterns, architectures, and best practices.",

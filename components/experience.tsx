@@ -1,7 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import SectionHeading from "./section-heading";
+import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { experiencesData } from "@/lib/data";
 import { useSectionInView } from "@/lib/hooks";
 import { useTheme } from "@/context/theme-context";
@@ -24,6 +25,76 @@ function highlightImpact(text: string) {
   return result;
 }
 
+// Sub-component for an individual experience card
+function ExperienceItem({ experience, index }: { experience: any; index: number }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  return (
+    <motion.div
+      className="group relative bg-gray-100 dark:bg-white/10 rounded-lg p-6 border border-black/5 cursor-pointer hover:bg-gray-200 dark:hover:bg-white/20 transition"
+      initial={{ opacity: 0, y: 50 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.15 }}
+      onClick={() => setIsExpanded(!isExpanded)}
+    >
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex-1">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-4">
+              <div className="text-6xl" style={{ color: experience.brandColor }}>
+                {experience.logo}
+              </div>
+              <h3 className="font-semibold text-lg">{experience.title}</h3>
+            </div>
+            <div className="text-gray-500 p-2">
+              {isExpanded ? <FaChevronUp /> : <FaChevronDown />}
+            </div>
+          </div>
+          <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">{experience.location}</p>
+          <p className="text-sm font-medium text-gray-700 dark:text-white/70 mb-3">{experience.date}</p>
+          
+          <motion.div
+            initial={false}
+            animate={{ height: isExpanded ? "auto" : 0, opacity: isExpanded ? 1 : 0 }}
+            className="overflow-hidden"
+          >
+            <div className="pt-2">
+              <p className="text-gray-700 dark:text-white/70 mb-4">{experience.description}</p>
+              
+              {experience.achievements && (
+                <div className="mb-4">
+                  <h4 className="text-sm font-medium text-gray-900 dark:text-white/90 mb-2">Key Achievements:</h4>
+                  <ul className="list-disc pl-5 text-sm text-gray-700 dark:text-white/75 space-y-1">
+                    {experience.achievements.map((achievement: string, i: number) => (
+                      <li key={i} dangerouslySetInnerHTML={{ __html: highlightImpact(achievement) }} />
+                    ))}
+                  </ul>
+                </div>
+              )}
+              
+              {experience.technologies && (
+                <div>
+                  <h4 className="text-sm font-medium text-gray-900 dark:text-white/90 mb-2">Technologies:</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {experience.technologies.map((tech: string, i: number) => (
+                      <span 
+                        key={i} 
+                        className="px-3 py-1 text-xs uppercase tracking-wider rounded-full bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-white/90 font-medium"
+                      >
+                        {tech}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
 export default function Experience() {
   const { ref } = useSectionInView("Experience");
   const { theme } = useTheme();
@@ -34,55 +105,7 @@ export default function Experience() {
       
       <div className="grid grid-cols-1 gap-6">
         {experiencesData.map((experience, index) => (
-          <motion.div
-            key={index}
-            className="group relative bg-gray-100 dark:bg-white/10 rounded-lg p-6 border border-black/5"
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.15 }}
-          >
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="flex-1">
-                <div className="flex items-center gap-4 mb-2">
-                  <div className="text-6xl" style={{ color: experience.brandColor }}>
-                    {experience.logo}
-                  </div>
-                  <h3 className="font-semibold text-lg">{experience.title}</h3>
-                </div>
-                <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">{experience.location}</p>
-                <p className="text-sm font-medium text-gray-700 dark:text-white/70 mb-3">{experience.date}</p>
-                
-                <p className="text-gray-700 dark:text-white/70 mb-4">{experience.description}</p>
-                
-                {experience.achievements && (
-                  <div className="mb-4">
-                    <h4 className="text-sm font-medium text-gray-900 dark:text-white/90 mb-2">Key Achievements:</h4>
-                    <ul className="list-disc pl-5 text-sm text-gray-700 dark:text-white/75 space-y-1">
-                      {experience.achievements.map((achievement, i) => (
-                        <li key={i} dangerouslySetInnerHTML={{ __html: highlightImpact(achievement) }} />
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                
-                {experience.technologies && (
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-900 dark:text-white/90 mb-2">Technologies:</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {experience.technologies.map((tech, i) => (
-                        <span 
-                          key={i} 
-                          className="px-3 py-1 text-xs uppercase tracking-wider rounded-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white/90 font-medium"
-                        >
-                          {tech}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </motion.div>
+          <ExperienceItem key={index} experience={experience} index={index} />
         ))}
       </div>
     </section>
