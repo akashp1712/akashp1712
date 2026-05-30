@@ -5,16 +5,13 @@ import { projectsData } from "@/lib/data";
 import Image from "next/image";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { BsArrowRight } from "react-icons/bs";
+import { FaGithub } from "react-icons/fa";
 
 type ProjectProps = (typeof projectsData)[number];
 
-export default function Project({
-  title,
-  description,
-  hyperlink,
-  tags,
-  imageUrl,
-}: ProjectProps) {
+export default function Project(props: ProjectProps) {
+  const { title, description, hyperlink, tags, imageUrl } = props;
+  const githubUrl = 'githubUrl' in props ? props.githubUrl : undefined;
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -38,12 +35,22 @@ export default function Project({
           <p className="mt-2 leading-relaxed text-gray-700 dark:text-white/70">
             {description}
           </p>
-          <a
-          className="group flex mt-4 mb-4  smax-w-fit items-center justify-center space-x-2 rounded-full border border-black bg-black px-5 py-2 text-sm text-white transition-colors hover:bg-white hover:text-black"
-          href={hyperlink} target="_blank">
-            Visit website{" "}
-            <BsArrowRight className="opacity-70 group-hover:translate-x-1 transition" />
-          </a>
+          <div className="flex gap-3 mt-4 mb-4">
+            <a
+              className="group flex max-w-fit items-center justify-center space-x-2 rounded-full border border-black bg-black px-5 py-2 text-sm text-white transition-colors hover:bg-white hover:text-black dark:border-white/20 dark:bg-white/10 dark:hover:bg-white/20"
+              href={hyperlink} target="_blank">
+              Visit website{" "}
+              <BsArrowRight className="opacity-70 group-hover:translate-x-1 transition" />
+            </a>
+            {githubUrl && (
+              <a
+                className="group flex max-w-fit items-center justify-center space-x-2 rounded-full border border-black/20 bg-white px-5 py-2 text-sm text-black transition-colors hover:bg-gray-100 dark:border-white/20 dark:bg-black/20 dark:text-white dark:hover:bg-white/10"
+                href={githubUrl as string} target="_blank">
+                <FaGithub className="opacity-70" />
+                <span>GitHub</span>
+              </a>
+            )}
+          </div>
 
           <ul className="flex flex-wrap mt-6 gap-2 sm:mt-auto">
             {tags.map((tag, index) => (
