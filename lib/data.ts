@@ -6,6 +6,7 @@ import paymintImg from "@/public/paymint.png";
 import claudeCruxImg from "@/public/claude-crux.png";
 import jsonDiffImg from "@/public/jsondiff.png";
 import jsonLintImg from "@/public/jsonlint.png";
+import vibeframesImg from "@/public/vibeframes.png";
 
 export const links = [
   {
@@ -161,6 +162,14 @@ export const experiencesData = [
 ] as const;
 
 export const projectsData = [
+  {
+    title: "VibeFrames",
+    description:
+      "Agentic video composition engine powered by a custom Mastra Harness — orchestrates LLM tools and skills to manage complex state mutations and stream real-time UI updates via the Vercel AI SDK.",
+    hyperlink: "https://vibeframes.vercel.app",
+    tags: ["Next.js", "AI", "Agentic", "Mastra", "Vercel AI SDK", "React"],
+    imageUrl: vibeframesImg,
+  },
   {
     title: "Paymint",
     description:
