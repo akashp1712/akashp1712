@@ -71,8 +71,7 @@ I'm passionate about solving complex problems at scale, building developer tools
 ## 📊 GitHub Analytics
 
 <div align="center">
-  <img height="180em" src="https://github-readme-stats.vercel.app/api?username=akashp1712&show_icons=true&theme=tokyonight&include_all_commits=true&count_private=true" alt="Akash's GitHub Stats"/>
-  <img height="180em" src="https://github-readme-stats.vercel.app/api/top-langs/?username=akashp1712&layout=compact&langs_count=8&theme=tokyonight" alt="Akash's Top Languages"/>
+  [![GitHub Streak](https://streak-stats.demolab.com?user=akashp1712)](https://git.io/streak-stats)
 </div>
 
 ---
