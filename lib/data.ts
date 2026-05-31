@@ -60,7 +60,7 @@ export const experiencesData = [
     icon: React.createElement(CgWorkAlt),
     logo: React.createElement(FaSalesforce),
     brandColor: "#00A1E0", // Salesforce blue
-    date: "Feb 2024 - Present",
+    date: "Jan 2026 - Present",
     achievements: [
       "Architecting the Agentic Content Studio built using React (frontend), FastAPI (python) and Mastra framework (node).",
       "Designed the core runtime on Mastra's Harness primitive: per-thread state, observational memory, skills, tools catalog and its APIs, image generation and Human-in-loop.",
@@ -76,7 +76,7 @@ export const experiencesData = [
     icon: React.createElement(CgWorkAlt),
     logo: React.createElement(FaSalesforce),
     brandColor: "#00A1E0", // Salesforce blue
-    date: "Feb 2024 - Present",
+    date: "Feb 2024 - Dec 2025",
     achievements: [
       "Led integration of Marketing Cloud Engagement (MCE) SMS traffic with Unified SMS platform on the Falcon AWS platform — reducing aggregator onboarding time from months to weeks.",
       "Spearheaded integration of a competitive SMS aggregator across LATAM and East Asian traffic, yielding ~$10M in annual customer saving. (Q3 2024 Quarter Award)",
