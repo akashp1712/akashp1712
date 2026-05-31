@@ -53,25 +53,39 @@ import { SiJavascript, SiPostgresql, SiRedis, SiNextdotjs, SiTypescript } from "
 // In your experiencesData array, add brandColor property to each item:
 export const experiencesData = [
   {
-    title: "Software Engineer - Senior Member of Technical Staff, Salesforce",
+    title: "AI Software Engineer, Salesforce",
     location: "Bengaluru, Karnataka, India",
     description:
-      "Building a platform for serving billions of SMS messages for Marketing Cloud customers.",
+      "Leading the development of Agentic Content Studio - a multi-turn agent platform for Marketing Cloud.",
     icon: React.createElement(CgWorkAlt),
     logo: React.createElement(FaSalesforce),
     brandColor: "#00A1E0", // Salesforce blue
     date: "Feb 2024 - Present",
     achievements: [
-      "Led onboarding of new SMS aggregator for LATM countries serving ~3 billion messages per annum.",
-      "Architected BYO(Bring-your-own) feature for SMS aggregator, improving cost transparency and platform flexibility.",
-      "Proposed and implemented SMS Aggregator onboarding playbook to automate paperwork, data collection and configuration generation for new platform, reducing ready to onboard from ~16 weeks to ~4 weeks.",
-      "Led multiple initiatives for innovation including AI calling, conversational WhatsApp and campaign building.",
-      "Developing a playbook solution for SMS aggregator onboarding, simplifying the process for nontechnical teams (support, product managers) while ensuring technical compliance.",
+      "Architecting the Agentic Content Studio built using React (frontend), FastAPI (python) and Mastra framework (node).",
+      "Designed the core runtime on Mastra's Harness primitive: per-thread state, observational memory, skills, tools catalog and its APIs, image generation and Human-in-loop.",
+      "Led multiple initiatives for innovation including AI calling, conversational WhatsApp and campaign building."
+    ],
+    technologies: ["React", "FastAPI", "Python", "Mastra AI", "LLMs", "Node.js"]
+  },
+  {
+    title: "Senior Software Engineer - Marketing Cloud, Salesforce",
+    location: "Bengaluru, Karnataka, India",
+    description:
+      "Led the modernization and integration of SMS platforms, serving billions of messages for Marketing Cloud customers.",
+    icon: React.createElement(CgWorkAlt),
+    logo: React.createElement(FaSalesforce),
+    brandColor: "#00A1E0", // Salesforce blue
+    date: "Feb 2024 - Present",
+    achievements: [
+      "Led integration of Marketing Cloud Engagement (MCE) SMS traffic with Unified SMS platform on the Falcon AWS platform — reducing aggregator onboarding time from months to weeks.",
+      "Spearheaded integration of a competitive SMS aggregator across LATAM and East Asian traffic, yielding ~$10M in annual customer saving. (Q3 2024 Quarter Award)",
+      "Architected BYO (Bring-your-own) feature for SMS aggregator, improving cost transparency and platform flexibility.",
+      "Proposed and implemented SMS Aggregator onboarding playbook to automate paperwork, reducing ready-to-onboard from ~16 weeks to ~4 weeks.",
       "Onboarding new service for migrating existing customers from Private Data Center to Public Cloud (AWS) to provide service resiliency and reduced infra cost.",
-      "Earned Star Performer of the Quarter (Q3 2024) for exceptional performance in work and innovation.",
       "Providing mentorship to Juniors for growing to the next level."
     ],
-    technologies: ["Java", "AWS", "Microservices", "Kafka", "Redis", "Monitoring Tools"]
+    technologies: ["Java", "AWS", "Microservices", "Kafka", "Redis"]
   },
   {
     title: "Software Development Engineer 2, Amazon",
