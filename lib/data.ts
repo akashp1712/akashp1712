@@ -46,8 +46,8 @@ export const links = [
 // Add these imports at the top of your file
 import { FaSalesforce } from "react-icons/fa";
 import { SiAmazon, SiMcafee, SiBroadcom } from "react-icons/si";
-import { FaAws, FaPython, FaJava, FaDatabase, FaCubes, FaMicrophone } from "react-icons/fa";
-import { SiJavascript, SiPostgresql, SiRedis, SiNextdotjs } from "react-icons/si";
+import { FaAws, FaPython, FaJava, FaDatabase, FaCubes, FaMicrophone, FaRobot } from "react-icons/fa";
+import { SiJavascript, SiPostgresql, SiRedis, SiNextdotjs, SiTypescript } from "react-icons/si";
 
 // Then in your experiencesData array, add logo property to each item:
 // In your experiencesData array, add brandColor property to each item:
@@ -197,16 +197,21 @@ export const projectsData = [
 ] as const;
 
 export const skillsData = [
-  { name: "AWS", icon: React.createElement(FaAws) },
+  { name: "Agentic AI", icon: React.createElement(FaRobot) },
+  { name: "LLMs", icon: React.createElement(FaRobot) },
+  { name: "Claude", icon: React.createElement(FaRobot) },
+  { name: "Mastra AI", icon: React.createElement(FaRobot) },
   { name: "Python", icon: React.createElement(FaPython) },
-  { name: "Java", icon: React.createElement(FaJava) },
-  { name: "JavaScript", icon: React.createElement(SiJavascript) },
+  { name: "TypeScript", icon: React.createElement(SiTypescript) },
+  { name: "NextJS", icon: React.createElement(SiNextdotjs) },
+  { name: "AWS", icon: React.createElement(FaAws) },
+  { name: "Microservices", icon: React.createElement(FaCubes) },
   { name: "PostgreSQL", icon: React.createElement(SiPostgresql) },
   { name: "DynamoDB", icon: React.createElement(FaDatabase) },
-  { name: "Microservices", icon: React.createElement(FaCubes) },
   { name: "Redis", icon: React.createElement(SiRedis) },
+  { name: "Java", icon: React.createElement(FaJava) },
+  { name: "JavaScript", icon: React.createElement(SiJavascript) },
   { name: "Voice AI", icon: React.createElement(FaMicrophone) },
-  { name: "NextJS", icon: React.createElement(SiNextdotjs) },
 ] as const;
 
 export const toolsData = [

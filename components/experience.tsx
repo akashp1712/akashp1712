@@ -31,7 +31,7 @@ function ExperienceItem({ experience, index }: { experience: any; index: number 
 
   return (
     <motion.div
-      className="group relative bg-gray-100 dark:bg-white/10 rounded-lg p-6 border border-black/5 cursor-pointer hover:bg-gray-200 dark:hover:bg-white/20 transition"
+      className="group relative bg-gray-100 dark:bg-white/10 rounded-lg p-4 sm:p-5 border border-black/5 cursor-pointer hover:bg-gray-200 dark:hover:bg-white/20 transition"
       initial={{ opacity: 0, y: 50 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.15 }}
@@ -39,19 +39,21 @@ function ExperienceItem({ experience, index }: { experience: any; index: number 
     >
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="flex-1">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-4">
-              <div className="text-6xl" style={{ color: experience.brandColor }}>
+          <div className="flex items-center justify-between mb-1 sm:mb-2">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="text-4xl sm:text-5xl" style={{ color: experience.brandColor }}>
                 {experience.logo}
               </div>
-              <h3 className="font-semibold text-lg">{experience.title}</h3>
+              <h3 className="font-semibold text-base sm:text-lg">{experience.title}</h3>
             </div>
             <div className="text-gray-500 p-2">
               {isExpanded ? <FaChevronUp /> : <FaChevronDown />}
             </div>
           </div>
-          <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">{experience.location}</p>
-          <p className="text-sm font-medium text-gray-700 dark:text-white/70 mb-3">{experience.date}</p>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-xs sm:text-sm text-gray-600 dark:text-gray-300 mb-1 sm:mb-2">
+            <span>{experience.location}</span>
+            <span className="font-medium text-gray-700 dark:text-white/70">{experience.date}</span>
+          </div>
           
           <motion.div
             initial={false}

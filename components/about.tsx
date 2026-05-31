@@ -19,7 +19,7 @@ export default function About() {
     >
       <SectionHeading>About me</SectionHeading>
       <p className="mb-3">
-        I'm a <span className="font-medium">Senior Software Engineer</span> specializing in <span className="font-bold">Agentic AI</span> and <span className="font-medium">scalable platforms</span>. With 9+ years of experience across Salesforce, Amazon, and McAfee, I architect systems that serve billions of users. Currently, I am leading the development of multi-turn agent platforms using <span className="font-semibold">Mastra Harness, Python, and React</span>, pushing the boundaries of conversational AI and real-time inference.
+        I'm a <span className="font-medium">Senior Software Engineer</span> specializing in <span className="font-bold">Agentic AI</span> and <span className="font-medium">scalable platforms</span>. With 9+ years of experience across Salesforce, Amazon, and McAfee, I architect systems that serve millions of users. Currently, I am leading the development of multi-turn agent platforms using <span className="font-semibold">Mastra Harness, Python, and React</span>, pushing the boundaries of conversational AI and real-time inference.
       </p>
     </motion.section>
   );
