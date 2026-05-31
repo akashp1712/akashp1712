@@ -2,7 +2,7 @@
   <img src="https://github.com/akashp1712.png" alt="Akash Panchal" width="120" style="border-radius: 50%;">
   
   <h1>👋 Hi, I'm Akash Panchal</h1>
-  <h3>Senior Software Engineer | AI/ML Developer | Open Source Contributor</h3>
+  <h3>Senior AI Software Engineer | Agentic Systems & LLMs | Scalable Platforms</h3>
   
   [![Website](https://img.shields.io/badge/Website-akashpanchal.com-blue?style=flat-square&logo=google-chrome)](https://akashpanchal.com)
   [![Blog](https://img.shields.io/badge/Blog-blog.akashpanchal.com-FF5700?style=flat-square&logo=hashnode&logoColor=white)](https://blog.akashpanchal.com)
