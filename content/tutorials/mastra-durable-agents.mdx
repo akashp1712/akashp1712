@@ -1,0 +1,257 @@
+---
+title: "Mastra, Part 6: Long-Running & Durable Agents"
+description: "Some agent work doesn't fit in one request. It scrapes forty pages, waits on a human, or runs on a schedule. This part covers the machinery for work that outlives the HTTP request: background tasks, durable agents that survive a crash, and heartbeats that run on a cron."
+publishedAt: "2026-06-16"
+order: 6
+tags: ["mastra", "durable", "background-tasks", "tutorial"]
+coverImage: "/cover-mastra-tutorial.png"
+draft: false
+---
+
+Everything in this series so far assumed the agent finishes while someone waits.
+You call `stream()`, tokens come back, done — seconds, not minutes. But a real
+agent platform accumulates work that doesn't fit that shape:
+
+- a research task that reads forty sources and takes four minutes,
+- an approval step that stalls until a human clicks "yes" tomorrow morning,
+- a nightly job that summarizes yesterday's tickets on a schedule.
+
+None of those survive being tied to an HTTP request. The connection times out,
+the serverless function gets killed, the user closes the tab — and the work dies
+with it. This part is about the machinery Mastra gives you for work that has to
+outlive the request that started it.
+
+<Callout type="info">
+This is the operational half of the series. [Part 5](/tutorials/mastra-rag) made
+the agent *correct*; this part makes it *survive*. The five earlier parts
+([agents](/tutorials/mastra-agents), [workflows](/tutorials/mastra-workflows),
+[harness](/tutorials/mastra-harness), [streaming](/tutorials/mastra-streaming),
+[RAG](/tutorials/mastra-rag)) are the foundation everything here builds on.
+</Callout>
+
+## Three problems, three tools
+
+These get conflated constantly, so let's separate them up front. They solve
+genuinely different problems:
+
+<LayerDiagram
+  caption="Pick by the question you're answering, not by the feature name."
+  layers={[
+    { label: "Background tasks", sub: "\"don't block the response on this slow tool\"" },
+    { label: "Durable agents", sub: "\"survive a crash / resume after a human approves\"", accent: true },
+    { label: "Heartbeats", sub: "\"run this agent on a schedule, no user present\"" },
+  ]}
+/>
+
+I'll take them in that order.
+
+## Background tasks — don't block on the slow part
+
+A single tool call is sometimes the slow part of a run — a scrape, a big
+export, a model-heavy summarization. Blocking the whole response on it makes the
+agent feel frozen. Background tasks let a tool return control immediately and
+finish its work off to the side.
+
+You enable the subsystem on the `Mastra` instance and set concurrency limits so a
+burst of tasks can't overwhelm you:
+
+```ts title="mastra/index.ts"
+import { Mastra } from "@mastra/core";
+
+export const mastra = new Mastra({
+  agents: { research: researchAgent },
+  backgroundTasks: {
+    enabled: true,
+    globalConcurrency: 20,     // at most 20 background tasks running at once
+    perAgentConcurrency: 5,    // ...and at most 5 from any single agent
+    backpressure: "queue",     // over the limit? queue, don't drop
+    defaultTimeoutMs: 120_000,
+  },
+});
+```
+
+Then mark the expensive tool as backgroundable:
+
+```ts title="tools/deep-scrape.ts"
+export const deepScrape = createTool({
+  id: "deep-scrape",
+  description: "Scrape and summarize an entire documentation site.",
+  inputSchema: z.object({ url: z.string() }),
+  outputSchema: z.object({ taskId: z.string() }),
+  background: {
+    enabled: true,
+    timeoutMs: 300_000, // this one legitimately needs five minutes
+    maxRetries: 2,
+  },
+  execute: async ({ url }) => {
+    // ...long crawl... the task runs off the request path
+    return { taskId: url };
+  },
+});
+```
+
+Now the agent can kick off the scrape, keep talking to the user, and let the task
+finish in the background. When you want the agent to run its loop until all such
+work drains rather than returning after one turn, pass `untilIdle`:
+
+```ts title="run.ts"
+// Keep looping until the agent AND its background tasks are all idle.
+const stream = await agent.stream("Scrape all three doc sites and compare them.", {
+  untilIdle: true,
+});
+```
+
+And you can inspect the queue out-of-band — for a status panel, or to resume a
+task after a restart:
+
+```ts title="tasks.ts"
+const task = mastra.backgroundTaskManager?.getTask(taskId);
+const all = mastra.backgroundTaskManager?.listTasks();
+await mastra.backgroundTaskManager?.resume(taskId);
+```
+
+<Callout type="tip">
+`backpressure: "queue"` is the safe default — excess tasks wait for a slot
+instead of failing. The alternative modes let you shed load when "eventually" is
+better than "never," but start with queueing and only change it once you've
+watched real traffic.
+</Callout>
+
+## Durable agents — survive the crash
+
+Background tasks handle *slow*. They don't handle *interrupted*. If the process
+dies mid-run — a deploy, a crash, an OOM — an ordinary agent loses everything:
+the conversation, the half-finished tool calls, the plan. A **durable agent**
+persists its state at each step, so it can pick up exactly where it stopped.
+
+You wrap an existing agent — nothing about the agent itself changes:
+
+```ts title="durable.ts"
+import { createDurableAgent } from "@mastra/core/agent";
+import { researchAgent } from "./mastra/agents";
+
+const durable = createDurableAgent({ agent: researchAgent });
+
+// stream() now hands back a runId — the handle to a run that outlives this process.
+const { output, runId, cleanup } = await durable.stream(
+  "Produce a competitive analysis of the top 5 vector databases."
+);
+
+console.log("run started:", runId);
+for await (const chunk of output.fullStream) {
+  // render as usual...
+}
+cleanup();
+```
+
+The `runId` is the whole point. If the process dies at chunk 400 of 900, you
+don't restart from zero — you reattach:
+
+```ts title="reattach.ts"
+// In a fresh process, after a crash or deploy:
+const live = durable.observe(runId); // re-attach to the same run's stream
+for await (const chunk of live) {
+  render(chunk);
+}
+```
+
+And the same durability powers **human-in-the-loop**: the agent can suspend,
+wait however long it takes for a person to respond, and resume with their input —
+even if that's tomorrow, in a different process.
+
+```ts title="resume.ts"
+// The run suspended itself waiting on an approval. Hours later:
+await durable.resume(runId, { approved: true, note: "ship it" });
+```
+
+<SequenceDiagram
+  caption="A durable run outlives the process. State is checkpointed each step, so observe() and resume() reattach to the same run after a crash or a wait."
+  actors={[
+    { id: "p1", label: "Process A" },
+    { id: "s", label: "Durable store" },
+    { id: "p2", label: "Process B" },
+  ]}
+  steps={[
+    { from: "p1", to: "s", label: "step 1…N checkpointed" },
+    { from: "p1", to: "s", label: "suspend (await approval)" },
+    { from: "p2", to: "s", label: "observe(runId)", dashed: true },
+    { from: "p2", to: "s", label: "resume(runId, input)" },
+    { from: "s", to: "p2", label: "continue from checkpoint", dashed: true },
+  ]}
+/>
+
+For heavier orchestration you can back durability with a workflow engine —
+`createInngestAgent` from `@mastra/inngest` runs the same durable model on
+Inngest's infrastructure — but `createDurableAgent` is the batteries-included
+starting point.
+
+## Heartbeats — run on a schedule, no user present
+
+The last case has no user at all. You want an agent to wake up on a cron —
+summarize yesterday's support tickets at 6am, sweep for anomalies hourly — and
+run entirely on its own. Those are **heartbeats**.
+
+```ts title="heartbeats.ts"
+mastra.heartbeats.create({
+  agentId: "research",
+  cron: "@daily",                 // nicknames work: @hourly, @daily, @weekly
+  timezone: "America/New_York",
+  prompt: "Summarize yesterday's support tickets and flag any recurring issue.",
+});
+```
+
+Each firing runs the agent with that prompt as if a user had sent it. A heartbeat
+can be **threadless** — a clean context every time, right for an independent daily
+digest — or **threaded**, so each run appends to an ongoing conversation and the
+agent remembers what it reported yesterday. Reach for threaded when the schedule
+is really one long task sampled over time; threadless when each run stands alone.
+
+<Callout type="warn">
+A heartbeat runs with no human watching, so a bad tool call has no one to catch
+it. Give scheduled agents the *narrowest* tool set that does the job, and lean on
+the [evals from Part 7](/tutorials/mastra-evals) to keep them honest — an
+unattended agent is exactly the one you most want automated checks on.
+</Callout>
+
+## Bonus: give the agent a goal, not just a prompt
+
+Closely related to running unattended: sometimes you don't want to prompt the
+agent turn-by-turn at all — you want to hand it an *objective* and let it keep
+working until it's met. Mastra's `goal` does that, with a judge deciding when
+"done" is actually done:
+
+```ts title="goal.ts"
+const agent = new Agent({
+  name: "researcher",
+  instructions: "You research topics thoroughly.",
+  model: openai("gpt-4o"),
+  goal: {
+    prompt: "Gather enough sources to write a well-cited 1000-word brief.",
+    judge: openai("gpt-4o"),   // decides whether the goal is satisfied
+    maxRuns: 8,                // hard stop so it can't loop forever
+  },
+});
+
+agent.setObjective("Cover the last 12 months of vector-DB benchmarks.");
+```
+
+The agent runs, the judge scores whether the objective is met, and it either
+stops or goes again — up to `maxRuns`. It's the autonomous cousin of `stopWhen`:
+instead of stopping on a *count* or a *tool call*, it stops when a model judges
+the *outcome* good enough.
+
+## What outlives the request
+
+Everything in this part exists to break the assumption that an agent's life is
+one HTTP request:
+
+- **Background tasks** move slow tool work off the response path.
+- **Durable agents** checkpoint state so a run survives crashes and long waits.
+- **Heartbeats** run agents on a schedule with no user present.
+- **Goals** let an agent work toward an objective across many runs.
+
+There's one question left, and it's the one that decides whether any of this is
+safe to ship: *is the agent actually good?* An agent that survives crashes and
+runs every night is a liability if its answers are wrong. Next, in
+[**Part 7: Evals & Scorers**](/tutorials/mastra-evals), I put numbers on quality
+and wire them into CI.

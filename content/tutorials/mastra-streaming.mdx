@@ -1,0 +1,267 @@
+---
+title: "Mastra, Part 4: Streaming to a Real UI"
+description: "A blocking generate() call is fine for a script. An interactive agent needs to stream — tokens, tool calls, and your own custom progress events. I wire agent.stream() into a UI and learn where the interesting data actually lives."
+publishedAt: "2026-06-02"
+order: 4
+tags: ["mastra", "streaming", "typescript", "tutorial"]
+coverImage: "/cover-mastra-tutorial.png"
+draft: false
+---
+
+The first three parts of this series built an [agent](/tutorials/mastra-agents),
+[orchestrated it with workflows](/tutorials/mastra-workflows), and
+[hosted it in a harness](/tutorials/mastra-harness). Every code sample used
+`agent.generate()` — call it, await it, get a finished answer.
+
+That's the right shape for a script. It's the wrong shape for a product. A user
+staring at a spinner for eight seconds while a multi-step agent grinds through
+three tool calls will assume it's broken. They want to *watch it think*: tokens
+appearing, "searching the docs…", a tool firing, the answer assembling.
+
+That's streaming. In this part I swap `generate()` for `stream()` and follow the
+data all the way to a UI.
+
+<Callout type="info">
+**The series so far**
+1. [Agents](/tutorials/mastra-agents) — the loop, tools, memory.
+2. [Workflows](/tutorials/mastra-workflows) — orchestration with guarantees.
+3. [The Harness](/tutorials/mastra-harness) — the runtime that hosts it.
+4. **Streaming** *(you're here)* — get the agent's work to a UI as it happens.
+</Callout>
+
+## From `generate` to `stream`
+
+The change is mechanical. Where `generate()` returns a finished result,
+`stream()` returns a **stream object** with several ways to read from it. You
+pick the view that matches what you're rendering.
+
+```ts title="stream.ts"
+import { mastra } from "./mastra";
+
+const agent = mastra.getAgent("assistant");
+const stream = await agent.stream("Help me plan a trip to Lisbon.");
+
+// The simplest view: just the text tokens, as they arrive.
+for await (const chunk of stream.textStream) {
+  process.stdout.write(chunk);
+}
+```
+
+Run that and the answer types itself out character-group by character-group
+instead of landing all at once. Same agent, same loop — you've only changed how
+you *consume* the output.
+
+## Three views onto one stream
+
+`textStream` is the friendly default, but the stream object exposes several
+readable streams and several promises. The distinction is the whole game, so
+here's the map:
+
+<LayerDiagram
+  caption="One stream() call, many ways to read it. Pick the stream for live rendering; await the promise when you just want the final value."
+  layers={[
+    { label: "textStream", sub: "just the text tokens" },
+    { label: "objectStream", sub: "partial structured output", accent: true },
+    { label: "fullStream", sub: "every event: text, tool-call, tool-result" },
+    { label: ".text / .object / .usage", sub: "promises — final values" },
+  ]}
+/>
+
+- **`textStream`** — a `ReadableStream<string>`. Only the assistant's text
+  deltas. Perfect for a chat bubble.
+- **`fullStream`** — every event in the run: text deltas *and* `tool-call`,
+  `tool-result`, step boundaries, and the final `finish`. This is what you want
+  when the UI shows tool activity, not just prose.
+- **`objectStream`** — when you asked for structured output, this emits the
+  object as it fills in, so a form can populate field-by-field.
+- **`.text`, `.object`, `.usage`, `.finishReason`** — these aren't streams,
+  they're **promises** that resolve when the run finishes. Handy when a
+  particular code path doesn't care about the live feed and just wants the
+  final answer or the token count.
+
+The mistake I made the first time: `await`-ing `stream.text` *and* looping over
+`stream.textStream`. Pick one per code path — the promise resolves to the same
+text the stream produced, so consuming both is just doing the work twice.
+
+## Watching the tools fire with `fullStream`
+
+Text-only streaming hides the most interesting part of an agent: the moment it
+decides to *do* something. `fullStream` surfaces it. Each chunk has a `type`,
+and you switch on it:
+
+```ts title="full-stream.ts"
+const stream = await agent.stream("What's the weather in Oslo right now?");
+
+for await (const chunk of stream.fullStream) {
+  switch (chunk.type) {
+    case "text-delta":
+      process.stdout.write(chunk.payload.text);
+      break;
+    case "tool-call":
+      console.log(`\n[calling ${chunk.payload.toolName}]`);
+      break;
+    case "tool-result":
+      console.log(`[got result from ${chunk.payload.toolName}]`);
+      break;
+    case "finish":
+      console.log(`\n[done — ${chunk.payload.usage?.totalTokens} tokens]`);
+      break;
+  }
+}
+```
+
+A run that uses a tool now narrates itself:
+
+```txt title="output"
+[calling get-weather]
+[got result from get-weather]
+It's about 4°C and clearing in Oslo right now.
+[done — 312 tokens]
+```
+
+<SequenceDiagram
+  caption="fullStream turns one agent run into a play-by-play. Each event is a chunk you can render the instant it arrives."
+  actors={[
+    { id: "ui", label: "UI" },
+    { id: "a", label: "Agent" },
+    { id: "t", label: "Tool" },
+  ]}
+  steps={[
+    { from: "a", to: "ui", label: "text-delta ×N", dashed: true },
+    { from: "a", to: "t", label: "tool-call" },
+    { from: "t", to: "a", label: "tool-result", dashed: true },
+    { from: "a", to: "ui", label: "text-delta ×N", dashed: true },
+    { from: "a", to: "ui", label: "finish" },
+  ]}
+/>
+
+That `[calling get-weather]` line is the difference between a UI that feels
+responsive and one that feels hung. You render it the moment the `tool-call`
+chunk arrives — long before any answer text exists.
+
+## Emitting your own events with the writer
+
+Here's the feature I didn't expect to love. Sometimes the interesting progress
+happens *inside a tool*, where the model has no idea what's going on — a tool
+that scrapes twelve pages, or compiles a project, or uploads a file. Mastra
+gives your tool a **writer** so it can push custom chunks onto the same stream
+the UI is already reading.
+
+```ts title="tools/research.ts"
+import { createTool } from "@mastra/core/tools";
+import { z } from "zod";
+
+export const researchTool = createTool({
+  id: "research",
+  description: "Research a topic across several sources.",
+  inputSchema: z.object({ topic: z.string() }),
+  outputSchema: z.object({ summary: z.string() }),
+  execute: async ({ topic }, { writer }) => {
+    const sources = ["docs", "changelog", "forum"];
+    for (const source of sources) {
+      // Stream a progress event the UI can render immediately.
+      await writer?.write({
+        type: "research-progress",
+        status: "reading",
+        source,
+      });
+      // ...actually fetch and read the source...
+    }
+    return { summary: `Summarized ${topic} from ${sources.length} sources.` };
+  },
+});
+```
+
+Those `research-progress` chunks flow through `fullStream` right alongside the
+built-in ones. Your UI matches on the `type` it invented and renders a live
+checklist:
+
+```ts title="ui.ts"
+for await (const chunk of stream.fullStream) {
+  if (chunk.type === "research-progress") {
+    updateChecklist(chunk.source, chunk.status); // "reading docs…"
+  }
+}
+```
+
+<Callout type="tip">
+Mark high-frequency progress chunks as `transient` — `writer.custom({ type,
+data, transient: true })` — and Mastra streams them to the UI without persisting
+them to the thread history. You get the live feedback without bloating the saved
+conversation with a hundred "reading page 7 of 12" lines.
+</Callout>
+
+## Handing the stream to the AI SDK UI
+
+Most React chat UIs in this ecosystem are built on Vercel's AI SDK and its
+`useChat` hook, which expects a specific message-stream shape. Mastra ships an
+adapter so you don't hand-translate chunks:
+
+```ts title="app/api/chat/route.ts"
+import { toAISdkV5Stream } from "@mastra/ai-sdk";
+import { mastra } from "@/mastra";
+
+export async function POST(req: Request) {
+  const { messages } = await req.json();
+  const agent = mastra.getAgent("assistant");
+  const stream = await agent.stream(messages);
+
+  // Convert Mastra's stream into the shape the AI SDK UI hooks expect.
+  return toAISdkV5Stream(stream, { from: "agent" });
+}
+```
+
+On the client, `useChat` consumes that response and re-renders as chunks land —
+you write zero streaming plumbing. The agent's tool calls and text both show up
+in the message list because the adapter maps Mastra's chunk types onto the AI
+SDK's message parts.
+
+## Structured output, streamed
+
+One more view worth knowing. If you ask the agent for a typed object, you can
+stream it *as it fills in* — useful for a UI that renders a card or form rather
+than prose:
+
+```ts title="structured-stream.ts"
+import { z } from "zod";
+
+const stream = await agent.stream("Extract the flight details from this email.", {
+  structuredOutput: {
+    schema: z.object({
+      airline: z.string(),
+      flightNumber: z.string(),
+      departsAt: z.string(),
+    }),
+  },
+});
+
+for await (const partial of stream.objectStream) {
+  // partial is a Partial<> of your schema, growing with each chunk:
+  // { airline: "TAP" }
+  // { airline: "TAP", flightNumber: "TP123" }
+  // { airline: "TAP", flightNumber: "TP123", departsAt: "2026-07-10T08:15" }
+  render(partial);
+}
+
+const final = await stream.object; // fully typed, validated object
+```
+
+The card populates field-by-field as the model produces them, then `stream.object`
+gives you the complete, schema-validated value once it's done.
+
+## What changed, and what didn't
+
+Nothing about the *agent* changed in this part. Same instructions, same tools,
+same memory from Part 1. All we changed is how the output leaves the building:
+
+- **`textStream`** for a plain typing effect,
+- **`fullStream`** to render tool activity as it happens,
+- the **writer** to inject your own progress events from inside a tool,
+- **`toAISdkV5Stream`** to plug straight into an AI SDK UI,
+- **`objectStream`** to stream structured output into a form.
+
+Streaming is what makes an agent *feel* alive. But feeling alive isn't the same
+as being *useful* — a fast, chatty agent that answers from nothing is still
+guessing. Next I give it something real to talk about:
+[**Part 5: RAG**](/tutorials/mastra-rag), where the agent retrieves your actual
+documents before it answers.

@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 
 function getYear() {
   return new Date().getFullYear();
@@ -6,22 +7,25 @@ function getYear() {
 
 export default function Footer() {
   return (
-    <footer className="mb-10 px-4 text-center text-gray-500">
-      <small className="mb-2 block text-xs">
-        &copy; {getYear()} Akash Panchal. All rights reserved.
+    <footer
+      className="ed-meta mx-auto mb-12 w-full max-w-3xl px-4 sm:px-6"
+      style={{ borderTop: "1px solid var(--line)", paddingTop: "2rem" }}
+    >
+      <nav className="mb-4 flex items-center gap-5">
+        <Link href="/tutorials" className="ed-link">
+          Tutorials
+        </Link>
+        <Link href="/articles" className="ed-link">
+          Articles
+        </Link>
+        <a href="/rss.xml" className="ed-link">
+          RSS
+        </a>
+      </nav>
+      <small className="block">
+        &copy; {getYear()} Akash Panchal. Built with Next.js, TypeScript &
+        Tailwind.
       </small>
-      <p className="text-xs">
-        <span className="font-semibold">About this website:</span> built with
-        ReactJS & NextJS (App Router & Server Actions), TypeScript, Tailwind CSS,
-        Framer Motion, React Email & Resend, Vercel hosting.
-      </p>
-      <p className="text-xs">
-        This template is{" "}
-        <a className="underline" target="_blank" href="https://github.com/ByteGrad/portfolio-website">
-        opensourced
-        </a>{" "}
-        by ByteGrad{" "}
-      </p>
     </footer>
   );
 }

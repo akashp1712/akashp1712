@@ -1,0 +1,260 @@
+---
+title: "Mastra, Part 1: Agents"
+description: "The first part of a hands-on series on Mastra. I start where everything else builds from — defining a typed agent, giving it tools with createTool, and wiring memory so it remembers across turns."
+publishedAt: "2026-05-12"
+order: 1
+tags: ["mastra", "agents", "typescript", "tutorial"]
+coverImage: "/cover-mastra-tutorial.png"
+draft: false
+---
+
+I've built agents from scratch — the loop, the message list, the stop
+condition, all by hand. It's the best way to understand what an agent *is*. But
+once you understand it, hand-rolling the same plumbing for every project gets
+old fast.
+
+[Mastra](https://mastra.ai) is a TypeScript framework that gives you those
+primitives — agents, tools, memory, workflows, and a runtime to host them —
+without hiding how they work. This series walks through it in three parts, and
+they build on each other:
+
+<Callout type="info">
+**This series**
+1. **Agents** *(you're here)* — define an agent, give it tools, add memory.
+2. [Workflows](/tutorials/mastra-workflows) — orchestrate multi-step logic.
+3. [The Harness](/tutorials/mastra-harness) — the runtime that hosts it all.
+4. [Streaming](/tutorials/mastra-streaming) — get the work to a UI live.
+5. [RAG](/tutorials/mastra-rag) — answer from real documents.
+6. [Durable agents](/tutorials/mastra-durable-agents) — survive crashes, run in the background.
+7. [Evals](/tutorials/mastra-evals) — prove the agent is actually good.
+</Callout>
+
+Everything here uses **Mastra 1.46+** (`@mastra/core`). I'll keep the code
+runnable and minimal, and link the official docs as I go.
+
+## What an agent is in Mastra
+
+In Mastra, an agent is a configured instance of the `Agent` class. You give it
+instructions, a model, and — optionally — tools, memory, and more. Mastra owns
+the loop; you describe the behavior.
+
+<LayerDiagram
+  caption="An Agent bundles four things you configure and one thing Mastra runs for you."
+  layers={[
+    { label: "Instructions", sub: "the system prompt" },
+    { label: "Model", sub: "provider/model-id" },
+    { label: "Tools", sub: "what it can do" },
+    { label: "Memory", sub: "what it remembers" },
+    { label: "The loop", sub: "Mastra runs this", accent: true },
+  ]}
+/>
+
+## Step 1: Define an agent
+
+Start with the smallest thing that works. An agent needs a name, instructions,
+and a model:
+
+```ts title="agents/assistant.ts"
+import { Agent } from "@mastra/core/agent";
+
+export const assistant = new Agent({
+  name: "Assistant",
+  instructions: "You are a concise, friendly assistant. Prefer short answers.",
+  model: "openai/gpt-5.5",
+});
+```
+
+Two things worth noting right away:
+
+- **`instructions` is your system prompt.** It's the single most important field
+  — it's where the agent's personality and rules live. Write it for the model.
+- **`model` is a string** in `provider/model-id` form. Mastra resolves the
+  provider for you, so swapping models is a one-line change.
+
+To actually run it, register the agent with a `Mastra` instance — this is the
+root object that holds everything your app exposes:
+
+```ts title="mastra/index.ts"
+import { Mastra } from "@mastra/core";
+import { assistant } from "../agents/assistant";
+
+export const mastra = new Mastra({
+  agents: { assistant },
+});
+```
+
+Now you can pull the agent back out and talk to it:
+
+```ts title="run.ts"
+import { mastra } from "./mastra";
+
+const agent = mastra.getAgent("assistant");
+
+const result = await agent.generate("What's the capital of Portugal?");
+console.log(result.text); // "Lisbon."
+```
+
+That `generate` call is the whole agent loop in one method. With no tools, it's
+a single model call. The moment you add a tool, that same loop starts doing real
+work.
+
+## Step 2: Give it a tool
+
+A tool is a function the model can call, described well enough that the model
+knows *when* to call it. Mastra's `createTool` wraps your function with a schema
+on both sides — input and output:
+
+```ts title="tools/weather.ts"
+import { createTool } from "@mastra/core/tools";
+import { z } from "zod";
+
+export const weatherTool = createTool({
+  id: "get-weather",
+  description: "Get the current weather for a given city.",
+  inputSchema: z.object({
+    city: z.string().describe("The city name, e.g. 'Lisbon'"),
+  }),
+  outputSchema: z.object({
+    city: z.string(),
+    celsius: z.number(),
+  }),
+  execute: async ({ city }) => {
+    // A real tool hits an API. We'll fake it.
+    const temps: Record<string, number> = { Lisbon: 22, Oslo: 4, Cairo: 35 };
+    return { city, celsius: temps[city] ?? 18 };
+  },
+});
+```
+
+The pieces that matter, and they're the same in every framework I've used:
+
+- **`description` is a prompt.** The model decides whether to call your tool
+  based purely on this sentence. "Get the current weather for a given city"
+  beats "weather fn".
+- **`inputSchema` is a contract.** The model must produce arguments that match
+  it. Mastra validates them with Zod *before* your `execute` runs, so bad input
+  never reaches your code.
+- **`outputSchema`** does the same on the way back, and gives downstream steps a
+  typed shape to rely on.
+
+Attach it to the agent by passing a `tools` map:
+
+```ts title="agents/assistant.ts" {1,8}
+import { Agent } from "@mastra/core/agent";
+import { weatherTool } from "../tools/weather";
+
+export const assistant = new Agent({
+  name: "Assistant",
+  instructions: "You are a helpful assistant. Use tools when they help.",
+  model: "openai/gpt-5.5",
+  tools: { weatherTool },
+});
+```
+
+Now ask it something that needs the tool, and watch the loop chain calls on its
+own:
+
+```ts
+const result = await agent.generate("Should I pack a coat for Oslo?");
+console.log(result.text);
+// "It's about 4°C in Oslo, so yes — bring a coat."
+```
+
+<SequenceDiagram
+  caption="One generate() call, three hops. The model decides to call the tool; Mastra runs it; the result feeds back in."
+  actors={[
+    { id: "u", label: "You" },
+    { id: "a", label: "Agent" },
+    { id: "t", label: "weatherTool" },
+  ]}
+  steps={[
+    { from: "u", to: "a", label: "generate(prompt)" },
+    { from: "a", to: "t", label: "get-weather(Oslo)" },
+    { from: "t", to: "a", label: "{ celsius: 4 }", dashed: true },
+    { from: "a", to: "u", label: "final answer" },
+  ]}
+/>
+
+You never wrote the loop. The model planned the order — call the tool, read the
+result, then answer — and Mastra drove it. That's the payoff of letting the
+framework own the loop: you describe capabilities, not control flow.
+
+<Callout type="tip">
+Spend your effort on tool `id`, `description`, and parameter names. The model
+can't see your implementation — only the schema. Half of "prompt engineering"
+for agents is really just naming things well.
+</Callout>
+
+## Step 3: Add memory
+
+So far each `generate` call is amnesiac — the agent forgets everything the
+moment it answers. To hold a conversation, the agent needs **memory**: a place
+to store and recall messages across turns.
+
+Mastra splits this into the memory *module* and a *storage backend* behind it.
+For local development, LibSQL (SQLite) is the simplest:
+
+```ts title="agents/assistant.ts" {3-4,12-17}
+import { Agent } from "@mastra/core/agent";
+import { Memory } from "@mastra/memory";
+import { LibSQLStore } from "@mastra/libsql";
+import { weatherTool } from "../tools/weather";
+
+export const assistant = new Agent({
+  name: "Assistant",
+  instructions: "You are a helpful assistant. Use tools when they help.",
+  model: "openai/gpt-5.5",
+  tools: { weatherTool },
+  memory: new Memory({
+    storage: new LibSQLStore({ url: "file:./memory.db" }),
+  }),
+});
+```
+
+Memory in Mastra is scoped by **thread** and **resource** — a thread is one
+conversation, a resource is usually one user. You pass those when you call the
+agent, and Mastra handles loading prior messages and saving new ones:
+
+```ts title="run.ts"
+const memoryScope = {
+  memory: { thread: "trip-planning", resource: "user-42" },
+};
+
+await agent.generate("What's the weather in Cairo?", memoryScope);
+
+// Later — same thread — the agent still has the context:
+const result = await agent.generate("Is that warmer than Oslo?", memoryScope);
+console.log(result.text);
+// "Yes — Cairo is about 35°C versus Oslo's 4°C."
+```
+
+The second call works *because* of memory. "Is that warmer than Oslo?" only
+makes sense if "that" still points at Cairo — and it does, because the first
+turn's messages were persisted to the thread and replayed into the second.
+
+<Callout type="warn">
+Memory is per-thread on purpose. If two users share a thread/resource, they'll
+see each other's history. Scope threads to a conversation and resources to a
+user, and nothing leaks between them.
+</Callout>
+
+Mastra's memory does more than replay the last N messages — it supports
+[working memory, semantic recall, and memory processors](https://mastra.ai/docs/memory/overview)
+for trimming long histories. But the model above — a thread, a resource, a
+storage backend — is the load-bearing idea. Everything else is a refinement.
+
+## What you've got
+
+In three small steps you built a real agent:
+
+- an **`Agent`** with instructions and a model,
+- a typed **tool** via `createTool` that the model calls on its own,
+- **memory** that gives it continuity across turns.
+
+That's a complete, useful agent. But a single agent is still just a loop around
+a model. The interesting systems come from *orchestrating* logic — running steps
+in sequence, branching on results, looping until done — with guarantees an agent
+loop alone can't give you.
+
+That's [**Part 2: Workflows**](/tutorials/mastra-workflows), where I build
+multi-step pipelines and then hand control between workflows and agents.

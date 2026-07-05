@@ -1,91 +1,73 @@
 <div align="center">
   <img src="https://github.com/akashp1712.png" alt="Akash Panchal" width="120" style="border-radius: 50%;">
-  
-  <h1>👋 Hi, I'm Akash Panchal</h1>
-  <h3>Senior AI Software Engineer | Agentic Systems & LLMs | Scalable Platforms</h3>
-  
-  [![Website](https://img.shields.io/badge/Website-akashpanchal.com-blue?style=flat-square&logo=google-chrome)](https://akashpanchal.com)
-  [![Blog](https://img.shields.io/badge/Blog-blog.akashpanchal.com-FF5700?style=flat-square&logo=hashnode&logoColor=white)](https://blog.akashpanchal.com)
-  [![LinkedIn](https://img.shields.io/badge/LinkedIn-akashpanchal-0077B5?style=flat-square&logo=linkedin)](https://linkedin.com/in/akashpanchal)
-  [![Twitter](https://img.shields.io/badge/Twitter-akashp1712-1DA1F2?style=flat-square&logo=twitter)](https://twitter.com/akashp1712)
-  [![GitHub](https://img.shields.io/badge/Github-akashp1712-181717?style=flat-square&logo=github)](https://github.com/akashp1712)
-  
-  **🚀 Always building. Always shipping. Always learning.**
+
+  <h1>Akash Panchal</h1>
+  <p><strong>Building agentic systems. Writing about how they work.</strong></p>
+
+  <p>AI Software Engineer at Salesforce. I build multi-turn agent platforms by day and publish deep-dive tutorials on Mastra, the AI SDK, and voice agents by night.</p>
+
+  [![Website](https://img.shields.io/badge/Read_the_writing-akashpanchal.com-111?style=flat-square&logo=google-chrome&logoColor=white)](https://akashpanchal.com)
+  [![LinkedIn](https://img.shields.io/badge/LinkedIn-akashpanchal-0A66C2?style=flat-square&logo=linkedin&logoColor=white)](https://linkedin.com/in/akashp1712)
+  [![Twitter](https://img.shields.io/badge/X-akashp1712-000?style=flat-square&logo=x&logoColor=white)](https://twitter.com/akashp1712)
 </div>
 
 ---
 
-## 🎯 About Me
+## What I work on
 
-🔹 **Current:** Senior Member of Technical Staff at Salesforce Marketing Cloud  
-🔹 **Experience:** 9+ years building enterprise solutions at Salesforce, Amazon, McAfee, Broadcom  
-🔹 **Expertise:** Distributed Systems, Mastra.ai Agentic Development, LLMs, Voice AI  
-🔹 **Recognition:** Salesforce - Star Performer of the Quarter (Q3 2024)  
+I build **agentic AI systems** — and I write about the parts most tutorials skip.
 
-I'm passionate about solving complex problems at scale, building developer tools, and engineering advanced multi-agent workflows using Mastra.ai.
+At Salesforce I lead a multi-turn agent platform built on the **Mastra Harness**: per-thread state, tool catalogs, human-in-the-loop, image generation — the connective tissue that turns a model-in-a-loop into something people can depend on. Before that: SMS platforms serving billions of messages, app-certification systems scanning hundreds of thousands of apps, home-network security. Nine-plus years across **Salesforce, Amazon, and McAfee**.
 
----
-
-## 🚀 Projects
-
-### 🎬 [**VibeFrames**](https://github.com/akashp1712/vibeframes)
-
-**Mastra-powered collaborative harness agent** that allows users to compose, slice, and edit videos through natural language dialogue, rendering real-time timelines and HTML-native video player trees via Server-Sent Events (SSE).
-
-<img src="https://raw.githubusercontent.com/akashp1712/vibeframes/main/assets/vibeframes_banner.png" alt="VibeFrames" style="border: 2px solid #e1e4e8; border-radius: 8px;">
+The writing is where I go deep on the hard problems: streaming to a real UI, grounding agents in your own docs, keeping long-running agents alive, proving they're any good, and the brutal timing of voice — all with runnable code and real output.
 
 ---
 
-### 💳 [**Paymint**](https://paymint.dev)
+## Writing
 
-**Developer-first payment platform** that abstracts complex payment APIs into reusable components.
+A **7-part series on building with Mastra**, front to back — each part is runnable, with real output, and assumes you already know what an LLM is:
 
-<img src="public/paymint-screen.png" alt="Paymint" style="border: 2px solid #e1e4e8; border-radius: 8px;">
+1. **Agents** — the loop, tools, memory
+2. **Workflows** — orchestration with guarantees
+3. **The Harness** — the runtime that hosts it all
+4. **Streaming** — get the agent's work to a UI as it happens
+5. **RAG** — answer from real documents, not vibes
+6. **Durable & long-running agents** — background tasks, crash recovery, heartbeats
+7. **Evals & scorers** — put numbers on quality and gate on them in CI
 
----
+Plus standalone deep dives: *The AI SDK v7 features I'm actually excited about*, *letting an agent write and run code safely in a Vercel Sandbox*, and *voice agents — the hard problems nobody warns you about*.
 
-### 🧠 [**AI SDK Patterns**](https://ai-sdk-patterns.dev)
-
-**Comprehensive resource** for AI SDK patterns, architectures, and best practices.
-
-<img src="public/api-sdk-patterns.png" alt="AI SDK Patterns" style="border: 2px solid #e1e4e8; border-radius: 8px;">
-
----
-
-### 🛠️ [**Crux (Claude Code Plugin)**](https://github.com/akashp1712/claude-crux)
-
-**AI context management system** that builds causal graphs to protect architectural decisions during long conversations.
-
-<img src="public/crux-cover.png" alt="Crux" style="border: 2px solid #e1e4e8; border-radius: 8px;">
+**→ [Read it all at akashpanchal.com](https://akashpanchal.com)**
 
 ---
 
-### 📞 [**Call GPT: Generative AI Phone Calling**](https://github.com/akashp1712/call-gpt)
+## Flagship projects
 
-**Voice AI toolkit** for creating conversational phone systems with real-time voice synthesis and natural language understanding.
+### [VibeFrames](https://github.com/akashp1712/vibeframes) — an agent that edits video
 
-<img src="public/call-gpt-image.png" alt="Call GPT" style="border: 2px solid #e1e4e8; border-radius: 8px;">
+An agentic video composition engine built on a custom **Mastra Harness**. The agent orchestrates LLM tools and skills to mutate complex timeline state and streams real-time UI updates back through the **Vercel AI SDK**. A working answer to "what does an agent that edits video actually look like?"
 
----
+`Mastra Harness` · `Vercel AI SDK` · `Next.js` · `Streaming`
 
-## 📊 GitHub Analytics
+### [Call GPT](https://github.com/akashp1712/call-gpt) — agentic phone calls
 
-<div align="center">
-  [![GitHub Streak](https://streak-stats.demolab.com?user=akashp1712)](https://git.io/streak-stats)
-</div>
+Twilio Media Streams wired to an LLM with real-time speech-to-text and text-to-speech. Where I learned the hard problems in voice — latency, barge-in, turn-taking.
+
+`Voice AI` · `Twilio` · `Real-time` · `LLMs`
+
+### [Paymint](https://paymint.dev) — payments, minus the plumbing
+
+A drop-in Paddle payments integration for indie developers — turning days of billing-API wrangling into minutes. Handles checkout, webhooks, and subscription state so you can ship the product instead of the plumbing.
+
+`Payments` · `Paddle` · `SaaS` · `TypeScript` · `DX`
+
+<sub>Also shipped: **[AI SDK Patterns](https://ai-sdk-patterns.dev)** — a reference library of production patterns for building with the Vercel AI SDK.</sub>
 
 ---
 
 <div align="center">
-  <p><strong>🚀 Always building. Always shipping. Always learning.</strong></p>
-  <p>⭐ Building in public. Follow along on my journey!</p>
-  
-  [![Email](https://img.shields.io/badge/Email-akashp1712@gmail.com-D14836?style=flat-square&logo=gmail&logoColor=white)](mailto:akashp1712@gmail.com)
-  [![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-0077B5?style=flat-square&logo=linkedin)](https://linkedin.com/in/akashpanchal)
-  [![Twitter](https://img.shields.io/badge/Twitter-Follow-1DA1F2?style=flat-square&logo=twitter)](https://twitter.com/akashp1712)
-  [![GitHub followers](https://img.shields.io/github/followers/akashp1712?style=social)](https://github.com/akashp1712)
-  [![GitHub stars](https://img.shields.io/github/stars/akashp1712?style=social)](https://github.com/akashp1712)
-  [![Website](https://img.shields.io/badge/Website-akashpanchal.com-blue?style=flat-square&logo=google-chrome)](https://akashpanchal.com)
-  [![Blog](https://img.shields.io/badge/Blog-blog.akashpanchal.com-FF5700?style=flat-square&logo=hashnode&logoColor=white)](https://blog.akashpanchal.com)
-  
+  <sub>Building in public. If the writing helps, say hi.</sub>
+
+  [![Email](https://img.shields.io/badge/Email-akashp1712@gmail.com-111?style=flat-square&logo=gmail&logoColor=white)](mailto:akashp1712@gmail.com)
+  [![Website](https://img.shields.io/badge/Website-akashpanchal.com-111?style=flat-square&logo=google-chrome&logoColor=white)](https://akashpanchal.com)
 </div>

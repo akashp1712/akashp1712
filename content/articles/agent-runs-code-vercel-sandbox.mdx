@@ -1,0 +1,239 @@
+---
+title: "I Let an Agent Write Code and Run It — Safely — in a Vercel Sandbox"
+description: "An agent that writes code you can't run is a fancy autocomplete. But running model-generated code on your own box is how you get a crypto miner. I build a mini-app where the agent writes, executes, and self-corrects code inside a Vercel Sandbox microVM — and walk the parts that surprised me."
+publishedAt: "2026-06-28"
+tags: ["vercel-sandbox", "agents", "ai-sdk", "build-log"]
+coverImage: "/cover-sandbox.png"
+draft: false
+---
+
+Here's the loop I wanted: user asks a question, the agent writes a little program
+to answer it, *runs* the program, reads the output, and — if it crashed — reads
+the error and fixes its own code. A code interpreter, basically. The kind of
+thing that makes an agent feel less like a chatbot and more like a colleague.
+
+Here's the loop I did *not* want: model-generated code executing on my server
+with my filesystem, my network, and my environment variables one `process.env`
+away. Running arbitrary LLM output on infrastructure you care about is how you
+end up hosting someone else's crypto miner.
+
+[Vercel Sandbox](https://vercel.com/docs/vercel-sandbox) resolves the tension: it
+gives the agent a real, isolated machine — a Firecracker microVM — that boots
+fast, runs the code, and gets thrown away. This is a build log of wiring it into
+an agent, including the parts I got wrong first.
+
+<Callout type="info">
+One thing worth stating up front, because I assumed the opposite: **Vercel
+Sandbox and the AI SDK are separate products.** There's no `experimental_sandbox`
+flag inside the SDK that magically runs tool code in a VM. You call the Sandbox
+SDK yourself, from inside a tool. That separation turned out to be the right
+mental model — the sandbox is just a machine; the agent is just a caller.
+</Callout>
+
+## The architecture, in one picture
+
+The agent never touches the sandbox directly. It calls a tool; the tool owns the
+sandbox lifecycle. That boundary is the whole safety story.
+
+<FlowDiagram
+  caption="The agent proposes code; the tool runs it in an isolated microVM and returns only stdout/exit code. Nothing executes on the app server."
+  nodes={[
+    { id: "u", label: "User", sub: "asks a question", col: 0 },
+    { id: "a", label: "Agent", sub: "writes code", col: 1 },
+    { id: "t", label: "run-code tool", sub: "owns the VM", col: 2, accent: true },
+    { id: "s", label: "Sandbox", sub: "Firecracker microVM", col: 3 },
+  ]}
+  edges={[
+    { from: "u", to: "a", label: "prompt" },
+    { from: "a", to: "t", label: "code" },
+    { from: "t", to: "s", label: "write + run" },
+    { from: "s", to: "t", label: "stdout / exit" },
+    { from: "t", to: "a", label: "result" },
+  ]}
+/>
+
+## Booting a sandbox
+
+Creating one is a single call. The options that matter are the ones that *lock it
+down* — I set them deliberately, not by copy-paste:
+
+```ts title="sandbox.ts"
+import { Sandbox } from "@vercel/sandbox";
+
+const sandbox = await Sandbox.create({
+  runtime: "node24",
+  timeout: 60_000,           // hard ceiling — the VM dies after a minute no matter what
+  networkPolicy: "deny-all", // the agent's code gets NO network. this is the big one.
+  ports: [],
+  resources: { vcpu: 1 },
+});
+```
+
+`networkPolicy: "deny-all"` is the line I care about most. Model-generated code
+with network access can exfiltrate anything it can read; with the network off,
+the worst it can do is waste its own 60 seconds of CPU inside a VM I'm about to
+delete. Compute is cheap and disposable; that's the trade the sandbox lets me
+make.
+
+## Writing files and running them
+
+The flow is: write the agent's code into the VM, run it, read back the result.
+`writeFiles` takes `Buffer` content; `runCommand` returns an exit code and async
+stdout.
+
+```ts title="run.ts"
+await sandbox.writeFiles([
+  { path: "main.js", content: Buffer.from(agentCode) },
+]);
+
+const result = await sandbox.runCommand("node", ["main.js"]);
+
+const stdout = await result.stdout();
+console.log(result.exitCode, stdout);
+```
+
+That `exitCode` is the pivot the whole self-correcting loop turns on. `0` means
+the code ran; anything else means it threw, and now I've got a `stderr` string
+that's about to become the agent's next input.
+
+## The tool the agent actually calls
+
+Wrapping that in an AI SDK tool is where it clicks. The tool boots a VM, runs the
+code, tears the VM down, and hands back a plain result object — the agent sees a
+normal tool response and has no idea a microVM lived and died to produce it:
+
+```ts title="tools/run-code.ts"
+import { tool } from "ai";
+import { z } from "zod";
+import { Sandbox } from "@vercel/sandbox";
+
+export const runCode = tool({
+  description: "Execute JavaScript and return its stdout. Use this to compute answers, don't guess.",
+  inputSchema: z.object({ code: z.string() }),
+  execute: async ({ code }) => {
+    const sandbox = await Sandbox.create({
+      runtime: "node24",
+      timeout: 60_000,
+      networkPolicy: "deny-all",
+    });
+    try {
+      await sandbox.writeFiles([{ path: "main.js", content: Buffer.from(code) }]);
+      const result = await sandbox.runCommand("node", ["main.js"]);
+      return {
+        exitCode: result.exitCode,
+        stdout: await result.stdout(),
+        stderr: await result.stderr(),
+      };
+    } finally {
+      await sandbox.stop(); // always tear down, even if it threw
+    }
+  },
+});
+```
+
+## The part that made it feel alive: self-correction
+
+Because the tool returns `stderr` and a non-zero `exitCode`, the agent can *read
+its own crash* and try again — no special framework, just the normal tool loop.
+I asked it to compute something with a deliberately tricky edge, and watched:
+
+```txt title="the agent debugging itself"
+[run-code] node main.js
+  → exitCode 1
+    stderr: TypeError: Cannot read properties of undefined (reading 'map')
+
+[agent] The array can be empty on the first pass. Adding a guard.
+
+[run-code] node main.js
+  → exitCode 0
+    stdout: { median: 42, p95: 118 }
+
+The median is 42ms and the p95 is 118ms.
+```
+
+That second attempt — the agent reading a `TypeError` and *fixing its own bug* —
+is the moment the demo stopped feeling like a trick. It's the `exitCode` and
+`stderr` flowing back through the tool result that makes it possible. Give the
+model the error and it debugs like a junior engineer who never gets tired.
+
+<SequenceDiagram
+  caption="The self-correcting loop. A non-zero exit code isn't a failure — it's the agent's next input."
+  actors={[
+    { id: "a", label: "Agent" },
+    { id: "t", label: "run-code" },
+    { id: "s", label: "Sandbox" },
+  ]}
+  steps={[
+    { from: "a", to: "t", label: "code v1" },
+    { from: "t", to: "s", label: "run" },
+    { from: "s", to: "t", label: "exit 1 + stderr", dashed: true },
+    { from: "t", to: "a", label: "error", dashed: true },
+    { from: "a", to: "t", label: "code v2 (fixed)" },
+    { from: "t", to: "s", label: "run" },
+    { from: "s", to: "a", label: "exit 0 + stdout", dashed: true },
+  ]}
+/>
+
+## Making it fast: snapshots
+
+Booting a fresh VM per tool call is clean but not free. When the agent makes ten
+calls in a conversation, ten cold boots add up. `snapshot()` plus
+`getOrCreate()` with `onCreate` / `onResume` hooks let you warm a VM once — deps
+installed, environment ready — and resume from that image on later calls:
+
+```ts title="warm.ts"
+const sandbox = await Sandbox.getOrCreate({
+  onCreate: async (s) => {
+    // runs once: install deps, seed files
+    await s.runCommand("npm", ["install", "lodash"]);
+    await s.snapshot();
+  },
+  onResume: async (s) => {
+    // runs on subsequent calls: already warm
+  },
+});
+```
+
+For a chat where the agent runs code repeatedly, resuming a snapshot instead of
+cold-booting is the difference between the interpreter feeling snappy and feeling
+like it's thinking with a modem.
+
+## Bonus: `eve` gives the whole thing evals
+
+Once this worked I wanted to know it *kept* working — that a prompt tweak didn't
+make the agent write worse code. Vercel's **eve** framework has evals built in:
+`defineEval` from `eve/evals` and an `eve eval` CLI. You define a case ("ask it to
+compute a median, assert the output"), and it runs the agent-plus-sandbox loop
+and scores it.
+
+```ts title="interpreter.eval.ts"
+import { defineEval } from "eve/evals";
+
+export default defineEval({
+  name: "code-interpreter",
+  input: "What's the median of [3, 1, 4, 1, 5, 9, 2, 6]?",
+  assert: ({ output }) => output.includes("3.5"),
+});
+```
+
+That closes the loop the [Mastra evals tutorial](/tutorials/mastra-evals) makes
+the case for: the interpreter isn't done because it worked once — it's done
+because there's a check that fails loudly the day it stops working.
+
+## What I'd tell myself before starting
+
+Three things I wish I'd known on hour one:
+
+1. **The sandbox and the AI SDK don't know about each other.** Own the VM
+   lifecycle yourself inside a tool. That's a feature — it keeps the boundary
+   crisp.
+2. **`networkPolicy: "deny-all"` first, loosen only if you must.** The default
+   posture for running someone else's code is "no network," and "someone else"
+   includes the model.
+3. **Return `stderr` and `exitCode` to the agent.** The self-correction that
+   makes this feel magical is entirely downstream of giving the model its own
+   error messages.
+
+The result is an agent that doesn't just *talk about* code — it runs it, watches
+it fail, and fixes it, all inside a microVM that can't hurt anything. That's the
+version of "AI writes code" I actually trust in production.

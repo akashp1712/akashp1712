@@ -1,0 +1,417 @@
+/* ============================================================
+   Tutorials — "Refined Editorial Dev"
+   Warm paper, one accent, editorial serif headings, Vitesse code.
+   Scoped under .reading-root so the rest of the site is untouched.
+   ============================================================ */
+
+.reading-root {
+  /* light: warm paper */
+  --paper: #faf8f4;
+  --paper-raised: #ffffff;
+  --ink: #1a1916;
+  --ink-soft: #57534e;
+  --ink-faint: #8c867d;
+  --line: rgba(26, 25, 22, 0.1);
+  --line-soft: rgba(26, 25, 22, 0.06);
+  --accent: #b5532b; /* warm terracotta — single accent */
+  --accent-soft: rgba(181, 83, 43, 0.1);
+
+  background-color: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  font-feature-settings: "ss01", "cv01";
+  min-height: 100vh;
+}
+
+/* Fixed backdrop sits behind everything (incl. root gradient blobs),
+   pinned to viewport so no cold band shows above the content. */
+.reading-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -5;
+  background-color: var(--paper);
+  pointer-events: none;
+}
+
+html.dark .reading-root {
+  /* dark: warm charcoal, not cold gray */
+  --paper: #16140f;
+  --paper-raised: #1e1b15;
+  --ink: #ece7dd;
+  --ink-soft: #b3ada0;
+  --ink-faint: #837c6e;
+  --line: rgba(236, 231, 221, 0.12);
+  --line-soft: rgba(236, 231, 221, 0.06);
+  --accent: #e08a5f;
+  --accent-soft: rgba(224, 138, 95, 0.12);
+}
+
+/* ---- Type scale ---- */
+.reading-root .font-display {
+  font-family: var(--font-display), Georgia, serif;
+}
+.reading-root .font-mono {
+  font-family: var(--font-mono), ui-monospace, monospace;
+}
+
+.tut-kicker {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.tut-title {
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 480;
+  letter-spacing: -0.02em;
+  line-height: 1.04;
+  color: var(--ink);
+}
+
+.tut-lede {
+  color: var(--ink-soft);
+  line-height: 1.6;
+}
+
+.tut-meta {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.78rem;
+  color: var(--ink-faint);
+}
+
+/* ---- Index cards ---- */
+.tut-card {
+  border-bottom: 1px solid var(--line);
+  transition: all 0.25s ease;
+}
+.tut-card:hover .tut-card-title {
+  color: var(--accent);
+}
+.tut-card:hover .tut-arrow {
+  transform: translateX(4px);
+  opacity: 1;
+}
+.tut-card-title {
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  transition: color 0.2s ease;
+}
+.tut-arrow {
+  color: var(--accent);
+  opacity: 0.4;
+  transition: all 0.25s ease;
+}
+.tut-tag {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+/* ---- TOC ---- */
+.tut-toc-label {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.tut-toc a {
+  color: var(--ink-soft);
+  transition: color 0.18s ease;
+  border-left: 1.5px solid transparent;
+}
+.tut-toc a:hover {
+  color: var(--accent);
+}
+
+/* ============================================================
+   Prose — the reading column
+   ============================================================ */
+.tut-prose {
+  color: var(--ink-soft);
+  font-size: 1.075rem;
+  line-height: 1.75;
+}
+.tut-prose > * + * {
+  margin-top: 1.4em;
+}
+.tut-prose h2 {
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 500;
+  font-size: 1.75rem;
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+  color: var(--ink);
+  margin-top: 2.8rem;
+  margin-bottom: 1rem;
+  scroll-margin-top: 7rem;
+}
+.tut-prose h3 {
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 500;
+  font-size: 1.3rem;
+  color: var(--ink);
+  margin-top: 2rem;
+  margin-bottom: 0.6rem;
+  scroll-margin-top: 7rem;
+}
+.tut-prose p {
+  color: var(--ink-soft);
+}
+.tut-prose strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+.tut-prose a {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid var(--accent-soft);
+  transition: border-color 0.2s ease;
+}
+.tut-prose a:hover {
+  border-bottom-color: var(--accent);
+}
+/* inline code */
+.tut-prose :not(pre) > code {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.85em;
+  background: var(--accent-soft);
+  color: var(--accent);
+  padding: 0.15em 0.4em;
+  border-radius: 5px;
+  white-space: nowrap;
+}
+.tut-prose ul,
+.tut-prose ol {
+  padding-left: 1.3rem;
+}
+.tut-prose li {
+  margin-top: 0.4em;
+}
+.tut-prose li::marker {
+  color: var(--ink-faint);
+}
+.tut-prose blockquote {
+  border-left: 2px solid var(--accent);
+  padding-left: 1.2rem;
+  font-style: italic;
+  color: var(--ink-soft);
+}
+
+/* ---- Tables ---- */
+.tut-prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+  margin: 1.8rem 0;
+}
+.tut-prose thead {
+  border-bottom: 1.5px solid var(--line);
+}
+.tut-prose th {
+  text-align: left;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  padding: 0.5rem 0.9rem;
+  font-weight: 500;
+}
+.tut-prose td {
+  padding: 0.65rem 0.9rem;
+  border-bottom: 1px solid var(--line-soft);
+  color: var(--ink-soft);
+}
+
+/* ============================================================
+   Code blocks — Vitesse theme, framed cleanly
+   ============================================================ */
+.tut-prose [data-rehype-pretty-code-figure] {
+  margin: 1.8rem 0;
+}
+.tut-prose [data-rehype-pretty-code-title] {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.74rem;
+  letter-spacing: 0.02em;
+  color: var(--ink-faint);
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  border-bottom: none;
+  border-radius: 10px 10px 0 0;
+  padding: 0.6rem 1.1rem;
+}
+.tut-prose [data-rehype-pretty-code-title] + pre {
+  border-radius: 0 0 10px 10px;
+  margin-top: 0;
+}
+.tut-prose pre {
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 1.1rem 0;
+  overflow-x: auto;
+  font-size: 0.85rem;
+  line-height: 1.7;
+}
+.tut-prose pre code {
+  font-family: var(--font-mono), monospace;
+  display: grid; /* per-line */
+  counter-reset: line;
+}
+.tut-prose [data-line] {
+  padding: 0 1.2rem;
+  border-left: 2px solid transparent;
+}
+.tut-prose [data-highlighted-line] {
+  background: var(--accent-soft);
+  border-left-color: var(--accent);
+}
+/* vitesse dual-theme token swap */
+.tut-prose [data-line] span {
+  color: var(--shiki-light);
+}
+html.dark .tut-prose [data-line] span {
+  color: var(--shiki-dark);
+}
+
+/* ============================================================
+   Home — editorial sections reusing the reading system
+   ============================================================ */
+
+/* Section eyebrow: mono kicker + a hairline rule to its right. */
+.ed-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.ed-eyebrow-label {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  white-space: nowrap;
+}
+.ed-eyebrow-rule {
+  height: 1px;
+  flex: 1;
+  background: var(--line);
+}
+
+/* Section title in the display serif. */
+.ed-section-title {
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 480;
+  letter-spacing: -0.02em;
+  line-height: 1.08;
+  color: var(--ink);
+}
+
+/* Raised surface card (skills, projects, timeline, writing rows). */
+.ed-card {
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+.ed-card:hover {
+  border-color: color-mix(in oklab, var(--accent) 40%, var(--line));
+}
+
+/* Mono metadata / labels. */
+.ed-meta {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  color: var(--ink-faint);
+}
+
+/* Skill / tag chip. */
+.ed-chip {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.8rem;
+  letter-spacing: 0.01em;
+  color: var(--ink-soft);
+  background: color-mix(in oklab, var(--ink) 3%, transparent);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  transition: color 0.18s ease, border-color 0.18s ease;
+}
+.ed-chip:hover {
+  color: var(--accent);
+  border-color: color-mix(in oklab, var(--accent) 40%, var(--line));
+}
+
+/* Quiet inline text link (hero social + resume, footer). */
+.ed-link {
+  color: var(--ink-soft);
+  border-bottom: 1px solid transparent;
+  transition: color 0.18s ease, border-color 0.18s ease;
+}
+.ed-link:hover {
+  color: var(--accent);
+  border-bottom-color: var(--accent-soft);
+}
+
+/* Solid accent CTA button. */
+.ed-btn {
+  background: var(--accent);
+  color: #fff;
+  border-radius: 999px;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.ed-btn:hover {
+  opacity: 0.9;
+}
+
+/* Ghost CTA button. */
+.ed-btn-ghost {
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  transition: border-color 0.18s ease, color 0.18s ease;
+}
+.ed-btn-ghost:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Prose bits used inside home sections (about/hero lede highlight). */
+.ed-strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* ---- Grouped series part-list (Writing) ---- */
+.ed-series-item span:last-child {
+  transition: color 0.18s ease;
+}
+.ed-series-item:hover span:last-child {
+  color: var(--accent);
+}
+
+/* ---- Floating nav (Header) ---- */
+.ed-nav-bar {
+  background: color-mix(in oklab, var(--paper) 82%, transparent);
+  border-color: var(--line);
+}
+.ed-nav-link {
+  color: var(--ink-faint);
+  transition: color 0.18s ease;
+}
+.ed-nav-link:hover {
+  color: var(--ink);
+}
+.ed-nav-link-active {
+  color: var(--ink);
+}
+.ed-nav-pill {
+  background: color-mix(in oklab, var(--ink) 7%, transparent);
+}

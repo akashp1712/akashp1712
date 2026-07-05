@@ -1,16 +1,20 @@
 "use client";
 
-import Image from "next/image";
 import React from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { BsArrowRight, BsLinkedin, BsMedium, BsTwitter } from "react-icons/bs";
-import { FaBlog } from "react-icons/fa";
-import { HiDownload } from "react-icons/hi";
-import { FaGithubSquare } from "react-icons/fa";
+import { BsArrowRight } from "react-icons/bs";
 import { useSectionInView } from "@/lib/hooks";
 import { useActiveSectionContext } from "@/context/active-section-context";
-import Typewriter from "typewriter-effect";
+
+// Quiet, mono, underline-on-hover text links — the "engineer, not vendor"
+// treatment. Replaces the old row of social pill buttons + resume CTA.
+const quietLinks = [
+  { label: "GitHub", href: "https://github.com/akashp1712" },
+  { label: "LinkedIn", href: "https://www.linkedin.com/in/akashp1712" },
+  { label: "X", href: "https://twitter.com/akashp1712" },
+  { label: "Résumé", href: "/CV.pdf" },
+];
 
 export default function Intro() {
   const { ref } = useSectionInView("Home", 0.5);
@@ -20,160 +24,101 @@ export default function Intro() {
     <section
       ref={ref}
       id="home"
-      className="mb-28 max-w-[60rem] mx-auto px-4 sm:px-6 text-center sm:mb-0 scroll-mt-[100rem]"
+      className="mb-24 w-full max-w-3xl px-4 scroll-mt-[100rem] sm:mb-8 sm:px-6"
     >
-      <div className="flex items-center justify-center">
-        <div className="relative">
-          <motion.div
-            initial={{ opacity: 0, scale: 0 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{
-              type: "tween",
-              duration: 0.2,
-            }}
-          >
-            <Image
-              src="/profile-pic.jpeg"
-              alt="Akash Panchal portrait"
-              width="192"
-              height="192"
-              quality="95"
-              priority={true}
-              className="h-24 w-24 rounded-full object-cover border-[0.35rem] border-white shadow-xl"
-            />
-          </motion.div>
-
-          <motion.span
-            className="absolute bottom-0 right-0 text-4xl"
-            initial={{ opacity: 0, scale: 0 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{
-              type: "spring",
-              stiffness: 125,
-              delay: 0.1,
-              duration: 0.7,
-            }}
-          >
-            👋
-          </motion.span>
-        </div>
-      </div>
-
-      <motion.h1
-        className="mb-10 mt-4 px-4 text-2xl font-medium !leading-[1.5] sm:text-4xl"
-        initial={{ opacity: 0, y: 100 }}
+      <motion.p
+        className="ed-eyebrow mb-6"
+        initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <span className="font-bold">Hello World, I'm Akash.</span>{" "}
+        <span className="ed-eyebrow-label">Portfolio · 2026</span>
+        <span className="ed-eyebrow-rule" />
+      </motion.p>
+
+      <motion.h1
+        className="ed-section-title text-5xl leading-[1.0] sm:text-7xl"
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.04 }}
+      >
+        Akash Panchal
       </motion.h1>
 
-      <motion.h1
-        className="mb-10 mt-4 px-4 text-2xl font-medium !leading-[1.5] sm:text-4xl"
-        initial={{ opacity: 0, y: 100 }}
+      <motion.p
+        className="mt-4 font-mono text-sm uppercase sm:text-base"
+        style={{ letterSpacing: "0.14em", color: "var(--accent)" }}
+        initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.08 }}
       >
-        <span className="font-bold">Software Engineer</span> with{" "}
-        <span className="font-bold">9 years</span> of experience. I enjoy
-        solving problems using
-        <Typewriter
-          options={{
-            strings: ["Software Engineering", "Algorithms", "Distributed Systems", "Web App", "Mobile App",],
-            autoStart: true,
-            loop: true,
+        AI Software Engineer
+      </motion.p>
+
+      <motion.p
+        className="tut-lede mt-7 max-w-2xl text-lg sm:text-xl"
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.12 }}
+      >
+        I build multi-turn agent platforms at{" "}
+        <span className="ed-strong">Salesforce</span> — the runtime, tools, and
+        memory that turn a model in a loop into something people depend on. On
+        the side I ship voice agents and write code-heavy deep dives on how all
+        of it actually works: the streaming, grounding, and evals that most
+        tutorials skip.
+      </motion.p>
+
+      {/* Primary path: read the series. */}
+      <motion.div
+        className="mt-9 flex flex-wrap items-center gap-x-6 gap-y-4"
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.16 }}
+      >
+        <Link
+          href="#blog"
+          onClick={() => {
+            setActiveSection("Writing");
+            setTimeOfLastClick(Date.now());
           }}
-        />
-      </motion.h1>
-
-      {/* AI/Voice AI Call-to-Action */}
-      <motion.div
-        className="mb-8 px-4"
-        initial={{ opacity: 0, y: 100 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-      >
-        <div className="p-4 rounded-lg bg-gray-100 dark:bg-white/10 border border-black/10 dark:border-white/10 text-gray-800 dark:text-white/90 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div>
-            <h3 className="text-lg font-semibold mb-1">Looking for AI or Voice AI expertise?</h3>
-            <p className="text-gray-600 dark:text-white/70">I'm available for consulting and development projects in AI and Voice AI technologies.</p>
-          </div>
-          <Link
-            href="#contact"
-            className="px-5 py-2 bg-gray-900 text-white dark:bg-white dark:text-gray-900 font-medium rounded-full hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors whitespace-nowrap mt-3 sm:mt-0"
-            onClick={() => {
-              setActiveSection("Contact");
-              setTimeOfLastClick(Date.now());
-            }}
-          >
-            Let's Talk
-          </Link>
-        </div>
+          className="ed-btn group inline-flex items-center gap-2 px-6 py-3 text-sm font-medium"
+        >
+          Read the Mastra series
+          <BsArrowRight className="transition group-hover:translate-x-1" />
+        </Link>
+        <Link
+          href="#projects"
+          onClick={() => {
+            setActiveSection("Projects");
+            setTimeOfLastClick(Date.now());
+          }}
+          className="ed-btn-ghost inline-flex items-center px-6 py-3 text-sm font-medium"
+        >
+          See what I&apos;ve built
+        </Link>
       </motion.div>
 
-      <motion.div
-        className="flex flex-col sm:flex-row items-center justify-center gap-2 px-4 text-lg font-medium"
-        initial={{ opacity: 0, y: 100 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{
-          delay: 0.1,
-        }}
+      {/* Quiet text links — no pills, no icons-as-buttons. */}
+      <motion.nav
+        className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2 ed-meta"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.24 }}
       >
-        
-          Let's Connect{" "}
-          <BsArrowRight className="opacity-70 group-hover:translate-x-1 transition bg-clip-padding" />
-        
-
-        <a
-          className="group bg-white px-7 py-3 flex items-center gap-2 rounded-full outline-none focus:scale-110 hover:scale-110 active:scale-105 transition cursor-pointer borderBlack dark:bg-white/10"
-          href="/CV.pdf"
-          download
-        >
-          Resume{" "}
-          <HiDownload className="opacity-60 group-hover:translate-y-1 transition" />
-          {" "}
-        </a>
-
-        <a
-          className="bg-white p-4 text-gray-700 hover:text-gray-950 flex items-center gap-2 rounded-full focus:scale-[1.15] hover:scale-[1.15] active:scale-105 transition cursor-pointer borderBlack dark:bg-white/10 dark:text-white/60"
-          href="https://www.linkedin.com/in/akashp1712"
-          target="_blank"
-        >
-          <BsLinkedin />
-        </a>
-
-
-        <a
-          className="bg-white p-4 text-gray-700 flex items-center gap-2 text-[1.35rem] rounded-full focus:scale-[1.15] hover:scale-[1.15] hover:text-gray-950 active:scale-105 transition cursor-pointer borderBlack dark:bg-white/10 dark:text-white/60"
-          href="https://github.com/akashp1712"
-          target="_blank"
-        >
-          <FaGithubSquare />
-        </a>
-
-        <a
-          className="bg-white p-4 text-gray-700 flex items-center gap-2 text-[1.35rem] rounded-full focus:scale-[1.15] hover:scale-[1.15] hover:text-gray-950 active:scale-105 transition cursor-pointer borderBlack dark:bg-white/10 dark:text-white/60"
-          href="https://medium.com/@akashp1712"
-          target="_blank"
-        >
-          <BsMedium />
-        </a>
-
-        <a
-          className="bg-white p-4 text-gray-700 flex items-center gap-2 text-[1.35rem] rounded-full focus:scale-[1.15] hover:scale-[1.15] hover:text-gray-950 active:scale-105 transition cursor-pointer borderBlack dark:bg-white/10 dark:text-white/60"
-          href="https://twitter.com/akashp1712"
-          target="_blank"
-        >
-          <BsTwitter />
-        </a>
-
-        <a
-          className="bg-white p-4 text-gray-700 flex items-center gap-2 text-[1.35rem] rounded-full focus:scale-[1.15] hover:scale-[1.15] hover:text-gray-950 active:scale-105 transition cursor-pointer borderBlack dark:bg-white/10 dark:text-white/60"
-          href="https://blog.akashpanchal.com"
-          target="_blank"
-          title="Blog"
-        >
-          <FaBlog />
-        </a>
-      </motion.div>
+        {quietLinks.map((l, i) => (
+          <React.Fragment key={l.label}>
+            {i > 0 && <span style={{ color: "var(--line)" }}>/</span>}
+            <a
+              href={l.href}
+              target={l.href.startsWith("http") ? "_blank" : undefined}
+              {...(l.label === "Résumé" ? { download: true } : {})}
+              className="ed-link"
+            >
+              {l.label}
+            </a>
+          </React.Fragment>
+        ))}
+      </motion.nav>
     </section>
   );
 }

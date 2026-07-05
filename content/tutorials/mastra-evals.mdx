@@ -1,0 +1,246 @@
+---
+title: "Mastra, Part 7: Evals & Scorers — Proving the Agent Is Good"
+description: "The finale. An agent that ships without evals is a vibe with a deploy button. This part puts numbers on agent quality — deterministic checks, model-graded scorers, pass/fail gates in CI, and live sampling in production — so 'it seems better' becomes 'it scored 0.86, up from 0.71'."
+publishedAt: "2026-06-23"
+order: 7
+tags: ["mastra", "evals", "testing", "tutorial"]
+coverImage: "/cover-mastra-tutorial.png"
+draft: false
+---
+
+You've built an [agent](/tutorials/mastra-agents), wrapped it in
+[workflows](/tutorials/mastra-workflows) and a [harness](/tutorials/mastra-harness),
+[streamed](/tutorials/mastra-streaming) it, [grounded it in RAG](/tutorials/mastra-rag),
+and made it [survive crashes and run on a schedule](/tutorials/mastra-durable-agents).
+One question decides whether any of that is safe to put in front of users:
+
+**Is it actually good — and how would you know if a change made it worse?**
+
+"It seems better" is not an answer you can ship on. You tweak a prompt, the demo
+looks great, you deploy, and three days later someone notices it started
+hallucinating refund policies. Without evals you're flying blind; every prompt
+edit is a coin flip you can't see land. This part replaces the vibe with numbers.
+
+<Callout type="info">
+**The series, completed**
+1. [Agents](/tutorials/mastra-agents) · 2. [Workflows](/tutorials/mastra-workflows) ·
+3. [Harness](/tutorials/mastra-harness) · 4. [Streaming](/tutorials/mastra-streaming) ·
+5. [RAG](/tutorials/mastra-rag) · 6. [Durable agents](/tutorials/mastra-durable-agents) ·
+7. **Evals** *(you're here)* — put numbers on quality and gate on them.
+</Callout>
+
+## Two kinds of "is it good?"
+
+Agent quality splits into two questions that need two different tools, and the
+biggest early mistake is using a model to answer the first kind.
+
+<LayerDiagram
+  caption="Use the cheap deterministic check whenever the question has a definite answer. Save the model-graded scorer for the genuinely fuzzy ones."
+  layers={[
+    { label: "Checks", sub: "deterministic: did it call the tool? in the right order?" },
+    { label: "Scorers", sub: "model-graded: is the answer relevant? faithful? toxic?", accent: true },
+  ]}
+/>
+
+- **Checks** answer *factual* questions about a run. Did it call `search-docs`?
+  Did it avoid tool errors? Did it call tools in the right order? These have a
+  yes/no answer, so grade them with code — fast, free, and never flaky.
+- **Scorers** answer *qualitative* questions. Is the answer relevant to what was
+  asked? Is it faithful to the retrieved sources, or did it drift? Is it toxic?
+  These need judgment, so a model grades them and returns a score.
+
+Reach for a scorer only when a check genuinely can't answer the question. A
+model-graded eval is slower, costs tokens, and has its own variance — don't spend
+it on something `===` could decide.
+
+## Checks — deterministic, and where you start
+
+Say you want to guarantee the RAG agent from [Part 5](/tutorials/mastra-rag)
+*always* looks something up before answering — the "never guess" rule, enforced.
+That's a check: did the run call `search-docs`?
+
+```ts title="evals/basic.test.ts"
+import { runEvals } from "@mastra/evals";
+import { checks } from "@mastra/evals/checks";
+import { supportAgent } from "../mastra/agents";
+
+const result = await runEvals({
+  target: supportAgent,
+  data: [
+    { input: "What's our refund window for annual plans?" },
+    { input: "How do I cancel a monthly plan?" },
+  ],
+  gates: [
+    checks.calledTool("search-docs"),  // must have retrieved
+    checks.noToolErrors(),             // and nothing threw
+  ],
+});
+
+console.log(result.verdict); // "passed" | "scored" | "failed"
+```
+
+```txt title="output"
+✓ calledTool(search-docs)   2/2
+✓ noToolErrors              2/2
+verdict: passed
+```
+
+The `checks` namespace covers the common factual questions out of the box:
+
+- **`calledTool(name)`** — the run used that tool.
+- **`noToolErrors()`** — no tool threw.
+- **`includes(text)`** — the output contains an expected string.
+- **`toolOrder([...])`** — tools fired in the sequence you expect (retrieve
+  *before* answer, not after).
+
+Because they're deterministic, checks belong in `gates` — they can hard-fail a
+run. That's what makes them CI-safe: no flakiness, no token cost, a clean
+pass/fail.
+
+## Scorers — for the fuzzy questions
+
+Now the questions code can't answer. Was the answer actually *relevant*? Was it
+*faithful* to the retrieved passages? Mastra ships prebuilt, model-graded scorers
+for exactly these:
+
+```ts title="evals/quality.test.ts"
+import { runEvals } from "@mastra/evals";
+import {
+  createAnswerRelevancyScorer,
+  createToxicityScorer,
+} from "@mastra/evals/scorers/prebuilt";
+import { openai } from "@ai-sdk/openai";
+
+const judge = openai("gpt-4o");
+
+const result = await runEvals({
+  target: supportAgent,
+  data: [
+    { input: "What's our refund window for annual plans?" },
+    { input: "Can I get a refund after 60 days?" },
+  ],
+  scorers: [
+    createAnswerRelevancyScorer({ model: judge }),
+    createToxicityScorer({ model: judge }),
+  ],
+});
+```
+
+```txt title="output"
+answer-relevancy   0.91  avg
+toxicity           0.00  avg
+verdict: scored
+```
+
+Note the verdict is `scored`, not `passed` — a scorer produces a *number*, and a
+number on its own doesn't fail a build. To make it a gate, put a threshold on it:
+"relevancy must average ≥ 0.8." Now a prompt change that quietly tanks relevancy
+to 0.62 fails CI instead of shipping.
+
+<Callout type="tip">
+Combine both in one run: `gates` for the deterministic checks that must pass, and
+`scorers` for the quality numbers you threshold. The `verdict` reflects both — it
+only reports `passed` when every gate held *and* every thresholded scorer cleared
+its bar.
+</Callout>
+
+## Wiring it into CI
+
+The entire payoff of evals is that they run automatically on every change. A
+`runEvals` call is just code, so it drops straight into whatever test runner you
+already use — no special harness.
+
+```ts title="evals/agent.eval.ts"
+import { runEvals } from "@mastra/evals";
+import { checks } from "@mastra/evals/checks";
+import { createAnswerRelevancyScorer } from "@mastra/evals/scorers/prebuilt";
+import { supportAgent } from "../mastra/agents";
+import { openai } from "@ai-sdk/openai";
+
+const result = await runEvals({
+  target: supportAgent,
+  data: goldenQuestions,               // your curated question set, in version control
+  gates: [checks.calledTool("search-docs"), checks.noToolErrors()],
+  scorers: [createAnswerRelevancyScorer({ model: openai("gpt-4o") })],
+});
+
+if (result.verdict === "failed") {
+  process.exit(1); // fail the build — a regression doesn't merge
+}
+```
+
+```yaml title=".github/workflows/evals.yml"
+- name: Run agent evals
+  run: pnpm tsx evals/agent.eval.ts
+  env:
+    OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+```
+
+That `goldenQuestions` set is the asset that compounds. Every time the agent gets
+something wrong in production, you add that case to the set. The eval suite grows
+into a memory of every mistake the agent has ever made — and every one it's now
+provably guarded against.
+
+<SequenceDiagram
+  caption="Evals turn a pull request into a quality gate. A prompt change that regresses relevancy fails before it reaches users."
+  actors={[
+    { id: "d", label: "PR" },
+    { id: "ci", label: "CI" },
+    { id: "e", label: "runEvals" },
+    { id: "m", label: "main" },
+  ]}
+  steps={[
+    { from: "d", to: "ci", label: "prompt change" },
+    { from: "ci", to: "e", label: "gates + scorers" },
+    { from: "e", to: "ci", label: "verdict", dashed: true },
+    { from: "ci", to: "m", label: "merge if passed" },
+    { from: "ci", to: "d", label: "block if failed", dashed: true },
+  ]}
+/>
+
+## Evals in production, not just CI
+
+CI proves the agent is good on questions you *thought of*. Production is where it
+meets the ones you didn't. So Mastra lets you attach scorers to a live agent and
+**sample** real traffic — score a fraction of actual runs, no golden set required:
+
+```ts title="mastra/agents.ts"
+export const supportAgent = new Agent({
+  name: "support",
+  instructions: "...",
+  model: openai("gpt-4o"),
+  tools: { searchDocs },
+  scorers: {
+    relevancy: {
+      scorer: createAnswerRelevancyScorer({ model: openai("gpt-4o") }),
+      sampling: { type: "ratio", rate: 0.1 }, // grade 10% of live runs
+    },
+  },
+});
+```
+
+Now 10% of real conversations get a relevancy score in the background. The
+sampling rate is the knob: crank it up for a risky launch week, dial it down once
+the numbers are boring. This is how you catch the slow drift that a fixed CI set
+never will — the moment production relevancy starts sliding, you see it in the
+data instead of in a support escalation.
+
+## What "good" actually means now
+
+Across seven parts the agent went from a loop that calls a model to a system you
+can *defend*:
+
+- **Checks** — deterministic, gating, free. Start here for anything with a
+  definite answer.
+- **Scorers** — model-graded numbers for relevancy, faithfulness, toxicity.
+  Threshold them to make them gate.
+- **`runEvals` in CI** — a regression fails the build instead of reaching users.
+- **Golden set** — a growing, version-controlled memory of every past mistake.
+- **Live sampling** — score real traffic to catch the drift CI can't.
+
+That's the whole arc: build it, orchestrate it, host it, stream it, ground it,
+keep it alive — and now, prove it's good and keep it that way. An agent you can
+put numbers on is an agent you can actually ship.
+
+*Thanks for reading the series. Every code sample here runs on public Mastra and
+AI SDK APIs — go build something and put an eval on it.*

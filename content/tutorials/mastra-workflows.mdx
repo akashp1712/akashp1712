@@ -1,0 +1,297 @@
+---
+title: "Mastra, Part 2: Workflows"
+description: "Part two of the Mastra series. Agents are great at deciding; workflows are great at guaranteeing. I build typed, multi-step workflows with sequencing, parallelism, branching, loops, and human-in-the-loop suspend & resume."
+publishedAt: "2026-05-19"
+order: 2
+tags: ["mastra", "workflows", "typescript", "tutorial"]
+coverImage: "/cover-mastra-tutorial.png"
+draft: false
+---
+
+In [Part 1](/tutorials/mastra-agents) I built a Mastra agent — a loop that lets
+a model decide what to do next. Agents are wonderful when you *want* the model
+to improvise. But sometimes you don't. Sometimes the steps are known, the order
+matters, and "the model felt like skipping validation today" is not an
+acceptable outcome.
+
+That's what **workflows** are for. A Mastra workflow is a typed graph of steps
+you wire together explicitly. You decide the control flow; the model only acts
+where you let it. Where an agent gives you flexibility, a workflow gives you
+**guarantees**.
+
+<Callout type="info">
+**The series**
+1. [Agents](/tutorials/mastra-agents) — define an agent, tools, memory.
+2. **Workflows** *(you're here)* — orchestrate multi-step logic.
+3. [The Harness](/tutorials/mastra-harness) — the runtime that hosts it all.
+4. [Streaming](/tutorials/mastra-streaming) — get the work to a UI live.
+5. [RAG](/tutorials/mastra-rag) — answer from real documents.
+6. [Durable agents](/tutorials/mastra-durable-agents) — survive crashes, run in the background.
+7. [Evals](/tutorials/mastra-evals) — prove the agent is actually good.
+</Callout>
+
+## Steps are the unit of work
+
+A workflow is built from **steps**. Each step is a typed function with an input
+schema and an output schema — the schemas are what let Mastra chain steps safely
+and catch a mismatch at build time instead of in production.
+
+```ts title="steps.ts"
+import { createStep } from "@mastra/core/workflows";
+import { z } from "zod";
+
+const formatStep = createStep({
+  id: "format",
+  inputSchema: z.object({ message: z.string() }),
+  outputSchema: z.object({ formatted: z.string() }),
+  execute: async ({ inputData }) => {
+    return { formatted: inputData.message.trim().toUpperCase() };
+  },
+});
+```
+
+Note `execute` receives `inputData` — already validated against `inputSchema`.
+It also gets `state`, `setState`, `mastra`, and more, but `inputData` in and a
+typed object out is the core contract.
+
+## Step 1: Sequence steps with `.then`
+
+Wire steps in order with `createWorkflow(...).then(...)`. The output of one step
+flows into the next, and the chain must end with `.commit()`:
+
+```ts title="workflows/greet.ts"
+import { createWorkflow, createStep } from "@mastra/core/workflows";
+import { z } from "zod";
+
+const formatStep = createStep({
+  id: "format",
+  inputSchema: z.object({ message: z.string() }),
+  outputSchema: z.object({ formatted: z.string() }),
+  execute: async ({ inputData }) => ({
+    formatted: inputData.message.trim(),
+  }),
+});
+
+const emphasizeStep = createStep({
+  id: "emphasize",
+  inputSchema: z.object({ formatted: z.string() }),
+  outputSchema: z.object({ result: z.string() }),
+  execute: async ({ inputData }) => ({
+    result: `${inputData.formatted}!`,
+  }),
+});
+
+export const greetWorkflow = createWorkflow({
+  id: "greet",
+  inputSchema: z.object({ message: z.string() }),
+  outputSchema: z.object({ result: z.string() }),
+})
+  .then(formatStep)
+  .then(emphasizeStep)
+  .commit();
+```
+
+Run it by creating a run and starting it with `inputData`:
+
+```ts title="run.ts"
+const run = await greetWorkflow.createRun();
+const result = await run.start({ inputData: { message: "  hello  " } });
+
+if (result.status === "success") {
+  console.log(result.result); // { result: "hello!" }
+}
+```
+
+That `result.status` is worth dwelling on. A run finishes as `success`,
+`failed`, or `suspended` (more on that last one shortly). You branch on it —
+workflows make their outcomes explicit, which is exactly the guarantee an open
+agent loop can't give you.
+
+## Step 2: Branch, parallelize, and loop
+
+Sequencing is the floor. The reason to reach for a workflow is everything else
+in the control-flow toolkit — and it reads almost like a flowchart in code.
+
+<FlowDiagram
+  caption="The four control-flow shapes. Pick the one that matches the work, not the other way around."
+  nodes={[
+    { id: "in", label: "input", sub: "inputData", col: 0 },
+    { id: "then", label: ".then", sub: "sequential", col: 1 },
+    { id: "par", label: ".parallel", sub: "concurrent", col: 1, accent: true },
+    { id: "br", label: ".branch", sub: "conditional", col: 1 },
+    { id: "fe", label: ".foreach", sub: "per item", col: 1 },
+    { id: "out", label: "output", sub: "result", col: 2 },
+  ]}
+  edges={[
+    { from: "in", to: "then" },
+    { from: "in", to: "par" },
+    { from: "in", to: "br" },
+    { from: "in", to: "fe" },
+    { from: "then", to: "out" },
+    { from: "par", to: "out" },
+    { from: "br", to: "out" },
+    { from: "fe", to: "out" },
+  ]}
+/>
+
+**Run steps in parallel** when they don't depend on each other. The output is an
+object keyed by each step's `id`:
+
+```ts
+createWorkflow({ /* ... */ })
+  .parallel([fetchWeatherStep, fetchNewsStep])
+  .then(combineStep)
+  .commit();
+
+// combineStep sees: { "fetch-weather": {...}, "fetch-news": {...} }
+```
+
+**Branch** to pick a path based on the data. Each entry is a `[condition, step]`
+pair; only the first matching branch runs:
+
+```ts
+createWorkflow({ /* ... */ })
+  .then(scoreStep)
+  .branch([
+    [async ({ inputData }) => inputData.score > 0.8, autoApproveStep],
+    [async ({ inputData }) => inputData.score <= 0.8, humanReviewStep],
+  ])
+  .commit();
+```
+
+**Loop** with `.dountil` (run until a condition becomes true) or `.dowhile`
+(run while it stays true):
+
+```ts
+createWorkflow({ /* ... */ })
+  .dountil(
+    refineStep,
+    async ({ inputData }) => inputData.qualityScore > 0.9,
+  )
+  .commit();
+```
+
+<LoopDiagram
+  caption="`.dountil` runs a step, checks the condition, and repeats — the workflow equivalent of an agent loop, but with an explicit exit you control."
+  nodes={[
+    { label: "Run step", sub: "refine" },
+    { label: "Check", sub: "score > .9?" },
+    { label: "Repeat", sub: "if false" },
+  ]}
+/>
+
+And **`.foreach`** runs a step once per item in an input array, with optional
+concurrency:
+
+```ts
+createWorkflow({ /* ... */ })
+  .foreach(processItemStep, { concurrency: 5 })
+  .commit();
+```
+
+<Callout type="tip">
+These compose. A real workflow might `.then` a fetch, `.parallel` several
+enrichments, `.branch` on a quality score, and `.foreach` over the results. The
+schemas keep every junction type-checked, so a refactor that breaks a hand-off
+fails at build time, not at 2am.
+</Callout>
+
+## Step 3: Calling an agent from a workflow
+
+Workflows and agents aren't rivals — they compose. The natural pattern is a
+workflow that owns the *structure* and delegates the *judgment* to an agent at
+exactly one step. Wrap an agent call inside a step like any other logic:
+
+```ts title="steps/summarize.ts"
+import { createStep } from "@mastra/core/workflows";
+import { z } from "zod";
+
+export const summarizeStep = createStep({
+  id: "summarize",
+  inputSchema: z.object({ article: z.string() }),
+  outputSchema: z.object({ summary: z.string() }),
+  execute: async ({ inputData, mastra }) => {
+    const agent = mastra.getAgent("assistant");
+    const res = await agent.generate(
+      `Summarize this in one sentence:\n\n${inputData.article}`,
+    );
+    return { summary: res.text };
+  },
+});
+```
+
+The step receives `mastra`, so it can reach any registered agent. Now you get
+both worlds: deterministic plumbing around a single point of model judgment —
+fetch deterministically, summarize with the model, store deterministically.
+
+## Step 4: Pause for a human with suspend & resume
+
+Here's the feature that makes workflows feel production-grade. A long-running
+process often needs to **stop and wait** — for an approval, a payment, a human
+edit — then pick up later, possibly after the server has restarted. Mastra
+handles this with **suspend & resume**.
+
+A step suspends itself; the run comes back with status `suspended` instead of
+`success`. Later, you resume it with the data it was waiting for:
+
+```ts title="steps/approval.ts"
+const approvalStep = createStep({
+  id: "approval",
+  inputSchema: z.object({ draft: z.string() }),
+  resumeSchema: z.object({ approved: z.boolean() }),
+  outputSchema: z.object({ published: z.boolean() }),
+  execute: async ({ inputData, resumeData, suspend }) => {
+    // First pass: no resume data yet, so pause and wait for a human.
+    if (!resumeData) {
+      await suspend({ draft: inputData.draft });
+      return { published: false };
+    }
+    // Resumed: we now have the human's decision.
+    return { published: resumeData.approved };
+  },
+});
+```
+
+```ts title="run.ts"
+const run = await publishWorkflow.createRun();
+const first = await run.start({ inputData: { draft } });
+
+if (first.status === "suspended") {
+  // ...hours later, after a human clicks "approve" in your UI...
+  const final = await run.resume({
+    step: "approval",
+    resumeData: { approved: true },
+  });
+  console.log(final.result); // { published: true }
+}
+```
+
+<SequenceDiagram
+  caption="Suspend & resume turns a workflow into a durable, human-in-the-loop process — the run survives the wait."
+  actors={[
+    { id: "w", label: "Workflow" },
+    { id: "s", label: "Storage" },
+    { id: "h", label: "Human" },
+  ]}
+  steps={[
+    { from: "w", to: "s", label: "suspend(draft)" },
+    { from: "s", to: "h", label: "await review", dashed: true },
+    { from: "h", to: "w", label: "resume(approved)" },
+    { from: "w", to: "h", label: "published", dashed: true },
+  ]}
+/>
+
+This is the difference between a script and a *process*. A script that waits for
+a human holds a thread open and dies on restart. A suspended Mastra workflow
+persists its state and resumes cleanly whenever the input arrives.
+
+## Where this leaves us
+
+You can now express real logic with guarantees: sequence with `.then`,
+parallelize, `.branch` on data, loop with `.dountil`, delegate judgment to an
+agent mid-workflow, and pause for a human with suspend & resume.
+
+So we have agents that decide and workflows that guarantee. The missing piece is
+the thing that *hosts* them — that holds a live session, switches behavior,
+streams to a UI, and gates risky tools behind approval. That's the runtime layer
+Mastra calls the **Harness**, and it's [**Part 3**](/tutorials/mastra-harness).

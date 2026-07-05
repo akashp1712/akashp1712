@@ -5,7 +5,6 @@ import SectionHeading from "./section-heading";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { experiencesData } from "@/lib/data";
 import { useSectionInView } from "@/lib/hooks";
-import { useTheme } from "@/context/theme-context";
 import { motion } from "framer-motion";
 
 // Helper function to bold numbers and impactful words
@@ -31,58 +30,72 @@ function ExperienceItem({ experience, index }: { experience: any; index: number 
 
   return (
     <motion.div
-      className="group relative bg-gray-100 dark:bg-white/10 rounded-lg p-4 sm:p-5 border border-black/5 cursor-pointer hover:bg-gray-200 dark:hover:bg-white/20 transition"
-      initial={{ opacity: 0, y: 50 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.15 }}
+      className="ed-card group relative cursor-pointer p-5 sm:p-6"
+      initial={{ opacity: 0, y: 40 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ delay: Math.min(index, 4) * 0.08 }}
       onClick={() => setIsExpanded(!isExpanded)}
     >
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="flex-1">
-          <div className="flex items-center justify-between mb-1 sm:mb-2">
-            <div className="flex items-center gap-3 sm:gap-4">
-              <div className="text-4xl sm:text-5xl" style={{ color: experience.brandColor }}>
-                {experience.logo}
-              </div>
-              <h3 className="font-semibold text-base sm:text-lg">{experience.title}</h3>
-            </div>
-            <div className="text-gray-500 p-2">
+      <div className="flex items-start gap-4">
+        <div className="text-3xl sm:text-4xl shrink-0" style={{ color: experience.brandColor }}>
+          {experience.logo}
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-3">
+            <h3
+              className="font-display text-lg leading-snug sm:text-xl"
+              style={{ color: "var(--ink)", fontWeight: 500 }}
+            >
+              {experience.title}
+            </h3>
+            <span
+              className="mt-1 shrink-0 transition"
+              style={{ color: "var(--ink-faint)" }}
+            >
               {isExpanded ? <FaChevronUp /> : <FaChevronDown />}
-            </div>
+            </span>
           </div>
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-xs sm:text-sm text-gray-600 dark:text-gray-300 mb-1 sm:mb-2">
+          <div className="ed-meta mt-1.5 flex flex-col gap-0.5 sm:flex-row sm:items-center sm:gap-3">
+            <span style={{ color: "var(--accent)" }}>{experience.date}</span>
+            <span className="hidden sm:inline" style={{ color: "var(--line)" }}>·</span>
             <span>{experience.location}</span>
-            <span className="font-medium text-gray-700 dark:text-white/70">{experience.date}</span>
           </div>
-          
+
           <motion.div
             initial={false}
             animate={{ height: isExpanded ? "auto" : 0, opacity: isExpanded ? 1 : 0 }}
             className="overflow-hidden"
           >
-            <div className="pt-2">
-              <p className="text-gray-700 dark:text-white/70 mb-4">{experience.description}</p>
-              
+            <div className="pt-4">
+              <p className="mb-4" style={{ color: "var(--ink-soft)", lineHeight: 1.65 }}>
+                {experience.description}
+              </p>
+
               {experience.achievements && (
                 <div className="mb-4">
-                  <h4 className="text-sm font-medium text-gray-900 dark:text-white/90 mb-2">Key Achievements:</h4>
-                  <ul className="list-disc pl-5 text-sm text-gray-700 dark:text-white/75 space-y-1">
+                  <h4 className="ed-meta mb-2" style={{ color: "var(--ink)" }}>
+                    Key achievements
+                  </h4>
+                  <ul
+                    className="list-disc space-y-1.5 pl-5 text-sm"
+                    style={{ color: "var(--ink-soft)", lineHeight: 1.6 }}
+                  >
                     {experience.achievements.map((achievement: string, i: number) => (
                       <li key={i} dangerouslySetInnerHTML={{ __html: highlightImpact(achievement) }} />
                     ))}
                   </ul>
                 </div>
               )}
-              
+
               {experience.technologies && (
                 <div>
-                  <h4 className="text-sm font-medium text-gray-900 dark:text-white/90 mb-2">Technologies:</h4>
+                  <h4 className="ed-meta mb-2" style={{ color: "var(--ink)" }}>
+                    Stack
+                  </h4>
                   <div className="flex flex-wrap gap-2">
                     {experience.technologies.map((tech: string, i: number) => (
-                      <span 
-                        key={i} 
-                        className="px-3 py-1 text-xs uppercase tracking-wider rounded-full bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-white/90 font-medium"
-                      >
+                      <span key={i} className="ed-chip px-2.5 py-1 text-xs">
                         {tech}
                       </span>
                     ))}
@@ -99,13 +112,12 @@ function ExperienceItem({ experience, index }: { experience: any; index: number 
 
 export default function Experience() {
   const { ref } = useSectionInView("Experience");
-  const { theme } = useTheme();
 
   return (
-    <section id="experience" ref={ref} className="scroll-mt-28 mb-28 max-w-[60rem] mx-auto px-4 sm:px-6">
-      <SectionHeading>Professional Experience</SectionHeading>
-      
-      <div className="grid grid-cols-1 gap-6">
+    <section id="experience" ref={ref} className="mb-24 w-full max-w-3xl scroll-mt-28 px-4 sm:px-6">
+      <SectionHeading eyebrow="02 / Experience">Where I&apos;ve worked</SectionHeading>
+
+      <div className="grid grid-cols-1 gap-4">
         {experiencesData.map((experience, index) => (
           <ExperienceItem key={index} experience={experience} index={index} />
         ))}

@@ -1,0 +1,201 @@
+---
+title: "The AI SDK v7 Features I'm Actually Excited About"
+description: "v7 isn't a coat of paint. It moves the hard parts of agent-building — the multi-step loop, tool approvals, structured output, telemetry — out of your app and into the SDK. Here are the features I reached for the same week they landed, and why."
+publishedAt: "2026-07-01"
+tags: ["ai-sdk", "typescript", "agents", "opinion"]
+coverImage: "/cover-ai-sdk-v7.png"
+draft: false
+---
+
+I've shipped enough agent code on the AI SDK to have a list of things I rebuilt
+by hand every project: the "keep calling the model until it stops asking for
+tools" loop, a way to pause for human approval before a destructive tool runs,
+telemetry that didn't feel bolted on. v7 ate most of that list. It's ESM-only and
+wants Node 22+, which annoyed me for exactly one afternoon and then stopped
+mattering.
+
+This isn't a changelog. It's the handful of features that changed how I write
+agents, in rough order of how much they changed it.
+
+<Callout type="info">
+Everything here is v7 (7.0.x) and public. Where a name changed from v6 I've
+called it out, because the renames are the thing most likely to trip you up in a
+migration.
+</Callout>
+
+## 1. `WorkflowAgent` — the loop is finally not my problem
+
+For two years every agent I wrote had the same skeleton hand-rolled at the top:
+call the model, check if it wants a tool, run the tool, feed the result back,
+loop, and bail out before it runs forever. Everyone wrote that loop. Everyone got
+the stop condition subtly wrong at least once.
+
+v7's `WorkflowAgent` (from `@ai-sdk/workflow`) turns that control flow into
+declared steps, with `'use step'` and `'use workflow'` directives marking the
+boundaries the SDK checkpoints and orchestrates:
+
+```ts title="research-agent.ts"
+"use workflow";
+
+import { WorkflowAgent } from "@ai-sdk/workflow";
+
+// Each 'use step' is a durable boundary the runtime can retry and resume.
+async function gather(topic: string) {
+  "use step";
+  // ...retrieve sources...
+}
+
+async function synthesize(sources: string[]) {
+  "use step";
+  // ...write the brief...
+}
+```
+
+The win isn't fewer lines — it's that the *boundaries* become real to the
+runtime. It knows where a step starts and ends, so it can retry one step without
+replaying the whole run. The loop I used to get wrong is now the SDK's job.
+
+## 2. Tool approval — the feature I'd hacked around in every prod app
+
+The single scariest thing about agents is the tool that does something
+irreversible: sends the email, deletes the row, charges the card. In v6 I gated
+those with my own middleware every time. v7 has `toolApproval` as a first-class
+concept — the run *suspends* before the tool executes and waits for a decision.
+
+```ts title="dangerous-tool.ts"
+const deleteRecord = tool({
+  description: "Permanently delete a customer record.",
+  inputSchema: z.object({ id: z.string() }),
+  needsApproval: true, // the run pauses here until a human responds
+  execute: async ({ id }) => db.records.delete(id),
+});
+```
+
+On the client, `useChat` gained `addToolApprovalResponse` to answer the prompt:
+
+```ts title="chat.tsx"
+const { addToolApprovalResponse } = useChat();
+
+// When the UI shows "Agent wants to delete record #841 — allow?"
+addToolApprovalResponse({ id: approvalId, approved: true });
+```
+
+This pairs perfectly with the durable/suspend model — the agent can wait for the
+click for as long as it takes. I've deleted a genuinely embarrassing amount of
+custom approval plumbing because of this one.
+
+<Callout type="tip">
+Default `needsApproval: true` on anything that writes, sends, or spends. The
+approval prompt is cheap; the 2am "why did the agent email all our customers"
+incident is not.
+</Callout>
+
+## 3. Unified `reasoning` — one dial across every model
+
+v6 had you configuring reasoning/thinking differently per provider — a
+provider-specific option here, a different one there. v7 collapses it to one
+dial that means the same thing everywhere:
+
+```ts title="reasoning.ts"
+const result = await generateText({
+  model,
+  reasoning: "high", // 'none' | 'low' | 'medium' | 'high' | 'xhigh'
+  prompt: "Prove that √2 is irrational.",
+});
+```
+
+The value is portability. I set `reasoning: 'high'` for a hard planning step and
+`'none'` for a cheap classification, and I can swap the underlying model without
+rewriting how I ask it to think. Small feature, disproportionate relief.
+
+## 4. `stopWhen` — say when out loud
+
+Bailing out of the agent loop used to be a magic number buried in config. v7's
+`stopWhen` makes the stop condition a readable expression, and composes several:
+
+```ts title="stop.ts"
+const result = await generateText({
+  model,
+  tools,
+  stopWhen: [
+    isStepCount(10),        // never more than 10 steps
+    hasToolCall("submit"),  // stop the moment it submits
+    isLoopFinished(),       // or when the loop naturally ends
+  ],
+});
+```
+
+`isStepCount` is what v6 called `stepCountIs` — this is one of the renames to
+watch. But reading `hasToolCall("submit")` in a diff tells you *exactly* when the
+agent is meant to stop, which a bare `10` never did.
+
+## 5. Structured output that isn't `experimental_` anymore
+
+`Output` graduated. `Output.object`, `Output.array`, and `Output.choice` give you
+typed, validated output as a supported API rather than the `experimental_output`
+I'd been shipping on nervously:
+
+```ts title="output.ts"
+const { output } = await generateText({
+  model,
+  output: Output.object({
+    schema: z.object({ sentiment: z.enum(["pos", "neg"]), score: z.number() }),
+  }),
+  prompt: review,
+});
+// output is typed and validated — no JSON.parse, no try/catch around a hope
+```
+
+`Output.choice` in particular is a clean way to force the model to pick from a
+fixed set — classification without the prompt-engineering gymnastics.
+
+## 6. Telemetry that isn't an afterthought
+
+I want traces of what the agent did — which tools, how many tokens, where the
+time went — without threading a logger through every call. v7's
+`registerTelemetry` (from `ai`, with `@ai-sdk/otel`) wires OpenTelemetry once, at
+the top:
+
+```ts title="telemetry.ts"
+import { registerTelemetry } from "ai";
+import { otelExporter } from "@ai-sdk/otel";
+
+registerTelemetry({ exporter: otelExporter() });
+// every generateText / streamText / tool call now emits spans
+```
+
+Then every run shows up in whatever OTel backend you already run. The reason this
+matters: the first production agent incident you debug without traces is the last
+one you'll want to.
+
+## The renames, in one place
+
+If you're migrating from v6, these are the ones that'll bite. Nothing conceptual
+changed — the names got clearer:
+
+<LayerDiagram
+  caption="v6 → v7 renames. Muscle memory is the main casualty."
+  layers={[
+    { label: "system → instructions", sub: "the agent's standing prompt" },
+    { label: "stepCountIs → isStepCount", sub: "the stop condition", accent: true },
+    { label: "fullStream → stream", sub: "the everything-stream" },
+    { label: "onFinish → onEnd", sub: "the completion callback" },
+    { label: "experimental_output → output", sub: "structured output, now stable" },
+  ]}
+/>
+
+## Why this release actually matters
+
+Squint at the list and there's one theme: **the hard, error-prone parts of
+building an agent moved from my code into the SDK.** The loop, the stop
+condition, the approval gate, the telemetry — the stuff everyone rebuilt and
+someone always got wrong is now a supported API with a name.
+
+That's the release I want from an agent framework. Not more surface area — less
+of *my* surface area for bugs to hide in. If you're still on v6, the ESM +
+Node 22 jump is the whole tax, and `WorkflowAgent` plus `toolApproval` alone are
+worth paying it.
+
+*If you want to see these applied end-to-end, my [Mastra series](/tutorials/mastra-agents)
+builds on the same AI SDK primitives — Mastra sits a layer above and leans on
+exactly these features.*

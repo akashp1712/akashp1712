@@ -1,12 +1,8 @@
 import React from "react";
 import { CgWorkAlt } from "react-icons/cg";
-import aiSdkPatternsImg from "@/public/api-sdk-patterns.png";
 import callGptImg from "@/public/call-gpt.png";
-import paymintImg from "@/public/paymint.png";
-import claudeCruxImg from "@/public/claude-crux.png";
-import jsonDiffImg from "@/public/jsondiff.png";
-import jsonLintImg from "@/public/jsonlint.png";
 import vibeframesImg from "@/public/vibeframes.png";
+import paymintImg from "@/public/paymint.png";
 
 export const links = [
   {
@@ -30,11 +26,7 @@ export const links = [
     hash: "#projects",
   },
   {
-    name: "Tools",
-    hash: "#tools",
-  },
-  {
-    name: "Blog",
+    name: "Writing",
     hash: "#blog",
   },
   {
@@ -43,11 +35,11 @@ export const links = [
   },
 ] as const;
 
-// Add these imports at the top of your file
+// Icons used by experience logos + the focused skills list.
 import { FaSalesforce } from "react-icons/fa";
-import { SiAmazon, SiMcafee, SiBroadcom } from "react-icons/si";
-import { FaAws, FaPython, FaJava, FaDatabase, FaCubes, FaMicrophone, FaRobot } from "react-icons/fa";
-import { SiJavascript, SiPostgresql, SiRedis, SiNextdotjs, SiTypescript } from "react-icons/si";
+import { SiAmazon, SiMcafee, SiBroadcom, SiChainlink } from "react-icons/si";
+import { FaAws, FaPython, FaMicrophone, FaRobot } from "react-icons/fa";
+import { SiNextdotjs, SiTypescript } from "react-icons/si";
 
 // Then in your experiencesData array, add logo property to each item:
 // In your experiencesData array, add brandColor property to each item:
@@ -179,70 +171,46 @@ export const projectsData = [
   {
     title: "VibeFrames",
     description:
-      "Agentic video composition engine powered by a custom Mastra Harness — orchestrates LLM tools and skills to manage complex state mutations and stream real-time UI updates via the Vercel AI SDK.",
+      "An agentic video composition engine built on a custom Mastra Harness. The agent orchestrates LLM tools and skills to mutate complex timeline state and streams real-time UI updates back through the Vercel AI SDK — a working answer to \"what does an agent that edits video actually look like?\"",
     hyperlink: "https://vibeframes.vercel.app",
     githubUrl: "https://github.com/akashp1712/vibeframes",
-    tags: ["Next.js", "AI", "Agentic", "Mastra", "Vercel AI SDK", "React"],
+    tags: ["Mastra Harness", "Vercel AI SDK", "Agentic", "Next.js", "Streaming"],
     imageUrl: vibeframesImg,
+  },
+  {
+    title: "Call GPT — Generative AI Phone Calling",
+    description:
+      "A toolkit for building agentic phone calls: Twilio Media Streams wired to an LLM with real-time speech-to-text and text-to-speech. This is where I learned the hard problems in voice — latency, barge-in, turn-taking — the ones no demo warns you about.",
+    hyperlink: "https://github.com/akashp1712/call-gpt",
+    tags: ["Voice AI", "Twilio", "Real-time", "Node.js", "LLMs"],
+    imageUrl: callGptImg,
   },
   {
     title: "Paymint",
     description:
-      "The easiest way to integrate Paddle payments. Stop wrestling with complex payment APIs. Get Paddle working in your app in minutes, not days.",
+      "A drop-in Paddle payments integration for indie developers — turning days of billing-API wrangling into minutes. Handles checkout, webhooks, and subscription state so you can ship the product instead of the plumbing.",
     hyperlink: "https://paymint.dev",
-    tags: ["Paddle", "Payment Integration", "API", "Developer Tools", "SaaS"],
+    tags: ["Payments", "Paddle", "SaaS", "TypeScript", "DX"],
     imageUrl: paymintImg,
   },
+] as const;
 
+// Smaller shipped work — shown as a compact timeline under the flagship projects.
+export const projectTimelineData = [
   {
     title: "AI SDK Patterns",
-    description: "Comprehensive resource for AI SDK patterns, architectures, and best practices.",
+    description: "A reference library of production patterns for building with the Vercel AI SDK.",
     hyperlink: "https://ai-sdk-patterns.dev",
-    tags: ["AI", "SDK", "Patterns", "Best Practices"],
-    imageUrl: aiSdkPatternsImg,
-  },
-  {
-    title: "Call GPT: Generative AI Phone Calling",
-    description: "A toolkit for building agentic phone call experiences using Twilio Media Streams, LLMs, and real-time speech-to-text and text-to-speech. Enables voice and video support with AI.",
-    hyperlink: "https://github.com/akashp1712/call-gpt",
-    tags: ["Node.js", "Twilio", "OpenAI", "Voice AI", "Real-time"],
-    imageUrl: callGptImg,
   },
 ] as const;
 
 export const skillsData = [
-  { name: "Agentic AI", icon: React.createElement(FaRobot) },
-  { name: "LLMs", icon: React.createElement(FaRobot) },
-  { name: "Claude", icon: React.createElement(FaRobot) },
+  { name: "Agents", icon: React.createElement(FaRobot) },
   { name: "Mastra AI", icon: React.createElement(FaRobot) },
+  { name: "LangChain", icon: React.createElement(SiChainlink) },
   { name: "Python", icon: React.createElement(FaPython) },
   { name: "TypeScript", icon: React.createElement(SiTypescript) },
   { name: "NextJS", icon: React.createElement(SiNextdotjs) },
   { name: "AWS", icon: React.createElement(FaAws) },
-  { name: "Microservices", icon: React.createElement(FaCubes) },
-  { name: "PostgreSQL", icon: React.createElement(SiPostgresql) },
-  { name: "DynamoDB", icon: React.createElement(FaDatabase) },
-  { name: "Redis", icon: React.createElement(SiRedis) },
-  { name: "Java", icon: React.createElement(FaJava) },
-  { name: "JavaScript", icon: React.createElement(SiJavascript) },
-  { name: "Voice AI", icon: React.createElement(FaMicrophone) },
-] as const;
-
-export const toolsData = [
-  {
-    title: "JSON Diff",
-    description: "Compare and visualize differences between JSON objects. Perfect for debugging API responses and configuration files.",
-    url: "/tools/jsondiff",
-    tags: ["JSON", "Diff", "Comparison", "Developer Tools"],
-    imageUrl: jsonDiffImg,
-    status: "Live",
-  },
-  {
-    title: "JSON Lint",
-    description: "Validate and format JSON files with detailed error reporting. Fix syntax errors and beautify your JSON data.",
-    url: "/tools/jsonlint",
-    tags: ["JSON", "Validation", "Formatter", "Developer Tools"],
-    imageUrl: jsonLintImg,
-    status: "Live",
-  },
+  { name: "Voice AI (LiveKit)", icon: React.createElement(FaMicrophone) },
 ] as const;
