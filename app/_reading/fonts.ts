@@ -1,24 +1,14 @@
-import { Fraunces, JetBrains_Mono, Hanken_Grotesk } from "next/font/google";
+// Mock variables to prevent Vercel build-time connection timeout/download errors from Google Fonts API.
+// The actual fonts are loaded at runtime via standard @import in app/globals.css.
 
-// Editorial display serif for headings — characterful, high-contrast.
-export const fraunces = Fraunces({
-  subsets: ["latin"],
-  display: "swap",
-  axes: ["opsz", "SOFT", "WONK"],
-  variable: "--font-display",
-});
+export const fraunces = {
+  variable: "font-display-loaded",
+};
 
-// Refined monospace for code + metadata.
-export const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-mono",
-});
+export const jetbrainsMono = {
+  variable: "font-mono-loaded",
+};
 
-// Body grotesk — warmer and more characterful than Inter, still highly
-// readable at long-form length. Used site-wide as the base sans.
-export const hankenGrotesk = Hanken_Grotesk({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-sans",
-});
+export const hankenGrotesk = {
+  variable: "font-sans-loaded",
+};
