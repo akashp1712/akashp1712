@@ -20,13 +20,11 @@ export default function About() {
       <SectionHeading eyebrow="01 / About">The short version</SectionHeading>
       <div className="tut-prose text-lg" style={{ lineHeight: 1.7 }}>
         <p>
-          I build <span className="ed-strong">agentic AI systems</span> and
-          write about how they actually work. At{" "}
-          <span className="ed-strong">Salesforce</span> I lead a multi-turn
-          agent platform built on the{" "}
-          <span className="ed-strong">Mastra Harness</span> — per-thread state,
-          tool catalogs, human-in-the-loop, image generation — the connective
-          tissue that turns a model in a loop into something people depend on.
+          I focus on the engineering details that bridge the gap between AI
+          demos and production systems. At <span className="ed-strong">Salesforce</span>,
+          this means designing the core runtime layers — thread binding, tool routing,
+          and permission guardrails — that allow agentic loops to run safely
+          and predictably at scale.
         </p>
         <p>
           Nine-plus years and a few platforms deep —{" "}

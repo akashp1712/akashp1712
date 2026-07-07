@@ -1,0 +1,324 @@
+---
+title: "Two Agent Harnesses: Mastra's AgentController vs LangChain's Deep Agents"
+description: "Two frameworks, working independently, reached for the same word — harness. But they bet on opposite shapes of work: one you hold and steer, the other you hand a goal and let run. Here's the line between them, in code."
+publishedAt: "2026-07-07"
+tags: ["mastra", "langchain", "agents", "architecture", "comparison"]
+coverImage: "/cover-two-agent-harnesses.svg"
+draft: false
+---
+
+Picture the demo. You wire up a model, give it a couple of tools, drop it in a
+`while` loop. You ask it something, it calls a tool, it answers. It looks great.
+You show it to your team.
+
+Then someone actually uses it.
+
+They refresh the browser mid-task, and the whole thing is gone — no memory of
+what it was doing. They want to nudge it sideways while it's mid-run, and
+there's no way to do that short of killing it and starting over. It's about to
+delete a file, and nothing stops it to ask first. It needs to farm out a
+sub-task without dragging the entire conversation along for the ride, and it
+can't.
+
+None of that showed up in the demo. All of it shows up in production.
+
+The pattern has a name by now: an agent loop is not an application. A model
+calling tools in a loop is a fine proof of concept and a rough product, and the
+gap between the two is exactly the stuff above — sessions, interruption,
+approval, isolation.
+
+Here's what's interesting. Two of the most-used agent frameworks looked at that
+exact gap, and — without coordinating — reached for the same word to describe
+their fix. Mastra ships the
+[`AgentController`](https://mastra.ai/docs/agent-controller/overview).
+LangChain ships [Deep Agents](https://github.com/langchain-ai/deepagents),
+whose own README opens by calling itself *"an open source agent harness — an
+opinionated agent that runs out of the box."*
+
+Same word. Not the same thing.
+
+<Callout type="info">
+This isn't a "which is better" post — that question doesn't really apply here.
+It's a "what is each one *for*" post. I've built on the `AgentController` model
+at length; I've read the Deep Agents source and built with LangGraph. Where
+I'm stating a tradeoff rather than a fact, I'll say so. Both APIs move fast —
+Mastra's `AgentController` is explicitly beta — so pin your versions and check
+the changelog before copying anything here verbatim.
+</Callout>
+
+## The shape underneath the word
+
+Here's the line, stated as plainly as I can put it: Mastra's harness is a
+stateful session host you hold and drive, turn by turn. Deep Agents is a
+compiled graph you hand a goal to, and mostly let run.
+
+Hold that distinction loosely for a second. Every API difference in this post
+is downstream of it.
+
+<LayerDiagram
+  caption="Same job — turn an agent loop into an application — approached from opposite ends. Mastra wraps the loop in a host you talk to over time. Deep Agents compiles the loop into a graph you invoke with a goal."
+  layers={[
+    { label: "Interactive app", sub: "you drive it, turn by turn" },
+    { label: "Mastra AgentController", sub: "stateful session host", accent: true },
+    { label: "Autonomous run", sub: "you give it a goal, it works" },
+    { label: "LangChain Deep Agents", sub: "compiled graph you .invoke()", accent: true },
+  ]}
+/>
+
+The rest of this post is just that picture, in code. Let's start with the side
+you hold.
+
+## Mastra's AgentController: a runtime you hold
+
+Mastra's docs describe the `AgentController` as *"a session controller for
+building interactive agent applications"* — the layer that sits between your
+UI and the agent loop. Not a function you call once. An object you construct,
+initialize, and then keep talking to for as long as the conversation lives.
+
+```ts title="controller.ts"
+import { AgentController } from "@mastra/core/agent-controller";
+import { LibSQLStore } from "@mastra/libsql";
+import { assistant } from "./agents/assistant";
+
+const controller = new AgentController({
+  id: "assistant-app",
+  agent: assistant,
+  storage: new LibSQLStore({ url: "file:./app.db" }),
+  modes: [{ id: "chat", name: "Chat", metadata: { default: true } }],
+});
+
+await controller.init();
+await controller.selectOrCreateThread();
+
+await controller.sendMessage({ content: "Summarize today's tickets." });
+```
+
+That's the whole shape already: a controller you build once, a thread you
+select or create, a message you send into it.
+
+The word to hold onto here is Session. The docs define it as *"per-conversation
+runtime state that tracks the active mode, model, thread binding, permission
+grants, follow-up queue, and token usage."* The controller is the host. The
+session is the live conversation running inside it. One controller can serve
+many users at once, and nothing leaks between their sessions.
+
+That distinction — host versus session — is what makes the rest of this
+section possible.
+
+Because the controller is something you hold onto, not something you fire and
+forget, you can do things a one-shot call can't. Start with the most obvious
+one: you can change your mind mid-run.
+
+```ts
+await controller.sendMessage({ content: "Refactor the auth module." });
+// It's working. Change your mind:
+await controller.steer({ content: "Actually — TypeScript strict mode first." });
+```
+
+`sendMessage` kicks the agent off. While it's working, `followUp` queues the
+next thing you want to say, and `steer` does something a little different — it
+injects guidance *without* waiting for the current step to finish. You're not
+appending to a queue. You're reaching into a run that's already happening.
+
+Your UI needs somewhere to read from while all of that is going on, and that's
+the second piece. The session exposes a `displayState` snapshot your UI
+renders straight from, and you subscribe to typed events —
+`message_update`, `tool_approval_required`, mode changes — instead of stitching
+together your own callbacks for each one.
+
+So far this is state and interruption. There's a third piece, and it's the one
+I keep coming back to on real projects.
+
+### Modes: one agent, several jobs
+
+An agent that plans a change and an agent that makes the change probably need
+different tools. The planning agent shouldn't be able to touch a file. The
+implementing agent needs to.
+
+You could run two separate agents. Mastra's answer is a mode: the same
+backing agent, wearing a different hat, with the controller carrying the
+thread across the switch.
+
+```ts title="controller.ts"
+modes: [
+  {
+    id: "plan",
+    name: "Plan",
+    metadata: { default: true },
+    instructions: "Reason about the task. Do not edit files.",
+    tools: { readFileTool, searchTool },   // REPLACES the agent's tools
+    transitionsTo: "build",
+  },
+  {
+    id: "build",
+    name: "Build",
+    instructions: "Implement the approved plan.",
+    additionalTools: { editFileTool },     // ADDS to the agent's tools
+  },
+]
+```
+
+In `plan`, the agent physically cannot edit a file — the tool isn't in its box,
+full stop. Approve the plan, and it moves into `build` with the edit tool
+added on top of what it already had. Nothing about the conversation resets.
+The plan you just approved is still sitting right there in context, because
+it's still the same thread.
+
+That's the payoff of a session that survives a mode switch: plan, then build,
+then review, on one agent — not three cold-started ones that each have to be
+re-told what's going on.
+
+Everything in this section assumed one thing: a person is on the other end,
+watching, steering, approving. What happens when nobody is?
+
+## Deep Agents: a graph you invoke
+
+Deep Agents starts from the opposite assumption. There's no long-lived object
+you hold and steer. There's a factory that compiles an agent for you, and you
+call it once, with a goal, and it goes.
+
+```python
+from deepagents import create_deep_agent
+
+agent = create_deep_agent(
+    model="openai:gpt-5.5",
+    tools=[my_custom_tool],
+    system_prompt="You are a research assistant.",
+)
+
+result = agent.invoke({"messages": "Research LangGraph and write a summary"})
+```
+
+That `agent` isn't a session host. It's a LangGraph `CompiledStateGraph`. The
+Deep Agents docs are unusually clear about where the layers sit: *"LangGraph
+is the graph runtime. LangChain's `create_agent` is a minimal agent harness on
+top of it."* Deep Agents is one more layer up — middleware for the specific
+things a long, unsupervised run tends to need, wired in for you.
+
+The first thing a run like that needs is somewhere to keep track of itself.
+That's what `write_todos` is for: the agent gets a planning tool and is
+prompted to maintain an explicit todo list, a scratchpad it can check back
+against as the run stretches on.
+
+A todo list handles *what to do next*. It doesn't handle *where to put
+everything the agent has read along the way* — and on a long run, that pile
+grows fast. So Deep Agents gives it a virtual filesystem: read, write, edit,
+and search, over backends you can swap — local, sandboxed, remote. Instead of
+carrying every document it's touched in the message history, the agent writes
+the bulky stuff to a file and comes back to it later.
+
+Planning and offloading get the agent through a long run solo. But some
+sub-tasks are cleaner handled by a separate agent entirely, with its own
+context window that doesn't get muddied by the parent's. Deep Agents supports
+that too, and the detail worth knowing is how far it opens the door: *"any
+LangGraph `CompiledStateGraph` can be passed in as a sub-agent."* Not just
+agents Deep Agents built for you — anything compiled in LangGraph, dropped in
+as a subagent.
+
+And because "let it run" doesn't mean "let it run unsupervised on everything,"
+there's a human-in-the-loop layer underneath all of it: tool calls can be
+approved, edited, or rejected before they execute.
+
+Put together, this is the Claude-Code-shaped problem, or the deep-research
+one: hand it a big, fuzzy goal, and let it plan, write to scratch files, spawn
+subagents, and grind toward an answer mostly on its own.
+
+<SequenceDiagram
+  caption="Deep Agents: one .invoke() kicks off an autonomous run. The agent plans, offloads to the filesystem, and delegates to subagents — you're mostly watching, not steering turn-by-turn."
+  actors={[
+    { id: "u", label: "You" },
+    { id: "a", label: "Deep Agent" },
+    { id: "s", label: "Subagent" },
+  ]}
+  steps={[
+    { from: "u", to: "a", label: "invoke(goal)" },
+    { from: "a", to: "a", label: "write_todos + files" },
+    { from: "a", to: "s", label: "delegate subtask" },
+    { from: "s", to: "a", label: "isolated result", dashed: true },
+    { from: "a", to: "u", label: "final answer", dashed: true },
+  ]}
+/>
+
+Notice what just happened. Both frameworks ended up with subagents. Both ended
+up with a human-approval gate. Both ended up with some notion of persisted
+work. Same three features, arrived at independently — which raises the
+obvious question of whether they mean the same thing.
+
+They don't.
+
+## Where they converge — and where they don't
+
+Start with subagents, since both frameworks lead with them.
+
+Both let you delegate to a focused child with its own context. Mastra
+declares subagents on the controller — with `allowedWorkspaceTools`, a
+`defaultModelId`, a `maxSteps` — and the controller auto-generates a
+`subagent` tool that the parent model calls when it wants one. By default a
+Mastra subagent starts fresh: it can't see the parent thread. Mark it
+`forked: true` and it clones the parent conversation instead — though a
+forked subagent then runs with the *parent's* instructions and tools, not its
+own.
+
+Deep Agents delegates too, but its headline isn't isolation — it's
+composability. Any compiled LangGraph graph can *be* a subagent. Mastra is
+optimizing for subagent isolation and control. Deep Agents is optimizing for
+subagent reuse across an entire ecosystem of graphs.
+
+Same feature name. Different reason it exists.
+
+Human-in-the-loop is the same story. Both gate risky tools behind approval,
+but look at where the approval actually surfaces. In Mastra it's a
+`tool_approval_required` event on a live session — and the grant gets
+remembered *on that session*, so you're not re-prompted for the same safe
+action every single turn, because there's a human sitting right there in an
+open conversation. In Deep Agents it's a tool interrupt inside an otherwise
+autonomous run: a checkpoint the graph pauses at, waiting. Same safety
+primitive. Completely different assumption about how present the human
+actually is.
+
+And persisted work. Mastra persists the session — thread, mode, grants, state
+— to a storage backend, because the entire point is that the conversation
+outlives any one request. Deep Agents persists to a virtual filesystem — the
+agent's own scratchpad — because the entire point is giving a long,
+unsupervised run somewhere to put its thinking.
+
+<Callout type="warn">
+Neither of these is a features checklist you tally up. If you tally, you'll
+pick wrong. The question is never "does it have subagents" — both do — it's
+"what does subagent *mean* here, and does that match how present my user is
+actually going to be?"
+</Callout>
+
+Three shared features, three different centers of gravity. Which leaves one
+question: given your product, which center of gravity is actually yours?
+
+## So which one do you reach for?
+
+If a person is going to sit with this agent — watching it work, redirecting
+it, approving its riskier moves, coming back tomorrow to the same thread —
+reach for Mastra's `AgentController`. A coding copilot. A support agent. A
+content studio. Anything where the product *is* the conversation. Modes, live
+steering, per-tool approvals surfaced straight to your UI, state that survives
+a refresh — that's what the session-host model was built for, specifically.
+
+If instead you're handing off a goal and want it to just go — deep research,
+a codebase-wide refactor, a batch analysis, long-horizon work where the agent
+needs to plan and keep notes and delegate more than it needs someone tapping
+its shoulder every step — reach for Deep Agents. The todo list and the virtual
+filesystem are the tell. They're infrastructure for autonomy over a long run,
+not for a tight interactive loop. And if you're already living in the
+LangGraph ecosystem, the fact that any compiled graph slots straight in as a
+subagent is a real pull in that direction.
+
+Here's the mistake I'd actually warn you against, because I think it's the
+common one: picking the framework by its logo first, and bending your product
+to fit its shape after. These two harnesses encode genuinely different bets
+about how autonomous your agent runs and how present your user is going to
+be. Figure out that answer for your product first. The framework choice tends
+to fall out of it almost on its own.
+
+If you want the deeper walkthrough of Mastra's session model — modes,
+subagents, tool approvals, all of it — I wrote that up as
+[Part 3 of my Mastra series](/tutorials/mastra-harness). This post was the
+view from one level up: not how the harness works, but why there are two of
+them, and what that tells you about the work you're actually trying to do.

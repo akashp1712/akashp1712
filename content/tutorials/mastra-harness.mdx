@@ -4,20 +4,37 @@ description: "Part three of the Mastra series. An agent and some tools aren't an
 publishedAt: "2026-05-26"
 order: 3
 tags: ["mastra", "agents", "harness", "tutorial"]
-coverImage: "/cover-mastra-tutorial.png"
+coverImage: "/cover-mastra-harness.svg"
 draft: false
 ---
 
-In [Part 1](/tutorials/mastra-agents) I built an agent. In
-[Part 2](/tutorials/mastra-workflows) I orchestrated logic around it. Both are
-the *ingredients* of an AI application. Neither is the application.
+Picture a coding assistant you'd actually trust with your repo.
 
-Think about what a real interactive agent — a coding assistant, a support
-copilot — actually needs beyond "call the model in a loop": a conversation that
-survives a browser refresh, a way to switch between *planning* and *doing*, the
-ability to spin off a focused helper for a subtask, and a gate that asks before
-it deletes a file. That connective tissue between your UI and the agent loop is
-what Mastra calls the **Harness**.
+You ask it to fix a bug. It reads the code, proposes a plan, you approve, it
+edits the files. Then you close the tab, grab coffee, come back an hour later —
+and the conversation is exactly where you left it.
+
+Now think about what that quietly requires.
+
+The conversation has to survive the refresh. Not just the messages — the mode
+it was in, the state it was tracking, everything mid-flight.
+
+It has to behave differently depending on what it's doing. Reasoning about a
+plan is a different job than editing files, and you don't want the same rules
+governing both.
+
+Sometimes it needs to hand a subtask to a narrower helper — "go read these
+twelve files and report back" — without dragging all twelve files into the main
+conversation.
+
+And before it deletes anything, it should ask.
+
+None of that is "call the model in a loop." It's the layer around the loop —
+and that layer is what Mastra calls the **Harness**.
+
+In [Part 1](/tutorials/mastra-agents) I built the agent. In
+[Part 2](/tutorials/mastra-workflows) I orchestrated logic around it. Both are
+the ingredients. Neither one, by itself, is what I just described above.
 
 <Callout type="info">
 **The series so far**
@@ -33,16 +50,18 @@ what Mastra calls the **Harness**.
 ## What the harness is — and what it's called
 
 "Harness" is how Mastra frames this layer in its feature lineup, right alongside
-Agents, Workflows, and Memory. In the API it's the
-[**`AgentController`**](https://mastra.ai/docs/agent-controller/overview) — the
+Agents, Workflows, and Memory.
+
+In the API, it has a more specific name: the
+[**`AgentController`**](https://mastra.ai/docs/agent-controller/overview). The
 docs describe it as a *"session controller"* that manages the pieces *"between
 your UI and the agent loop: managing conversation threads, switching between
 agent modes, persisting state."*
 
-You *could* build all of this yourself on top of the `Agent` class. The harness
-is the opinionated version — reach for it when you want the collaborative-session
-model without hand-rolling the runtime around it. Mastra's own terminal coding
-agent, Mastra Code, is built on it.
+You could build all of this yourself on top of the `Agent` class — none of it
+is magic. The harness is just the opinionated version, and you reach for it
+when you'd rather not hand-roll a runtime around your agent loop. Mastra's own
+terminal coding agent, Mastra Code, is built on it.
 
 <Callout type="warn">
 The `AgentController` is in **beta** as of Mastra 1.46, and the docs note it's
@@ -61,11 +80,15 @@ upgrading.
   ]}
 />
 
+None of this means much in the abstract. Let's wire one up.
+
 ## Step 1: Wrap an agent in a controller
 
 The controller takes an agent, a storage backend for persistence, and at least
-one **mode** (more on modes next — the `modes` array is required, and the
-controller throws at construction if it's empty):
+one **mode** — more on modes in a moment.
+
+That last part isn't optional: the `modes` array is required, and the
+controller throws at construction time if it's empty.
 
 ```ts title="controller.ts"
 import { AgentController } from "@mastra/core/agent-controller";
@@ -85,21 +108,28 @@ await controller.init();
 await controller.selectOrCreateThread();
 ```
 
-`init()` boots the runtime; `selectOrCreateThread()` binds it to a conversation
-thread. From here the controller is live and holding a **session**.
+`init()` boots the runtime. `selectOrCreateThread()` binds it to a conversation
+thread. From here the controller is live.
+
+But a controller just sitting there isn't interesting yet. What it's holding
+onto — the actual state of the conversation — is where this gets useful.
 
 ## Step 2: Read everything from the session
 
-The split that makes the harness click: **the controller performs actions; the
-session is where you read the result.** The docs put it cleanly — the
-`AgentController` is *"the shared host; the Session is the conversation running
-inside it."* One controller can serve many users, and nothing leaks between
-their sessions.
+Here's the split that makes the harness click: the controller performs
+actions; the **session** is where you read the result.
 
-The session tracks the current thread, mode, model, permission grants, queued
-follow-ups, your app's structured state, and a **display state** — a single
-snapshot your UI renders from. The recommended pattern is to subscribe and
-re-render on change:
+The docs put it cleanly — the `AgentController` is *"the shared host; the
+Session is the conversation running inside it."* One controller can serve many
+users at once, and nothing leaks between their sessions.
+
+So what does a session actually hold? The current thread, the current mode,
+the current model, permission grants. Queued follow-ups. Your app's own
+structured state. And one more thing worth its own paragraph: a **display
+state**.
+
+Display state is a single snapshot your UI renders from. Instead of stitching
+together a dozen callbacks, you subscribe once and re-render on change:
 
 ```ts title="ui.ts"
 const snapshot = controller.session.displayState.get();
@@ -112,13 +142,13 @@ controller.subscribe((event) => {
 });
 ```
 
-That `displayState` snapshot carries running totals too — token usage, queued
-follow-up count — so your UI reads them from one place instead of stitching
-together a dozen callbacks.
+That snapshot carries running totals too — token usage, queued follow-up count
+— so your UI reads them from one place instead of five.
 
-To drive the conversation, you queue messages onto the controller. A normal
-message goes through `followUp`; if the agent is mid-run and you want to redirect
-it, `steer` injects guidance without waiting:
+Reading state is half the picture. The other half is driving the conversation
+forward. You queue messages onto the controller — a normal message goes through
+`followUp`. And if the agent is already mid-run and you want to redirect it
+without waiting for it to finish, `steer` injects guidance right into the run:
 
 ```ts
 await controller.followUp({ content: "Summarize today's tickets." });
@@ -127,15 +157,65 @@ await controller.followUp({ content: "Summarize today's tickets." });
 await controller.steer({ content: "Actually, just the high-priority ones." });
 ```
 
+That's enough to hold a real conversation. But real interactive agents don't
+stay in one gear the whole time — and that's the next piece.
+
 ## Step 3: Modes — one agent, many behaviors
 
-This is the feature I find most useful. A **mode** layers its own instructions
-and tool overrides on top of the same backing agent. The controller keeps
-exactly one mode active at a time and carries the thread and state across
-switches — so the agent can behave like a planner, then like a builder, without
-losing the conversation.
+This is the feature I find most useful in the whole harness.
 
-The classic shape is a plan → build → review flow:
+A **mode** layers its own instructions and tool overrides on top of the same
+backing agent. The controller keeps exactly one mode active at a time, and it
+carries the thread and state across every switch — so the agent can go from
+planner to builder without losing the conversation underneath it.
+
+The classic shape is a plan → build → review flow. Start with just the first
+mode:
+
+```ts title="controller.ts"
+modes: [
+  {
+    id: "plan",
+    name: "Plan",
+    metadata: { default: true },
+    instructions: "Reason about the task. Do not edit files yet.",
+    tools: { readFileTool, searchTool }, // REPLACES the agent's tools
+    transitionsTo: "build",
+  },
+],
+```
+
+`tools` here *replaces* the backing agent's tools for the duration of this
+mode. In `plan`, the agent literally cannot edit a file — the edit tool isn't
+in its toolbox at all. There's also a `transitionsTo` field on that object.
+Hold that thought — it matters once we get to switching.
+
+Add a second mode alongside it:
+
+```ts title="controller.ts"
+modes: [
+  {
+    id: "plan",
+    name: "Plan",
+    metadata: { default: true },
+    instructions: "Reason about the task. Do not edit files yet.",
+    tools: { readFileTool, searchTool }, // REPLACES the agent's tools
+    transitionsTo: "build",
+  },
+  {
+    id: "build",
+    name: "Build",
+    instructions: "Implement the approved plan.",
+    additionalTools: { editFileTool }, // ADDS to the agent's tools
+  },
+],
+```
+
+`additionalTools` behaves differently from `tools` — it *augments* the agent's
+existing toolset instead of replacing it. (You can't set both on a single mode;
+pick one.)
+
+One more, and the flow is complete:
 
 ```ts title="controller.ts" {6-26}
 const controller = new AgentController({
@@ -167,23 +247,22 @@ const controller = new AgentController({
 });
 ```
 
-Three knobs are doing the work here, and the distinction matters:
+`review` introduces the third knob: `availableTools` is a per-mode visibility
+allowlist on top of whatever's already configured. Three modes, three different
+ways of narrowing what the agent can touch.
 
-- **`tools`** *replaces* the backing agent's tools for that mode. In `plan`, the
-  agent literally cannot edit files — the edit tool isn't in its toolbox.
-- **`additionalTools`** *augments* them. (You can't set both on one mode.)
-- **`availableTools`** is a per-mode visibility allowlist on top of whatever's
-  configured.
-
-Switch modes through the session. The switch aborts any in-progress generation,
-saves the outgoing mode's model, and emits a `mode_changed` event:
+Switching modes happens through the session. The switch aborts any
+in-progress generation, saves the outgoing mode's model, and emits a
+`mode_changed` event:
 
 ```ts
 await controller.session.mode.switch({ modeId: "build" });
 ```
 
-You can also let it happen automatically: a mode with `transitionsTo` advances on
-its own when a plan is approved — and stays put to revise if it's rejected.
+That's the manual path. Remember `transitionsTo` from the plan mode above?
+That's the automatic one — a mode with `transitionsTo` advances on its own once
+the model decides it's done (say, once a plan is approved), and stays put to
+revise if it isn't.
 
 <SequenceDiagram
   caption="Plan → build → review, all on one backing agent and one thread. The mode changes the rules; the conversation persists."
@@ -202,21 +281,27 @@ its own when a plan is approved — and stays put to revise if it's rejected.
   ]}
 />
 
-Why bother instead of three separate agents? Because they'd each start cold.
-With modes, the *plan* you just approved is still in context when *build* picks
-up — same thread, same state, different rules.
+Why bother with this instead of three separate agents? Because three separate
+agents would each start cold. With modes, the plan you just approved is still
+sitting in context when `build` picks up — same thread, same state, just
+different rules laid over it.
+
+Modes handle switching behavior on the *same* thread. But sometimes you don't
+want the same thread at all — you want to hand a task to someone else entirely.
 
 ## Step 4: Subagents for focused detours
 
-Some subtasks deserve their own narrow agent: "go read these twelve files and
-report back" shouldn't pollute the main conversation with twelve files of noise.
-Mastra's harness supports **subagents** — child agents with constrained tools
-that the parent can spawn. The docs describe them as letting *"a parent agent
-delegate focused tasks to child agents with constrained tools and
-instructions."*
+Some subtasks deserve their own narrow agent. "Go read these twelve files and
+report back" shouldn't pollute the main conversation with twelve files' worth
+of noise.
 
-Configure them on the controller. Mastra auto-generates a `subagent` tool the
-parent model can call to spin one up:
+Mastra's harness supports **subagents** for exactly this — child agents with
+constrained tools that the parent can spawn. The docs describe them as letting
+*"a parent agent delegate focused tasks to child agents with constrained tools
+and instructions."*
+
+You configure them on the controller, and Mastra auto-generates a `subagent`
+tool the parent model can call whenever it wants to spin one up:
 
 ```ts title="controller.ts" {5-14}
 const controller = new AgentController({
@@ -237,24 +322,38 @@ const controller = new AgentController({
 });
 ```
 
-By default a subagent starts fresh — it can't see the parent's messages, so the
-parent passes everything it needs in the `task`. That isolation is the point:
-the explorer burns through files on a cheaper model and returns a tidy summary,
-and the main thread never sees the mess. (If a subtask genuinely needs the full
-conversation, you can mark a subagent `forked: true` to clone the parent thread —
-that requires memory configured on the controller.)
+`allowedWorkspaceTools` is the same narrowing idea as modes, just scoped to
+this child agent instead of the parent. `defaultModelId` lets you put a
+cheaper model on the job — there's no reason an exploration pass needs your
+most expensive model. `maxSteps` is the leash: a hard cap so a subagent can't
+wander forever.
+
+By default a subagent starts fresh. It can't see the parent's messages, so the
+parent has to pass everything it needs in the `task`. That isolation is the
+whole point — the explorer burns through files on a cheap model and comes back
+with a tidy summary, and the main thread never sees the mess it made getting
+there. (If a subtask genuinely needs the full conversation, you can mark a
+subagent `forked: true` to clone the parent thread instead — that requires
+memory configured on the controller.)
+
+Subagents keep the mess contained. But there's still one question hanging
+over all of this: what stops any of these agents — main thread, subagent,
+doesn't matter — from just deleting a file because the model decided to?
 
 ## Step 5: Tool approvals — the human-in-the-loop gate
 
-The last piece is what makes me comfortable pointing a tool-using agent at
-anything that matters. **Tool approvals** let you require confirmation for risky
-operations — file writes, deployments, anything destructive — while trusted
-tools run automatically.
+This is the piece that makes me comfortable pointing a tool-using agent at
+anything that actually matters.
 
-When the agent calls a gated tool, the run pauses and surfaces an approval
-request through the session; your UI prompts the user; the run continues or
-cancels based on the answer. Grants the user approves are remembered on the
-session, so you're not re-prompting for the same safe action every turn.
+**Tool approvals** let you require confirmation for risky operations — file
+writes, deployments, anything destructive — while everything you trust runs
+straight through, no interruption.
+
+Here's the mechanics. When the agent calls a gated tool, the run pauses and
+surfaces an approval request through the session. Your UI prompts the user.
+The run continues or cancels based on the answer. And grants the user approves
+get remembered on the session, so you're not re-prompting for the same safe
+action every single turn.
 
 <FlowDiagram
   caption="Trusted tools run straight through. Gated tools detour through a human before they touch anything."
@@ -272,31 +371,36 @@ session, so you're not re-prompting for the same safe action every turn.
   ]}
 />
 
-This is the same instinct as workflow suspend & resume from Part 2 — pause,
-defer to a human, continue — but applied at the granularity of a single tool
-call, right inside an open conversation.
+If this feels familiar, it should — it's the same instinct as workflow
+suspend & resume from Part 2. Pause, defer to a human, continue. Just applied
+at the granularity of a single tool call, right inside an open conversation
+instead of a whole workflow step.
+
+That's the last piece. Zoom out, and here's what you've actually got.
 
 ## The whole picture
 
-Step back and look at what the three parts assembled:
+Step back and look at what the three parts assembled.
 
-- **Part 1** gave us an **agent** — a model that can decide and call tools, with
-  memory for continuity.
-- **Part 2** gave us **workflows** — explicit orchestration with branching,
-  loops, and durable suspend & resume.
-- **Part 3** gave us the **harness** — the `AgentController` runtime with a live
-  session, switchable modes, focused subagents, and tool approvals.
+Part 1 gave you an agent — a model that can decide and call tools, with memory
+for continuity.
 
-Agents decide. Workflows guarantee. The harness hosts. Each layer is useful
-alone, but the reason to use a framework like Mastra is that they snap together —
-and you never had to hand-write the loop, the persistence, or the approval gate
-to get there.
+Part 2 gave you workflows — explicit orchestration with branching, loops, and
+durable suspend & resume.
 
-That's the core trio. From here the series turns to what it takes to put this in
-front of real users: [streaming its work to a UI](/tutorials/mastra-streaming),
+Part 3 gave you the harness — the `AgentController` runtime, with a live
+session, switchable modes, focused subagents, and tool approvals.
+
+Agents decide. Workflows guarantee. The harness hosts. Each layer is useful on
+its own, but the reason to reach for a framework like Mastra is that they snap
+together — and you never had to hand-write the loop, the persistence, or the
+approval gate to get there.
+
+That's the core trio. From here the series turns to what it takes to put this
+in front of real users: [streaming its work to a UI](/tutorials/mastra-streaming),
 [grounding it in your own documents](/tutorials/mastra-rag),
 [keeping long-running agents alive](/tutorials/mastra-durable-agents), and
 [proving the thing is actually good](/tutorials/mastra-evals). With these three
 parts behind you, you now have the mental model to read Mastra's own
 [docs](https://mastra.ai/docs) the way I do: not as magic, but as named answers
-to problems you've built solutions for yourself.
+to problems you've already built solutions for yourself.

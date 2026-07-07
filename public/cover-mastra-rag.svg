@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 480" width="1600" height="480">
+  <rect width="1600" height="480" fill="#f8fafc"/>
+  <pattern id="dots" x="0" y="0" width="48" height="48" patternUnits="userSpaceOnUse">
+    <circle cx="2" cy="2" r="1.4" fill="#e2e8f0"/>
+  </pattern>
+  <rect width="1600" height="480" fill="url(#dots)"/>
+
+  <!-- ── RAG pipeline ── -->
+  <!-- Common y center: 240, box height: 104, half=52 -->
+
+  <!-- 1. Docs -->
+  <rect x="40" y="188" width="172" height="104" rx="12" fill="#0f172a"/>
+  <text x="126" y="218" font-family="ui-monospace,monospace" font-size="12" fill="#f8fafc"  text-anchor="middle">docs.pdf</text>
+  <text x="126" y="236" font-family="ui-monospace,monospace" font-size="12" fill="#94a3b8" text-anchor="middle">wiki.html</text>
+  <text x="126" y="254" font-family="ui-monospace,monospace" font-size="12" fill="#94a3b8" text-anchor="middle">notes.md</text>
+  <text x="126" y="282" font-family="ui-monospace,monospace" font-size="12" fill="#64748b" text-anchor="middle">…</text>
+  <line x1="212" y1="240" x2="264" y2="240" stroke="#0f172a" stroke-width="2"/>
+  <path d="M 257,233 L 272,240 L 257,247" fill="none" stroke="#0f172a" stroke-width="2" stroke-linejoin="round"/>
+
+  <!-- 2. Chunk -->
+  <rect x="274" y="196" width="192" height="88" rx="12" fill="#f8fafc" stroke="#0f172a" stroke-width="2"/>
+  <text x="370" y="222" font-family="ui-monospace,monospace" font-size="12" fill="#0f172a" text-anchor="middle">chunk(doc, {</text>
+  <text x="370" y="240" font-family="ui-monospace,monospace" font-size="12" fill="#64748b" text-anchor="middle">  size: 512,</text>
+  <text x="370" y="258" font-family="ui-monospace,monospace" font-size="12" fill="#64748b" text-anchor="middle">  overlap: 50</text>
+  <text x="370" y="276" font-family="ui-monospace,monospace" font-size="12" fill="#0f172a" text-anchor="middle">})</text>
+  <line x1="466" y1="240" x2="518" y2="240" stroke="#0f172a" stroke-width="2"/>
+  <path d="M 511,233 L 526,240 L 511,247" fill="none" stroke="#0f172a" stroke-width="2" stroke-linejoin="round"/>
+
+  <!-- 3. Embed -->
+  <rect x="528" y="196" width="192" height="88" rx="12" fill="#f8fafc" stroke="#0f172a" stroke-width="2"/>
+  <text x="624" y="222" font-family="ui-monospace,monospace" font-size="12" fill="#0f172a" text-anchor="middle">embed(chunks,</text>
+  <text x="624" y="240" font-family="ui-monospace,monospace" font-size="12" fill="#64748b" text-anchor="middle">  openai(</text>
+  <text x="624" y="258" font-family="ui-monospace,monospace" font-size="12" fill="#64748b" text-anchor="middle">  'text-3-sm'</text>
+  <text x="624" y="276" font-family="ui-monospace,monospace" font-size="12" fill="#0f172a" text-anchor="middle">))</text>
+  <line x1="720" y1="240" x2="772" y2="240" stroke="#0f172a" stroke-width="2"/>
+  <path d="M 765,233 L 780,240 L 765,247" fill="none" stroke="#0f172a" stroke-width="2" stroke-linejoin="round"/>
+
+  <!-- 4. VectorStore (upsert) -->
+  <rect x="782" y="196" width="192" height="88" rx="12" fill="#f8fafc" stroke="#0f172a" stroke-width="2"/>
+  <text x="878" y="222" font-family="ui-monospace,monospace" font-size="12" fill="#0f172a" text-anchor="middle">vectorStore</text>
+  <text x="878" y="240" font-family="ui-monospace,monospace" font-size="12" fill="#64748b" text-anchor="middle">.upsert(</text>
+  <text x="878" y="258" font-family="ui-monospace,monospace" font-size="12" fill="#64748b" text-anchor="middle">  embeddings</text>
+  <text x="878" y="276" font-family="ui-monospace,monospace" font-size="12" fill="#0f172a" text-anchor="middle">)</text>
+  <!-- Dashed line (retrieval path) -->
+  <line x1="974" y1="240" x2="1026" y2="240" stroke="#0f172a" stroke-width="2" stroke-dasharray="8 5"/>
+  <path d="M 1018,233 L 1034,240 L 1018,247" fill="none" stroke="#0f172a" stroke-width="2" stroke-linejoin="round"/>
+
+  <!-- 5. Query -->
+  <rect x="1036" y="196" width="192" height="88" rx="12" fill="#f8fafc" stroke="#0f172a" stroke-width="2"/>
+  <text x="1132" y="222" font-family="ui-monospace,monospace" font-size="12" fill="#0f172a" text-anchor="middle">.query(</text>
+  <text x="1132" y="240" font-family="ui-monospace,monospace" font-size="12" fill="#64748b" text-anchor="middle">  queryEmbed,</text>
+  <text x="1132" y="258" font-family="ui-monospace,monospace" font-size="12" fill="#64748b" text-anchor="middle">  { topK: 5 }</text>
+  <text x="1132" y="276" font-family="ui-monospace,monospace" font-size="12" fill="#0f172a" text-anchor="middle">)</text>
+  <line x1="1228" y1="240" x2="1280" y2="240" stroke="#0f172a" stroke-width="2"/>
+  <path d="M 1272,233 L 1288,240 L 1272,247" fill="none" stroke="#0f172a" stroke-width="2" stroke-linejoin="round"/>
+
+  <!-- 6. Agent with context -->
+  <rect x="1290" y="184" width="274" height="112" rx="12" fill="#0f172a"/>
+  <text x="1427" y="212" font-family="ui-monospace,monospace" font-size="12" fill="#f8fafc"  text-anchor="middle">agent.generate(</text>
+  <text x="1427" y="230" font-family="ui-monospace,monospace" font-size="12" fill="#94a3b8" text-anchor="middle">  [userMsg,</text>
+  <text x="1427" y="248" font-family="ui-monospace,monospace" font-size="12" fill="#94a3b8" text-anchor="middle">   ...context],</text>
+  <text x="1427" y="266" font-family="ui-monospace,monospace" font-size="12" fill="#94a3b8" text-anchor="middle">  { threadId }</text>
+  <text x="1427" y="288" font-family="ui-monospace,monospace" font-size="12" fill="#f8fafc"  text-anchor="middle">)</text>
+
+  <text x="40" y="50" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#cbd5e1" letter-spacing="0.18em" font-weight="700">MASTRA · RAG</text>
+</svg>

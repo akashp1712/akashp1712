@@ -1,0 +1,274 @@
+---
+title: "Mastra Processors: Cutting an Agent's Input Context Without Losing the Plot"
+description: "Picture re-reading every email from this week before answering one text. That's what a tool-using agent does with stale tool calls by default. Here's how Mastra's processors trim it — ToolCallFilter, the other built-ins, and writing your own."
+publishedAt: "2026-07-07"
+tags: ["mastra", "agents", "context-engineering", "processors", "tokens"]
+coverImage: "/cover-mastra-processors.svg"
+draft: false
+---
+
+Picture a coworker who, every time you ask a quick follow-up question, first
+reads back to you every email, every search result, and every document they've
+opened all week — out loud, in full — before finally answering.
+
+You'd stop asking follow-up questions.
+
+That's roughly what a tool-using agent does by default. Every time it calls a
+tool, the full arguments and the full result get folded into the message
+history. And on every turn after that, all of it gets read back to the model
+again — verbatim, whether it's still useful or not.
+
+Here's the part that stings: you're paying for that re-reading. Every token of
+it.
+
+Let me show you where that costs you, and then how Mastra's processors fix it.
+
+<Callout type="info">
+Same rule as always: public docs plus a toy example. The processor pipeline has
+several hook points — I'll focus on the input side, since that's where
+context-trimming actually happens.
+</Callout>
+
+## The tax you don't see until the invoice
+
+Run an agent for a few turns and watch the token count on the *input* side, not
+the output.
+
+By turn ten, a real chunk of every request is stale tool output — arguments and
+results the model glanced at once, several turns ago, and doesn't need again.
+It's still sitting in the message history. It still gets serialized into the
+prompt. You're still billed for it.
+
+Nobody notices this in a demo. Demos are short. You notice it in production,
+on the invoice, once real conversations run long enough for old tool calls to
+pile up.
+
+So where do you actually step in and stop it?
+
+## Where processors sit
+
+Mastra calls the fix a **processor** — middleware that intercepts messages at
+defined points in the pipeline so you can transform them before they reach the
+model.
+
+Input processors run *before* the model sees messages. Output processors run
+*after* it responds. The `Processor` interface exposes a hook at each
+meaningful point in that loop:
+
+| Hook | When it runs |
+|------|-------------|
+| `processInput()` | Once, before the agentic loop starts |
+| `processInputStep()` | At each loop iteration |
+| `processLLMRequest()` | Right before the provider call — the final prompt |
+| `processLLMResponse()` | After a completed response |
+| `processOutputStream()` | On each streaming chunk |
+| `processOutputResult()` | On the final messages, post-generation |
+
+For cutting input context specifically, two of those matter: `processInput` and
+`processInputStep`. They're your chance to rewrite the message list before any
+of it costs you tokens.
+
+<PipelineDiagram
+  caption="Processors are pipeline stages. An input processor can drop, trim, or rewrite messages before they're serialized into the request — which is exactly where stale tool output should be pruned."
+  stages={[
+    { label: "Message history", sub: "grows every turn" },
+    { label: "Input processors", sub: "trim / rewrite" },
+    { label: "LLM request", sub: "what you pay for" },
+    { label: "Response", sub: "back to the loop" },
+  ]}
+/>
+
+Mastra already ships a processor that does exactly this for tool calls. Let's
+look at it.
+
+## The built-in: `ToolCallFilter`
+
+Before you write anything custom, reach for what's already there.
+`ToolCallFilter` removes tool calls and their results from what the model
+sees — and that's usually exactly the stale weight you're trying to shed.
+
+Here's the minimal version:
+
+```ts title="agent.ts"
+import { ToolCallFilter } from "@mastra/core/processors";
+
+const agent = new Agent({
+  name: "research-agent",
+  instructions: "…",
+  model: "openai/gpt-5.5",
+  inputProcessors: [
+    new ToolCallFilter({
+      filterAfterToolSteps: 2,     // keep the 2 most recent tool-producing steps
+    }),
+  ],
+});
+```
+
+`filterAfterToolSteps: 2` keeps the most recent couple of tool-producing steps
+completely intact — because the agent usually does need what just
+happened — and filters everything older than that. This one option is the
+sweet spot: recent context stays sharp, ancient tool noise goes away.
+
+That's already a real fix. But there's one more option worth adding, because
+of what it does to the stuff that *does* get filtered:
+
+```ts
+new ToolCallFilter({
+  filterAfterToolSteps: 2,
+  preserveModelOutput: true,   // keep a compact toModelOutput summary, drop raw
+})
+```
+
+`preserveModelOutput: true` is the subtle one. Instead of deleting a filtered
+tool result outright, it keeps the compact `toModelOutput` form and throws
+away the raw arguments and the full response. The model still knows a tool
+ran, and roughly what it returned — just not the multi-kilobyte payload behind
+it.
+
+<Callout type="warn">
+Don't set `filterAfterToolSteps: 0` reflexively to "save the most tokens." If
+you strip all tool history, the agent can re-call a tool it already called two
+turns ago, because it has no memory of having done so. This is a tradeoff
+between token cost and the agent's short-term memory — tune it, don't max it.
+</Callout>
+
+`ToolCallFilter` handles the common case well. But sometimes it's too blunt an
+instrument.
+
+## Writing a custom processor
+
+Say one tool — a page scraper — returns 10KB of raw HTML every time it runs.
+You don't want to filter every tool's history, just that one's. That calls for
+a custom `Processor`.
+
+Start with the shape:
+
+```ts title="processors/strip-scraper-output.ts"
+import type { Processor } from "@mastra/core/processors";
+
+export const stripScraperOutput: Processor = {
+  name: "strip-scraper-output",
+
+  // Runs once before the loop; `messages` is the snapshot to transform.
+  processInput: async ({ messages }) => {
+    return messages.map((message) => {
+      // ...
+    });
+  },
+};
+```
+
+`processInput` hands you the message snapshot, and whatever you return
+replaces it. The interesting part is what happens inside that `map`.
+
+Here's the detail that will bite you if you don't know it going in: the
+actual text and tool content of a message doesn't live on `message.content`
+directly. It lives one level deeper, in `message.content.parts`.
+
+```ts
+// Text content lives in message.content.parts — NOT message.content.
+const parts = message.content?.parts?.map((part) => {
+  // ...
+});
+```
+
+<Callout type="warn">
+Reach for `message.content` expecting a string and you'll get `undefined` —
+and quietly transform nothing. Every processor needs to iterate `parts`.
+</Callout>
+
+Now fill in what happens to each part. Check whether it's a result from the
+noisy scraper, and if so, swap it for a one-line marker instead of deleting it
+outright — the model still knows a scrape happened, just not the full payload
+it returned:
+
+```ts
+const parts = message.content?.parts?.map((part) => {
+  const isNoisyScrape =
+    part.type === "tool-result" && part.toolName === "scrape-page";
+
+  if (isNoisyScrape) {
+    // Replace the 10KB HTML blob with a one-line marker.
+    return { ...part, result: "[scraped page content omitted to save context]" };
+  }
+  return part;
+});
+```
+
+Everything else passes through untouched. Put it all together, and the whole
+processor looks like this:
+
+```ts title="processors/strip-scraper-output.ts"
+import type { Processor } from "@mastra/core/processors";
+
+export const stripScraperOutput: Processor = {
+  name: "strip-scraper-output",
+
+  // Runs once before the loop; `messages` is the snapshot to transform.
+  processInput: async ({ messages }) => {
+    return messages.map((message) => {
+      // Text content lives in message.content.parts — NOT message.content.
+      const parts = message.content?.parts?.map((part) => {
+        const isNoisyScrape =
+          part.type === "tool-result" && part.toolName === "scrape-page";
+
+        if (isNoisyScrape) {
+          // Replace the 10KB HTML blob with a one-line marker.
+          return { ...part, result: "[scraped page content omitted to save context]" };
+        }
+        return part;
+      });
+
+      return { ...message, content: { ...message.content, parts } };
+    });
+  },
+};
+```
+
+Register it exactly like the built-in:
+
+```ts
+const agent = new Agent({
+  // …
+  inputProcessors: [stripScraperOutput],
+});
+```
+
+## The other built-ins worth knowing
+
+Custom processors are the escape hatch. Before you reach for one, it's worth
+knowing what Mastra already ships beyond `ToolCallFilter`.
+
+`TokenLimiter` is the blunt backstop: once the total token count crosses a
+limit, it drops older messages. No cleverness, just a hard ceiling. It won't
+win you elegance, but it's reliable — the thing standing between you and a
+context-overflow error.
+
+`ToolSearchProcessor` solves a different problem. Instead of putting fifty
+tool schemas into every single request, it exposes two meta-tools —
+`search_tools` and `load_tool` — so the model discovers the tools it actually
+needs on demand. `ToolCallFilter` trims tool *results*; this trims tool
+*definitions*. In a heavy, many-tool agent, you often want both.
+
+`ProviderHistoryCompat` is the quiet one: it smooths over provider-specific
+quirks in message history so you're not hand-patching message shapes
+yourself.
+
+## Where to start
+
+If you take one thing from this: an agent's context isn't free just because
+the model already read something once. Every old tool call you don't trim
+gets paid for again, on every turn after it.
+
+Here's the path I'd actually walk. Start with `ToolCallFilter` and a sane
+`filterAfterToolSteps` — for most agents, that's the whole fix. Measure input
+tokens before and after; this is one of the few optimizations where the win
+shows up immediately and unambiguously on the bill. If your tool catalog
+itself is large, add `ToolSearchProcessor` on top. Reach for a custom
+`Processor` only when one specific tool is the problem, not the whole
+pipeline.
+
+For how this fits the larger picture of feeding an agent the right
+context — not just less of it — see [Part 5 on RAG](/tutorials/mastra-rag),
+which is the other half of the context story: not just trimming what's stale,
+but retrieving what's relevant.

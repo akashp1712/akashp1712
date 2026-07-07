@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 480" width="1600" height="480">
+  <rect width="1600" height="480" fill="#f8fafc"/>
+  <pattern id="dots" x="0" y="0" width="48" height="48" patternUnits="userSpaceOnUse">
+    <circle cx="2" cy="2" r="1.4" fill="#e2e8f0"/>
+  </pattern>
+  <rect width="1600" height="480" fill="url(#dots)"/>
+
+  <g transform="translate(100,244)">
+
+    <!-- Workflow running -->
+    <rect x="0" y="-52" width="200" height="104" rx="12" fill="#0f172a"/>
+    <text x="100" y="-22" font-family="ui-monospace,monospace" font-size="13" fill="#f8fafc"  text-anchor="middle">workflow</text>
+    <text x="100" y="-4"  font-family="ui-monospace,monospace" font-size="12" fill="#94a3b8" text-anchor="middle">.step('approve',</text>
+    <text x="100" y="14"  font-family="ui-monospace,monospace" font-size="12" fill="#94a3b8" text-anchor="middle">  approveRefund</text>
+    <text x="100" y="40"  font-family="ui-monospace,monospace" font-size="13" fill="#f8fafc"  text-anchor="middle">)</text>
+
+    <line x1="200" y1="0" x2="280" y2="0" stroke="#0f172a" stroke-width="2"/>
+    <path d="M 273,-7 L 288,0 L 273,7" fill="none" stroke="#0f172a" stroke-width="2" stroke-linejoin="round"/>
+
+    <!-- Suspend block -->
+    <rect x="290" y="-60" width="210" height="120" rx="12" fill="#f8fafc" stroke="#0f172a" stroke-width="2"/>
+    <text x="395" y="-34" font-family="ui-monospace,monospace" font-size="13" fill="#0f172a" text-anchor="middle">workflow</text>
+    <text x="395" y="-14" font-family="ui-monospace,monospace" font-size="12" fill="#64748b" text-anchor="middle">.suspend(</text>
+    <text x="395" y="6"   font-family="ui-monospace,monospace" font-size="12" fill="#64748b" text-anchor="middle">  { stepId,</text>
+    <text x="395" y="24"  font-family="ui-monospace,monospace" font-size="12" fill="#64748b" text-anchor="middle">    context }</text>
+    <text x="395" y="48"  font-family="ui-monospace,monospace" font-size="13" fill="#0f172a" text-anchor="middle">)</text>
+
+    <!-- Pause icon (vertical bars) -->
+    <line x1="500" y1="0" x2="560" y2="0" stroke="#0f172a" stroke-width="2"/>
+    <!-- Hourglass wait symbol -->
+    <path d="M 560,-20 L 580,0 L 560,20 L 560,-20" fill="none" stroke="#0f172a" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M 600,-20 L 580,0 L 600,20 L 600,-20" fill="none" stroke="#0f172a" stroke-width="2" stroke-linejoin="round"/>
+    <line x1="556" y1="-20" x2="604" y2="-20" stroke="#0f172a" stroke-width="2"/>
+    <line x1="556" y1="20"  x2="604" y2="20"  stroke="#0f172a" stroke-width="2"/>
+
+    <!-- Human approval box -->
+    <rect x="640" y="-70" width="220" height="140" rx="12" fill="#f8fafc" stroke="#0f172a" stroke-width="2"/>
+    <text x="750" y="-44" font-family="ui-monospace,monospace" font-size="13" fill="#0f172a" text-anchor="middle">Human Review</text>
+    <!-- Human icon -->
+    <circle cx="750" cy="-14" r="14" fill="none" stroke="#0f172a" stroke-width="2"/>
+    <path d="M 726,24 Q 750,42 774,24" fill="none" stroke="#0f172a" stroke-width="2"/>
+    <text x="750" y="58"  font-family="ui-monospace,monospace" font-size="12" fill="#64748b" text-anchor="middle">approves/rejects</text>
+    <text x="750" y="76"  font-family="ui-monospace,monospace" font-size="11" fill="#94a3b8" text-anchor="middle">via API / UI</text>
+
+    <line x1="600" y1="0" x2="640" y2="0" stroke="#0f172a" stroke-width="2"/>
+
+    <line x1="860" y1="0" x2="940" y2="0" stroke="#0f172a" stroke-width="2"/>
+    <path d="M 933,-7 L 948,0 L 933,7" fill="none" stroke="#0f172a" stroke-width="2" stroke-linejoin="round"/>
+
+    <!-- Resume block -->
+    <rect x="950" y="-60" width="220" height="120" rx="12" fill="#f8fafc" stroke="#0f172a" stroke-width="2"/>
+    <text x="1060" y="-34" font-family="ui-monospace,monospace" font-size="13" fill="#0f172a" text-anchor="middle">workflow</text>
+    <text x="1060" y="-14" font-family="ui-monospace,monospace" font-size="12" fill="#64748b" text-anchor="middle">.resume(</text>
+    <text x="1060" y="6"   font-family="ui-monospace,monospace" font-size="12" fill="#64748b" text-anchor="middle">  { stepId,</text>
+    <text x="1060" y="24"  font-family="ui-monospace,monospace" font-size="12" fill="#64748b" text-anchor="middle">    decision }</text>
+    <text x="1060" y="48"  font-family="ui-monospace,monospace" font-size="13" fill="#0f172a" text-anchor="middle">)</text>
+
+    <line x1="1170" y1="0" x2="1250" y2="0" stroke="#0f172a" stroke-width="2"/>
+    <path d="M 1243,-7 L 1258,0 L 1243,7" fill="none" stroke="#0f172a" stroke-width="2" stroke-linejoin="round"/>
+
+    <!-- Continues -->
+    <rect x="1260" y="-52" width="200" height="104" rx="12" fill="#0f172a"/>
+    <text x="1360" y="-22" font-family="ui-monospace,monospace" font-size="13" fill="#f8fafc"  text-anchor="middle">continues</text>
+    <text x="1360" y="-4"  font-family="ui-monospace,monospace" font-size="12" fill="#94a3b8" text-anchor="middle">from exact</text>
+    <text x="1360" y="14"  font-family="ui-monospace,monospace" font-size="12" fill="#94a3b8" text-anchor="middle">checkpoint</text>
+    <text x="1360" y="38"  font-family="ui-monospace,monospace" font-size="11" fill="#64748b" text-anchor="middle">no state lost</text>
+
+  </g>
+
+  <text x="52" y="50" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#cbd5e1" letter-spacing="0.18em" font-weight="700">MASTRA · HUMAN-IN-THE-LOOP</text>
+</svg>

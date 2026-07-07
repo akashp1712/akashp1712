@@ -1,0 +1,242 @@
+---
+title: "Human-in-the-Loop in Mastra: Pausing an Agent for a Human, Then Picking Up Exactly Where It Left Off"
+description: "Imagine a refund needs a manager's approval — but the manager won't see it for six hours, on a different device, in a request that hasn't happened yet. That's what human-in-the-loop really asks of your runtime. Here's suspend, resume, bail, and tool approvals in Mastra, with code."
+publishedAt: "2026-07-07"
+tags: ["mastra", "agents", "human-in-the-loop", "workflows", "architecture"]
+coverImage: "/cover-mastra-human-in-the-loop.svg"
+draft: false
+---
+
+Think about asking your manager to sign off on something.
+
+You send the request and go back to work. You don't sit there refreshing your
+inbox. Maybe they get to it in ten minutes. Maybe they're in back-to-back
+meetings and you hear back at 6pm, from their phone, nowhere near the laptop
+where you filed the request in the first place. Either way, when the answer
+comes back, you don't start over. You pick up exactly where you left off.
+
+Now think about what that actually demands from the software underneath a
+request like that.
+
+Most agent code can't do it. An agent loop only exists for as long as the
+request that's currently open. It has no way to say "pause here, remember
+everything, and I'll be back" — because once that request ends, so does it.
+So the moment a real process needs a human — approve this refund, pick one of
+three plans, sign off before we deploy — you need something underneath the
+agent that can actually stop, save its place, and wait. Possibly for hours.
+Possibly in a completely different HTTP request, on a different server.
+
+That's the part "human-in-the-loop" glosses over when people say it like it's
+just a confirmation dialog. Mastra solves the hard part at the workflow level,
+with two verbs: suspend and resume. Let me walk through the mechanics.
+
+<Callout type="info">
+Public docs + a toy workflow. Two places HITL shows up in Mastra: workflow
+`suspend`/`resume` (the general mechanism, covered here) and tool approvals in
+the AgentController (the same instinct at the granularity of one tool call).
+I'll get to both.
+</Callout>
+
+## The core: a step that suspends
+
+The unit of HITL is a workflow step that can pause itself. Here's the shape of
+one, before we get to the pausing part:
+
+```ts title="workflows/refund.ts"
+import { createStep } from "@mastra/core/workflows";
+import { z } from "zod";
+
+const approveRefund = createStep({
+  id: "approve-refund",
+  inputSchema: z.object({ amount: z.number(), customerId: z.string() }),
+  outputSchema: z.object({ approved: z.boolean() }),
+
+  // What the step hands out when it pauses:
+  suspendSchema: z.object({ reason: z.string(), amount: z.number() }),
+  // What it expects back when someone resumes it:
+  resumeSchema: z.object({ approved: z.boolean() }),
+```
+
+Two schemas already tell you most of the story. `suspendSchema` is the shape
+of the message the step sends out into the world when it needs a human —
+what it's asking, and why. `resumeSchema` is the shape of the answer it's
+willing to accept back. The step is, in effect, declaring both ends of a
+conversation it hasn't had yet.
+
+So what does it actually do with them? Here's the first half of `execute`:
+
+```ts
+  execute: async ({ inputData, resumeData, suspend, bail }) => {
+    // Small refunds: no human needed, just proceed.
+    if (inputData.amount < 50) return { approved: true };
+
+    // First pass — no resumeData yet, so pause and ask a human.
+    if (!resumeData) {
+      return await suspend({
+        reason: "Refund over $50 needs manager sign-off.",
+        amount: inputData.amount,
+      });
+    }
+```
+
+Small refunds skip the whole dance — that's the easy branch. The interesting
+one is `suspend()`. Call it, and the workflow freezes exactly where it is,
+persists a snapshot of everything it knows, and hands control back to
+whoever called it. The `payload` you pass in — validated against
+`suspendSchema` — is what your app shows the human.
+
+That's the pause. But a workflow that only knows how to stop isn't useful
+yet — it also has to know what to do once someone answers. Here's the rest of
+the function:
+
+```ts
+    // Manager said no — exit gracefully, not as an error.
+    if (!resumeData.approved) return await bail({ approved: false });
+
+    // Resumed with approval — continue.
+    return { approved: true };
+  },
+});
+```
+
+Notice `resumeData` shows up again here — this is the step waking back up,
+with the human's answer already validated against `resumeSchema` and sitting
+in its hands. And notice the branch right above the final return: if the
+manager said no, the step doesn't throw. It calls `bail()`.
+
+That's worth sitting with for a second, because it's the detail most people
+miss. A human saying "no" is not an error. It's a normal, expected outcome of
+the process you built — and if you model it as a thrown exception, you end up
+wrapping ordinary business outcomes in error-handling code that was never
+meant for them. `bail(result)` is the clean off-ramp: it exits the workflow
+gracefully, with a result, not a stack trace.
+
+So that's the whole vocabulary — `suspend(payload)` to freeze and ask,
+`resume(resumeData)` to answer, `bail(result)` to leave gracefully. Everything
+else in HITL is just this, applied.
+
+<SequenceDiagram
+  caption="The request that starts the workflow ends at suspend(). Hours later, a completely separate request calls resume() — and the workflow continues from the same step with no lost state."
+  actors={[
+    { id: "u", label: "Customer" },
+    { id: "w", label: "Workflow" },
+    { id: "m", label: "Manager" },
+  ]}
+  steps={[
+    { from: "u", to: "w", label: "request refund" },
+    { from: "w", to: "m", label: "suspend: needs sign-off", dashed: true },
+    { from: "w", to: "u", label: "'pending approval'", dashed: true },
+    { from: "m", to: "w", label: "resume({approved})" },
+    { from: "w", to: "u", label: "refund processed", dashed: true },
+  ]}
+/>
+
+The workflow just went quiet for however long the manager takes. So who
+actually wakes it back up?
+
+## Resuming from the outside
+
+The suspend happens inside the workflow. The resume comes from somewhere
+else entirely — an approval endpoint, a Slack button handler, whatever the
+human actually clicks:
+
+```ts title="routes/approve.ts"
+// The manager clicked "approve" in your admin UI. Resume the paused run.
+await run.resume({
+  step: "approve-refund",
+  resumeData: { approved: true },
+});
+```
+
+You address the specific step by id, and you hand it exactly the shape its
+`resumeSchema` declared — nothing more. And because the workflow's snapshot
+was persisted the moment it called `suspend()`, this still works even if the
+process that first ran the workflow is long gone. Different server, different
+day, doesn't matter.
+
+But before any of that can happen, the human needs to know what they're being
+asked. Where does that come from?
+
+## Inspecting what a workflow is waiting on
+
+A suspended workflow isn't a black box. You can read exactly why it paused
+and what it's waiting for — which is how you build the screen that actually
+prompts the human:
+
+```ts
+const suspended = result.steps["approve-refund"].suspendPayload;
+// -> { reason: "Refund over $50 needs manager sign-off.", amount: 120 }
+showApprovalPrompt(suspended);
+```
+
+`suspendPayload` is the same object the step handed to `suspend()` a moment
+ago — nothing lost in translation. It's the bridge between "the agent needs
+something" and "here's a screen asking a person for it."
+
+One gate, one manager, one answer. Real processes are rarely that tidy.
+
+## Multiple gates in one flow
+
+Legal, then finance, then a manager — plenty of real approval chains have more
+than one sign-off in them, and Mastra handles that fine. There's just one rule
+worth knowing before you design around it.
+
+<Callout type="warn">
+Each suspended step must be resumed *in sequence*, with a separate `resume()`
+call per gate. There's no "resume everything at once." If your process has
+three approval gates, expect three distinct suspend/resume round-trips —
+design your UI and endpoints for that, not for a single magic approve button.
+</Callout>
+
+That covers a whole workflow waiting on people. But sometimes you don't want
+to pause a whole process — you just want to stop one risky thing from
+happening without someone watching.
+
+## The other flavor: tool approvals
+
+Workflow suspend/resume is the general mechanism, built for a whole process.
+But sometimes the thing that needs a human isn't a multi-step workflow at
+all — it's one call, inside an otherwise-open agent conversation. A file
+delete. A deploy. An email about to go out to a customer.
+
+For that, Mastra has tool approvals on the AgentController. Same instinct —
+pause, defer to a human, continue — but scoped down to a single tool call, and
+surfaced as a live event instead of a persisted snapshot:
+
+```ts
+controller.subscribe((event) => {
+  if (event.type === "tool_approval_required") {
+    // Show the user what the agent wants to do; approve or deny.
+    promptForApproval(event);
+  }
+});
+```
+
+The difference between the two comes down to time. Workflow suspend/resume is
+built for a structured process that might sit for hours — a refund waiting on
+a manager who's currently in a meeting. Tool approval is built for the
+opposite: the agent is about to do something risky right now, and there's a
+human actively watching the conversation who can just say yes or no in the
+moment.
+
+Same safety principle both times. Pick between them by asking how long the
+human might take, and whether they're even there to ask.
+
+## Where to start
+
+If you take one thing from this: real human-in-the-loop is a persistence
+problem before it's ever a UI problem. The approval dialog is the easy 5%. The
+hard 95% is stopping cleanly, saving everything, letting the request end, and
+picking it back up correctly — in a different request, possibly hours and a
+redeploy later. `suspend`/`resume`, with `bail` for the graceful no, is what
+makes that 95% tractable without you hand-rolling a state machine and a job
+queue yourself.
+
+So: reach for workflow suspend/resume when the wait might be long and nobody's
+watching. Reach for tool approval when the human is right there, live, and the
+risky thing is about to happen in the next few seconds.
+
+And if what you're building is a whole multi-step process rather than a
+single call, that's exactly what [workflows](/tutorials/mastra-workflows) are
+for — human-in-the-loop is one of the strongest reasons to reach for a
+workflow over a bare agent loop in the first place.

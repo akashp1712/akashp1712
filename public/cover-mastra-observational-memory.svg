@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 480" width="1600" height="480">
+  <rect width="1600" height="480" fill="#f8fafc"/>
+  <pattern id="dots" x="0" y="0" width="48" height="48" patternUnits="userSpaceOnUse">
+    <circle cx="2" cy="2" r="1.4" fill="#e2e8f0"/>
+  </pattern>
+  <rect width="1600" height="480" fill="url(#dots)"/>
+
+  <!-- Memory layers: working → semantic → episodic → semantic search -->
+
+  <!-- Layer 1: Working memory (messages array) -->
+  <rect x="52" y="96" width="280" height="288" rx="14" fill="#0f172a"/>
+  <text x="192" y="128" font-family="ui-monospace,monospace" font-size="12" fill="#94a3b8" text-anchor="middle" letter-spacing="0.06em">WORKING MEMORY</text>
+  <rect x="72" y="144" width="240" height="36" rx="6" fill="#1e293b"/>
+  <text x="192" y="167" font-family="ui-monospace,monospace" font-size="12" fill="#f8fafc" text-anchor="middle">{ role:'user', … }</text>
+  <rect x="72" y="190" width="240" height="36" rx="6" fill="#1e293b"/>
+  <text x="192" y="213" font-family="ui-monospace,monospace" font-size="12" fill="#f8fafc" text-anchor="middle">{ role:'assistant', …}</text>
+  <rect x="72" y="236" width="240" height="36" rx="6" fill="#1e293b"/>
+  <text x="192" y="259" font-family="ui-monospace,monospace" font-size="12" fill="#f8fafc" text-anchor="middle">{ role:'tool', … }</text>
+  <text x="192" y="308" font-family="ui-monospace,monospace" font-size="11" fill="#64748b" text-anchor="middle">messages[]</text>
+  <text x="192" y="326" font-family="ui-monospace,monospace" font-size="11" fill="#64748b" text-anchor="middle">in-context window</text>
+  <text x="192" y="366" font-family="ui-monospace,monospace" font-size="11" fill="#475569" text-anchor="middle">{ lastMessages: 40 }</text>
+
+  <!-- Arrow right -->
+  <line x1="332" y1="240" x2="396" y2="240" stroke="#0f172a" stroke-width="2"/>
+  <path d="M 388,233 L 404,240 L 388,247" fill="none" stroke="#0f172a" stroke-width="2" stroke-linejoin="round"/>
+
+  <!-- Layer 2: Semantic (vector embeddings) -->
+  <rect x="406" y="96" width="280" height="288" rx="14" fill="#f8fafc" stroke="#0f172a" stroke-width="2"/>
+  <text x="546" y="128" font-family="ui-monospace,monospace" font-size="12" fill="#94a3b8" text-anchor="middle" letter-spacing="0.06em">SEMANTIC MEMORY</text>
+  <!-- Vector rows -->
+  <rect x="426" y="144" width="240" height="22" rx="4" fill="#e2e8f0"/>
+  <rect x="426" y="144" width="180" height="22" rx="4" fill="#cbd5e1"/>
+  <rect x="426" y="176" width="240" height="22" rx="4" fill="#e2e8f0"/>
+  <rect x="426" y="176" width="130" height="22" rx="4" fill="#cbd5e1"/>
+  <rect x="426" y="208" width="240" height="22" rx="4" fill="#e2e8f0"/>
+  <rect x="426" y="208" width="210" height="22" rx="4" fill="#cbd5e1"/>
+  <rect x="426" y="240" width="240" height="22" rx="4" fill="#e2e8f0"/>
+  <rect x="426" y="240" width="90"  height="22" rx="4" fill="#cbd5e1"/>
+  <text x="546" y="298" font-family="ui-monospace,monospace" font-size="11" fill="#64748b" text-anchor="middle">embeddings via</text>
+  <text x="546" y="316" font-family="ui-monospace,monospace" font-size="11" fill="#64748b" text-anchor="middle">openai('text-3-sm')</text>
+  <text x="546" y="356" font-family="ui-monospace,monospace" font-size="11" fill="#475569" text-anchor="middle">{ semanticRecall: { topK:5 } }</text>
+
+  <!-- Arrow right -->
+  <line x1="686" y1="240" x2="750" y2="240" stroke="#0f172a" stroke-width="2"/>
+  <path d="M 742,233 L 758,240 L 742,247" fill="none" stroke="#0f172a" stroke-width="2" stroke-linejoin="round"/>
+
+  <!-- Layer 3: Episodic / conversation history -->
+  <rect x="760" y="96" width="280" height="288" rx="14" fill="#f8fafc" stroke="#0f172a" stroke-width="2"/>
+  <text x="900" y="128" font-family="ui-monospace,monospace" font-size="12" fill="#94a3b8" text-anchor="middle" letter-spacing="0.06em">EPISODIC MEMORY</text>
+  <rect x="780" y="144" width="240" height="36" rx="6" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="900" y="162" font-family="ui-monospace,monospace" font-size="11" fill="#475569" text-anchor="middle">thread: "2024-01-session-1"</text>
+  <text x="900" y="178" font-family="ui-monospace,monospace" font-size="11" fill="#94a3b8" text-anchor="middle">12 messages</text>
+  <rect x="780" y="192" width="240" height="36" rx="6" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="900" y="210" font-family="ui-monospace,monospace" font-size="11" fill="#475569" text-anchor="middle">thread: "2024-01-session-2"</text>
+  <text x="900" y="226" font-family="ui-monospace,monospace" font-size="11" fill="#94a3b8" text-anchor="middle">38 messages</text>
+  <rect x="780" y="240" width="240" height="36" rx="6" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="900" y="258" font-family="ui-monospace,monospace" font-size="11" fill="#475569" text-anchor="middle">thread: "2024-02-session-1"</text>
+  <text x="900" y="274" font-family="ui-monospace,monospace" font-size="11" fill="#94a3b8" text-anchor="middle">7 messages</text>
+  <text x="900" y="332" font-family="ui-monospace,monospace" font-size="11" fill="#64748b" text-anchor="middle">LibSQLStore per threadId</text>
+  <text x="900" y="366" font-family="ui-monospace,monospace" font-size="11" fill="#475569" text-anchor="middle">{ threads: true }</text>
+
+  <!-- Arrow right -->
+  <line x1="1040" y1="240" x2="1104" y2="240" stroke="#0f172a" stroke-width="2"/>
+  <path d="M 1096,233 L 1112,240 L 1096,247" fill="none" stroke="#0f172a" stroke-width="2" stroke-linejoin="round"/>
+
+  <!-- Layer 4: Agent with memory config -->
+  <rect x="1114" y="96" width="440" height="288" rx="14" fill="#0f172a"/>
+  <text x="1334" y="128" font-family="ui-monospace,monospace" font-size="12" fill="#94a3b8" text-anchor="middle" letter-spacing="0.06em">AGENT MEMORY CONFIG</text>
+  <text x="1144" y="162" font-family="ui-monospace,monospace" font-size="12" fill="#f8fafc">new Memory({</text>
+  <text x="1164" y="182" font-family="ui-monospace,monospace" font-size="12" fill="#94a3b8">  storage: libsql,</text>
+  <text x="1164" y="200" font-family="ui-monospace,monospace" font-size="12" fill="#94a3b8">  vector: pgVector,</text>
+  <text x="1164" y="218" font-family="ui-monospace,monospace" font-size="12" fill="#94a3b8">  embedder: openai(</text>
+  <text x="1184" y="236" font-family="ui-monospace,monospace" font-size="12" fill="#64748b">    'text-3-sm'),</text>
+  <text x="1164" y="254" font-family="ui-monospace,monospace" font-size="12" fill="#94a3b8">  options: {</text>
+  <text x="1184" y="272" font-family="ui-monospace,monospace" font-size="12" fill="#64748b">    lastMessages: 40,</text>
+  <text x="1184" y="290" font-family="ui-monospace,monospace" font-size="12" fill="#64748b">    semanticRecall:</text>
+  <text x="1204" y="308" font-family="ui-monospace,monospace" font-size="12" fill="#64748b">      { topK: 5 }</text>
+  <text x="1164" y="326" font-family="ui-monospace,monospace" font-size="12" fill="#94a3b8">  }</text>
+  <text x="1144" y="358" font-family="ui-monospace,monospace" font-size="12" fill="#f8fafc">})</text>
+
+  <text x="52" y="50" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#cbd5e1" letter-spacing="0.18em" font-weight="700">MASTRA · OBSERVATIONAL MEMORY</text>
+</svg>

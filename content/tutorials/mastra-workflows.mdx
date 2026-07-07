@@ -4,20 +4,34 @@ description: "Part two of the Mastra series. Agents are great at deciding; workf
 publishedAt: "2026-05-19"
 order: 2
 tags: ["mastra", "workflows", "typescript", "tutorial"]
-coverImage: "/cover-mastra-tutorial.png"
+coverImage: "/cover-mastra-workflows.svg"
 draft: false
 ---
 
-In [Part 1](/tutorials/mastra-agents) I built a Mastra agent — a loop that lets
-a model decide what to do next. Agents are wonderful when you *want* the model
-to improvise. But sometimes you don't. Sometimes the steps are known, the order
-matters, and "the model felt like skipping validation today" is not an
-acceptable outcome.
+Picture an agent that processes refunds.
 
-That's what **workflows** are for. A Mastra workflow is a typed graph of steps
-you wire together explicitly. You decide the control flow; the model only acts
-where you let it. Where an agent gives you flexibility, a workflow gives you
-**guarantees**.
+Most days it's fine. Check the order, verify the customer is actually
+eligible, issue the credit, send a confirmation. Four steps, always in that
+order, because skipping the eligibility check is exactly how you end up
+refunding someone who isn't owed anything.
+
+Except nothing is forcing those four steps to happen in that order. The agent
+is a model deciding what to do next, turn by turn. Most of the time it decides
+correctly. And then one day, on some input you didn't anticipate, it decides
+the eligibility check "seemed redundant" and skips straight to issuing the
+credit.
+
+That's not a bug in the model. That's what an agent *is* — a loop that lets
+the model choose its own path. Which is exactly why it's the wrong tool for
+the parts of your system where the order isn't up for a vote.
+
+In [Part 1](/tutorials/mastra-agents) I built that kind of agent. This time I
+want the opposite: not a model deciding what happens next, but a graph I wire
+together myself, where every step runs when I say it runs, in the order I put
+it in — no matter what the input looks like.
+
+Mastra calls that a **workflow**. If an agent gives you flexibility, a
+workflow gives you a guarantee.
 
 <Callout type="info">
 **The series**
@@ -32,9 +46,13 @@ where you let it. Where an agent gives you flexibility, a workflow gives you
 
 ## Steps are the unit of work
 
-A workflow is built from **steps**. Each step is a typed function with an input
-schema and an output schema — the schemas are what let Mastra chain steps safely
-and catch a mismatch at build time instead of in production.
+Before you can wire anything together, you need to know what a single link
+in that chain looks like on its own.
+
+A workflow is built out of steps. A step is a typed function — it declares an
+input schema and an output schema, and Mastra uses those schemas to check that
+one step's output can actually feed the next step's input. Get that wrong and
+you find out at build time, not in production.
 
 ```ts title="steps.ts"
 import { createStep } from "@mastra/core/workflows";
@@ -50,14 +68,18 @@ const formatStep = createStep({
 });
 ```
 
-Note `execute` receives `inputData` — already validated against `inputSchema`.
-It also gets `state`, `setState`, `mastra`, and more, but `inputData` in and a
-typed object out is the core contract.
+Notice what `execute` receives: `inputData`, already validated against
+`inputSchema` before your code ever sees it. There's more available in that
+object too — `state`, `setState`, `mastra`, and a few others we'll get to —
+but the core contract is simple. Typed data in, typed data out.
+
+One step alone doesn't do much. The interesting part is what happens when you
+start chaining them.
 
 ## Step 1: Sequence steps with `.then`
 
-Wire steps in order with `createWorkflow(...).then(...)`. The output of one step
-flows into the next, and the chain must end with `.commit()`:
+The simplest way to chain two steps is also the most common: run one, then
+run the other, and pass the output of the first straight into the second.
 
 ```ts title="workflows/greet.ts"
 import { createWorkflow, createStep } from "@mastra/core/workflows";
@@ -91,7 +113,11 @@ export const greetWorkflow = createWorkflow({
   .commit();
 ```
 
-Run it by creating a run and starting it with `inputData`:
+`createWorkflow(...).then(...).then(...)` reads almost like pseudocode, which
+is the point. Note the chain has to end with `.commit()` — that's what locks
+the graph in and makes it runnable.
+
+Running it looks like this: create a run, then start it with the input data.
 
 ```ts title="run.ts"
 const run = await greetWorkflow.createRun();
@@ -102,15 +128,22 @@ if (result.status === "success") {
 }
 ```
 
-That `result.status` is worth dwelling on. A run finishes as `success`,
-`failed`, or `suspended` (more on that last one shortly). You branch on it —
-workflows make their outcomes explicit, which is exactly the guarantee an open
-agent loop can't give you.
+That `result.status` check is worth sitting with for a second. A run doesn't
+just return a value — it comes back tagged as `success`, `failed`, or
+`suspended` (we'll get to what that last one means). You branch on the status
+explicitly. An agent loop can fail silently in a dozen creative ways; a
+workflow hands you back one of three known outcomes, every time.
+
+Sequencing gets you a long way. But real processes aren't always a straight
+line — sometimes two steps don't depend on each other, sometimes you need to
+pick a path, sometimes you need to repeat something until it's good enough.
 
 ## Step 2: Branch, parallelize, and loop
 
-Sequencing is the floor. The reason to reach for a workflow is everything else
-in the control-flow toolkit — and it reads almost like a flowchart in code.
+Sequencing is the floor, not the ceiling. The reason to reach for a workflow
+instead of just calling functions in order is everything else in the
+control-flow toolkit — and each piece maps to a shape you'd recognize from any
+flowchart.
 
 <FlowDiagram
   caption="The four control-flow shapes. Pick the one that matches the work, not the other way around."
@@ -134,8 +167,11 @@ in the control-flow toolkit — and it reads almost like a flowchart in code.
   ]}
 />
 
-**Run steps in parallel** when they don't depend on each other. The output is an
-object keyed by each step's `id`:
+Start with the one you'll reach for most often. If two steps don't depend on
+each other's output — fetching the weather and fetching the news, say —
+there's no reason to make one wait on the other. Run them in parallel, and the
+combined output is an object keyed by each step's `id`, so the next step can
+tell them apart.
 
 ```ts
 createWorkflow({ /* ... */ })
@@ -146,8 +182,10 @@ createWorkflow({ /* ... */ })
 // combineStep sees: { "fetch-weather": {...}, "fetch-news": {...} }
 ```
 
-**Branch** to pick a path based on the data. Each entry is a `[condition, step]`
-pair; only the first matching branch runs:
+Sometimes the steps *do* depend on the data, just not in a way that runs them
+one after another — they're alternatives. That's what branching is for. Each
+entry is a `[condition, step]` pair, and only the first branch whose condition
+matches actually runs.
 
 ```ts
 createWorkflow({ /* ... */ })
@@ -159,8 +197,10 @@ createWorkflow({ /* ... */ })
   .commit();
 ```
 
-**Loop** with `.dountil` (run until a condition becomes true) or `.dowhile`
-(run while it stays true):
+Then there's the case where one pass isn't enough — you want to keep refining
+something until it clears a bar. That's a loop, and Mastra gives you two
+flavors: `.dountil` runs a step and keeps repeating it until a condition
+becomes true, while `.dowhile` keeps going while it stays true.
 
 ```ts
 createWorkflow({ /* ... */ })
@@ -180,8 +220,14 @@ createWorkflow({ /* ... */ })
   ]}
 />
 
-And **`.foreach`** runs a step once per item in an input array, with optional
-concurrency:
+It's worth pausing on that diagram's caption, because it's the whole pitch
+for workflows in miniature. `.dountil` looks a lot like the loop an agent
+runs internally — try, check, try again. The difference is the exit
+condition lives in your code, not in the model's judgment about when to stop.
+
+Last shape: sometimes you don't have two known steps to run, you have one
+step and a list of items to run it against. `.foreach` runs a step once per
+item in an input array, and you can cap how many run at once.
 
 ```ts
 createWorkflow({ /* ... */ })
@@ -196,11 +242,19 @@ schemas keep every junction type-checked, so a refactor that breaks a hand-off
 fails at build time, not at 2am.
 </Callout>
 
+Four shapes, and you can combine all of them in one graph. What you can't do
+with any of them, on their own, is let the model actually *think* about
+something mid-process — for that you still need an agent. So how do the two
+work together?
+
 ## Step 3: Calling an agent from a workflow
 
-Workflows and agents aren't rivals — they compose. The natural pattern is a
-workflow that owns the *structure* and delegates the *judgment* to an agent at
-exactly one step. Wrap an agent call inside a step like any other logic:
+Workflows and agents aren't competing approaches. They compose — and the
+natural pattern is a workflow that owns the *structure* while handing off
+*judgment* to an agent at exactly one point in the graph.
+
+From inside a step, that handoff is nothing special. It's just a function
+call, wrapped in the same shape as any other step.
 
 ```ts title="steps/summarize.ts"
 import { createStep } from "@mastra/core/workflows";
@@ -220,19 +274,30 @@ export const summarizeStep = createStep({
 });
 ```
 
-The step receives `mastra`, so it can reach any registered agent. Now you get
-both worlds: deterministic plumbing around a single point of model judgment —
-fetch deterministically, summarize with the model, store deterministically.
+That `mastra` argument is what makes it possible — every step gets it, and
+through it, a step can reach any agent registered in your app. So now you get
+both worlds at once inside a single graph: fetch deterministically, hand the
+one part that needs judgment to a model, then store the result
+deterministically again. The scaffolding stays predictable; only the middle
+step gets to think.
+
+That covers the steps that run cleanly, start to finish, in one pass. Not
+every real process works that way — some of them need to stop halfway through
+and wait for a person.
 
 ## Step 4: Pause for a human with suspend & resume
 
-Here's the feature that makes workflows feel production-grade. A long-running
-process often needs to **stop and wait** — for an approval, a payment, a human
-edit — then pick up later, possibly after the server has restarted. Mastra
-handles this with **suspend & resume**.
+This is the feature that makes workflows feel production-grade rather than
+academic.
 
-A step suspends itself; the run comes back with status `suspended` instead of
-`success`. Later, you resume it with the data it was waiting for:
+A long-running process often needs to stop and wait — for an approval, a
+payment, a human editing a draft — and then pick back up later. Possibly much
+later. Possibly after the server that started it has restarted. Mastra
+handles this with what it calls suspend & resume.
+
+The mechanics: a step can suspend itself instead of returning a result. When
+it does, the run comes back with status `suspended` instead of `success`,
+and it just... waits. Nothing is polling, nothing is blocking a thread.
 
 ```ts title="steps/approval.ts"
 const approvalStep = createStep({
@@ -251,6 +316,10 @@ const approvalStep = createStep({
   },
 });
 ```
+
+Later — could be seconds, could be hours — you resume the run with the data
+it was waiting on. `resumeSchema` describes the shape of that data, the same
+way `inputSchema` describes what the step expects on its first pass.
 
 ```ts title="run.ts"
 const run = await publishWorkflow.createRun();
@@ -281,17 +350,23 @@ if (first.status === "suspended") {
   ]}
 />
 
-This is the difference between a script and a *process*. A script that waits for
-a human holds a thread open and dies on restart. A suspended Mastra workflow
-persists its state and resumes cleanly whenever the input arrives.
+This is the line between a script and a process. A script that waits for a
+human holds a thread open and dies the moment the server restarts. A
+suspended Mastra workflow persists its state to storage and picks up exactly
+where it left off, whenever the resume data actually arrives.
 
 ## Where this leaves us
 
-You can now express real logic with guarantees: sequence with `.then`,
-parallelize, `.branch` on data, loop with `.dountil`, delegate judgment to an
-agent mid-workflow, and pause for a human with suspend & resume.
+Put it together and you can now express real logic with real guarantees:
+sequence with `.then`, run independent work in `.parallel`, `.branch` on the
+data in front of you, loop with `.dountil` until something clears a bar,
+delegate the one part that needs judgment to an agent mid-workflow, and pause
+for a human with suspend & resume — all without ever wondering whether a step
+got skipped.
 
-So we have agents that decide and workflows that guarantee. The missing piece is
-the thing that *hosts* them — that holds a live session, switches behavior,
-streams to a UI, and gates risky tools behind approval. That's the runtime layer
-Mastra calls the **Harness**, and it's [**Part 3**](/tutorials/mastra-harness).
+So now we have two halves of the story: agents that decide, and workflows
+that guarantee. What's still missing is the thing that actually *hosts*
+either of them — something that holds a live session open, switches behavior
+based on context, streams progress to a UI, and knows to gate a risky tool
+call behind approval instead of just running it. Mastra calls that runtime
+layer the Harness, and it's [Part 3](/tutorials/mastra-harness).

@@ -1,0 +1,120 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 480" width="1600" height="480">
+  <rect width="1600" height="480" fill="#f8fafc"/>
+  <pattern id="dots" x="0" y="0" width="48" height="48" patternUnits="userSpaceOnUse">
+    <circle cx="2" cy="2" r="1.4" fill="#e2e8f0"/>
+  </pattern>
+  <rect width="1600" height="480" fill="url(#dots)"/>
+
+  <!-- ═══════════════════════════════════════════════
+       CONCEPT: A horizontal run of checkpoint steps,
+       all connected to a shared persistence layer
+       below. A crash wall cuts through the middle;
+       the agent resumes on the right side.
+       ═══════════════════════════════════════════ -->
+
+  <!-- ── Shared persistence rail (horizontal) ── -->
+  <!-- LibSQL row at y=360 -->
+  <rect x="100" y="338" width="1400" height="52" rx="10" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="800" y="356" font-family="ui-monospace,monospace" font-size="11" fill="#94a3b8" text-anchor="middle" letter-spacing="0.05em">LibSQLStore  ·  checkpoint persistence  ·  survives crash + redeploy</text>
+  <text x="800" y="374" font-family="ui-monospace,monospace" font-size="11" fill="#64748b" text-anchor="middle">new MastraStorage({ url: process.env.DATABASE_URL })</text>
+
+  <!-- ── 5 checkpoint step boxes across the top ── -->
+  <!-- Step positions (centers): 190, 420, 650, 880, 1110 -->
+  <!-- Box: w=190 h=96, top y=152 → bottom y=248 -->
+
+  <!-- step 1 -->
+  <rect x="95" y="152" width="190" height="96" rx="12" fill="#0f172a"/>
+  <text x="190" y="188" font-family="ui-monospace,monospace" font-size="13" fill="#f8fafc"  text-anchor="middle">step(</text>
+  <text x="190" y="206" font-family="ui-monospace,monospace" font-size="12" fill="#94a3b8" text-anchor="middle">'fetch',</text>
+  <text x="190" y="224" font-family="ui-monospace,monospace" font-size="12" fill="#94a3b8" text-anchor="middle">fetchAgent</text>
+  <text x="190" y="242" font-family="ui-monospace,monospace" font-size="13" fill="#f8fafc"  text-anchor="middle">)</text>
+
+  <!-- step 2 -->
+  <rect x="325" y="152" width="190" height="96" rx="12" fill="#f8fafc" stroke="#0f172a" stroke-width="2"/>
+  <text x="420" y="188" font-family="ui-monospace,monospace" font-size="13" fill="#0f172a" text-anchor="middle">step(</text>
+  <text x="420" y="206" font-family="ui-monospace,monospace" font-size="12" fill="#64748b" text-anchor="middle">'parse',</text>
+  <text x="420" y="224" font-family="ui-monospace,monospace" font-size="12" fill="#64748b" text-anchor="middle">parseAgent</text>
+  <text x="420" y="242" font-family="ui-monospace,monospace" font-size="13" fill="#0f172a" text-anchor="middle">)</text>
+
+  <!-- step 3  ← crash here -->
+  <rect x="555" y="152" width="190" height="96" rx="12" fill="#f8fafc" stroke="#0f172a" stroke-width="2"/>
+  <text x="650" y="188" font-family="ui-monospace,monospace" font-size="13" fill="#0f172a" text-anchor="middle">step(</text>
+  <text x="650" y="206" font-family="ui-monospace,monospace" font-size="12" fill="#64748b" text-anchor="middle">'write',</text>
+  <text x="650" y="224" font-family="ui-monospace,monospace" font-size="12" fill="#64748b" text-anchor="middle">writeAgent</text>
+  <text x="650" y="242" font-family="ui-monospace,monospace" font-size="13" fill="#0f172a" text-anchor="middle">)</text>
+
+  <!-- ── Horizontal connector through steps 1-3 ── -->
+  <line x1="285" y1="200" x2="325" y2="200" stroke="#0f172a" stroke-width="2"/>
+  <line x1="515" y1="200" x2="555" y2="200" stroke="#0f172a" stroke-width="2"/>
+  <path d="M 548,193 L 563,200 L 548,207" fill="none" stroke="#0f172a" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M 318,193 L 333,200 L 318,207" fill="none" stroke="#0f172a" stroke-width="2" stroke-linejoin="round"/>
+
+  <!-- ── Crash wall ── -->
+  <line x1="780" y1="60" x2="780" y2="430" stroke="#94a3b8" stroke-width="2.5" stroke-dasharray="10 7"/>
+  <!-- Crash label -->
+  <rect x="734" y="64" width="92" height="28" rx="6" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="780" y="83" font-family="ui-monospace,monospace" font-size="11" fill="#94a3b8" text-anchor="middle">💥 crash</text>
+
+  <!-- Steps 3→wall arrow (dashed = in-flight) -->
+  <line x1="745" y1="200" x2="778" y2="200" stroke="#94a3b8" stroke-width="2" stroke-dasharray="6 4"/>
+
+  <!-- Resume arrow through wall (solid) -->
+  <line x1="780" y1="200" x2="840" y2="200" stroke="#0f172a" stroke-width="2.5"/>
+  <path d="M 832,193 L 848,200 L 832,207" fill="none" stroke="#0f172a" stroke-width="2" stroke-linejoin="round"/>
+
+  <!-- step 4 (resume point) -->
+  <rect x="850" y="152" width="190" height="96" rx="12" fill="#f8fafc" stroke="#0f172a" stroke-width="2"/>
+  <text x="945" y="178" font-family="ui-monospace,monospace" font-size="11" fill="#94a3b8" text-anchor="middle">// resumed here</text>
+  <text x="945" y="198" font-family="ui-monospace,monospace" font-size="13" fill="#0f172a" text-anchor="middle">step(</text>
+  <text x="945" y="216" font-family="ui-monospace,monospace" font-size="12" fill="#64748b" text-anchor="middle">'eval',</text>
+  <text x="945" y="242" font-family="ui-monospace,monospace" font-size="13" fill="#0f172a" text-anchor="middle">evalAgent)</text>
+
+  <!-- step 5 -->
+  <rect x="1080" y="152" width="190" height="96" rx="12" fill="#f8fafc" stroke="#0f172a" stroke-width="2"/>
+  <text x="1175" y="188" font-family="ui-monospace,monospace" font-size="13" fill="#0f172a" text-anchor="middle">step(</text>
+  <text x="1175" y="206" font-family="ui-monospace,monospace" font-size="12" fill="#64748b" text-anchor="middle">'notify',</text>
+  <text x="1175" y="224" font-family="ui-monospace,monospace" font-size="12" fill="#64748b" text-anchor="middle">notifyAgent</text>
+  <text x="1175" y="242" font-family="ui-monospace,monospace" font-size="13" fill="#0f172a" text-anchor="middle">)</text>
+
+  <!-- Connector steps 4-5 -->
+  <line x1="1040" y1="200" x2="1080" y2="200" stroke="#0f172a" stroke-width="2"/>
+  <path d="M 1073,193 L 1088,200 L 1073,207" fill="none" stroke="#0f172a" stroke-width="2" stroke-linejoin="round"/>
+
+  <!-- createDurableAgent label (right end) -->
+  <rect x="1310" y="152" width="258" height="96" rx="12" fill="#0f172a"/>
+  <text x="1439" y="182" font-family="ui-monospace,monospace" font-size="12" fill="#f8fafc"  text-anchor="middle">createDurableAgent({</text>
+  <text x="1439" y="200" font-family="ui-monospace,monospace" font-size="12" fill="#94a3b8" text-anchor="middle">  model,</text>
+  <text x="1439" y="218" font-family="ui-monospace,monospace" font-size="12" fill="#94a3b8" text-anchor="middle">  steps,</text>
+  <text x="1439" y="236" font-family="ui-monospace,monospace" font-size="12" fill="#94a3b8" text-anchor="middle">  storage</text>
+  <text x="1439" y="242" font-family="ui-monospace,monospace" font-size="13" fill="#f8fafc"  text-anchor="middle">})</text>
+
+  <!-- Arrow step5 → createDurableAgent -->
+  <line x1="1270" y1="200" x2="1310" y2="200" stroke="#0f172a" stroke-width="2"/>
+  <path d="M 1302,193 L 1318,200 L 1302,207" fill="none" stroke="#0f172a" stroke-width="2" stroke-linejoin="round"/>
+
+  <!-- ── Vertical tick lines from steps down to persistence rail ── -->
+  <line x1="190"  y1="248" x2="190"  y2="338" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 4"/>
+  <line x1="420"  y1="248" x2="420"  y2="338" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 4"/>
+  <line x1="650"  y1="248" x2="650"  y2="338" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 4"/>
+  <line x1="945"  y1="248" x2="945"  y2="338" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 4"/>
+  <line x1="1175" y1="248" x2="1175" y2="338" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 4"/>
+
+  <!-- ── Status chips above steps ── -->
+  <rect x="148" y="118" width="84" height="26" rx="6" fill="#0f172a"/>
+  <text x="190" y="136" font-family="ui-monospace,monospace" font-size="11" fill="#f8fafc" text-anchor="middle">✓ done</text>
+
+  <rect x="378" y="118" width="84" height="26" rx="6" fill="#0f172a"/>
+  <text x="420" y="136" font-family="ui-monospace,monospace" font-size="11" fill="#f8fafc" text-anchor="middle">✓ done</text>
+
+  <rect x="608" y="118" width="84" height="26" rx="6" fill="#94a3b8"/>
+  <text x="650" y="136" font-family="ui-monospace,monospace" font-size="11" fill="#f8fafc" text-anchor="middle">✗ crashed</text>
+
+  <rect x="895" y="118" width="100" height="26" rx="6" fill="#f8fafc" stroke="#0f172a" stroke-width="1.5"/>
+  <text x="945" y="136" font-family="ui-monospace,monospace" font-size="11" fill="#0f172a" text-anchor="middle">▶ resumed</text>
+
+  <rect x="1130" y="118" width="90" height="26" rx="6" fill="#f8fafc" stroke="#0f172a" stroke-width="1.5"/>
+  <text x="1175" y="136" font-family="ui-monospace,monospace" font-size="11" fill="#0f172a" text-anchor="middle">⟳ running</text>
+
+  <!-- Corner label -->
+  <text x="52" y="50" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#cbd5e1" letter-spacing="0.18em" font-weight="700">MASTRA · DURABLE AGENTS</text>
+</svg>

@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 480" width="1600" height="480">
+  <rect width="1600" height="480" fill="#f8fafc"/>
+  <pattern id="dots" x="0" y="0" width="48" height="48" patternUnits="userSpaceOnUse">
+    <circle cx="2" cy="2" r="1.4" fill="#e2e8f0"/>
+  </pattern>
+  <rect width="1600" height="480" fill="url(#dots)"/>
+
+  <!-- ── Mastra Harness: full stack overview ── -->
+
+  <!-- Left: MastraHarness config -->
+  <rect x="52" y="96" width="320" height="288" rx="14" fill="#0f172a"/>
+  <text x="212" y="124" font-family="ui-monospace,monospace" font-size="12" fill="#94a3b8" text-anchor="middle" letter-spacing="0.06em">MASTRA HARNESS</text>
+  <text x="72"  y="150" font-family="ui-monospace,monospace" font-size="12" fill="#f8fafc">new Mastra({</text>
+  <text x="92"  y="170" font-family="ui-monospace,monospace" font-size="12" fill="#94a3b8">  agents: {</text>
+  <text x="112" y="188" font-family="ui-monospace,monospace" font-size="12" fill="#64748b">    myAgent,</text>
+  <text x="112" y="206" font-family="ui-monospace,monospace" font-size="12" fill="#64748b">    routerAgent,</text>
+  <text x="92"  y="224" font-family="ui-monospace,monospace" font-size="12" fill="#94a3b8">  },</text>
+  <text x="92"  y="242" font-family="ui-monospace,monospace" font-size="12" fill="#94a3b8">  workflows: {</text>
+  <text x="112" y="260" font-family="ui-monospace,monospace" font-size="12" fill="#64748b">    pipeline,</text>
+  <text x="92"  y="278" font-family="ui-monospace,monospace" font-size="12" fill="#94a3b8">  },</text>
+  <text x="92"  y="296" font-family="ui-monospace,monospace" font-size="12" fill="#94a3b8">  storage: libsql,</text>
+  <text x="92"  y="314" font-family="ui-monospace,monospace" font-size="12" fill="#94a3b8">  logger,</text>
+  <text x="72"  y="350" font-family="ui-monospace,monospace" font-size="12" fill="#f8fafc">})</text>
+  <text x="72"  y="374" font-family="ui-monospace,monospace" font-size="11" fill="#475569">export { mastra }</text>
+
+  <!-- Arrow right -->
+  <line x1="372" y1="240" x2="444" y2="240" stroke="#0f172a" stroke-width="2"/>
+  <path d="M 436,233 L 452,240 L 436,247" fill="none" stroke="#0f172a" stroke-width="2" stroke-linejoin="round"/>
+
+  <!-- Middle: Runtime components stacked vertically -->
+  <!-- Agent registry -->
+  <rect x="454" y="104" width="240" height="72" rx="10" fill="#f8fafc" stroke="#0f172a" stroke-width="2"/>
+  <text x="574" y="128" font-family="ui-monospace,monospace" font-size="12" fill="#0f172a" text-anchor="middle">Agent Registry</text>
+  <text x="574" y="148" font-family="ui-monospace,monospace" font-size="11" fill="#64748b" text-anchor="middle">mastra.getAgent('myAgent')</text>
+  <text x="574" y="166" font-family="ui-monospace,monospace" font-size="11" fill="#94a3b8" text-anchor="middle">.generate(messages)</text>
+
+  <!-- Tool catalog -->
+  <rect x="454" y="196" width="240" height="72" rx="10" fill="#f8fafc" stroke="#0f172a" stroke-width="2"/>
+  <text x="574" y="220" font-family="ui-monospace,monospace" font-size="12" fill="#0f172a" text-anchor="middle">Tool Catalog</text>
+  <text x="574" y="240" font-family="ui-monospace,monospace" font-size="11" fill="#64748b" text-anchor="middle">createTool({ id, schema,</text>
+  <text x="574" y="258" font-family="ui-monospace,monospace" font-size="11" fill="#94a3b8" text-anchor="middle">  execute })</text>
+
+  <!-- Memory store -->
+  <rect x="454" y="288" width="240" height="72" rx="10" fill="#f8fafc" stroke="#0f172a" stroke-width="2"/>
+  <text x="574" y="312" font-family="ui-monospace,monospace" font-size="12" fill="#0f172a" text-anchor="middle">Thread Memory</text>
+  <text x="574" y="332" font-family="ui-monospace,monospace" font-size="11" fill="#64748b" text-anchor="middle">LibSQLStore per threadId</text>
+  <text x="574" y="350" font-family="ui-monospace,monospace" font-size="11" fill="#94a3b8" text-anchor="middle">{ lastMessages: 40 }</text>
+
+  <!-- Connector lines (middle to right) -->
+  <line x1="694" y1="140" x2="740" y2="240" stroke="#0f172a" stroke-width="1.5" stroke-dasharray="5 4" opacity="0.5"/>
+  <line x1="694" y1="232" x2="740" y2="240" stroke="#0f172a" stroke-width="1.5" stroke-dasharray="5 4" opacity="0.5"/>
+  <line x1="694" y1="324" x2="740" y2="240" stroke="#0f172a" stroke-width="1.5" stroke-dasharray="5 4" opacity="0.5"/>
+  <path d="M 732,233 L 748,240 L 732,247" fill="none" stroke="#0f172a" stroke-width="2" stroke-linejoin="round"/>
+
+  <!-- Right: API layer -->
+  <rect x="750" y="152" width="280" height="176" rx="14" fill="#f8fafc" stroke="#0f172a" stroke-width="2"/>
+  <text x="890" y="180" font-family="ui-monospace,monospace" font-size="12" fill="#94a3b8" text-anchor="middle" letter-spacing="0.06em">API LAYER</text>
+  <text x="770" y="208" font-family="ui-monospace,monospace" font-size="12" fill="#0f172a">POST /api/agent</text>
+  <text x="770" y="228" font-family="ui-monospace,monospace" font-size="11" fill="#64748b">  ← chat endpoint</text>
+  <text x="770" y="254" font-family="ui-monospace,monospace" font-size="12" fill="#0f172a">GET  /api/memory</text>
+  <text x="770" y="274" font-family="ui-monospace,monospace" font-size="11" fill="#64748b">  ← thread history</text>
+  <text x="770" y="300" font-family="ui-monospace,monospace" font-size="12" fill="#0f172a">POST /api/workflow</text>
+  <text x="770" y="320" font-family="ui-monospace,monospace" font-size="11" fill="#64748b">  ← trigger pipeline</text>
+
+  <!-- Arrow to client -->
+  <line x1="1030" y1="240" x2="1100" y2="240" stroke="#0f172a" stroke-width="2"/>
+  <path d="M 1092,233 L 1108,240 L 1092,247" fill="none" stroke="#0f172a" stroke-width="2" stroke-linejoin="round"/>
+
+  <!-- Client: Next.js app -->
+  <rect x="1110" y="152" width="440" height="176" rx="14" fill="#0f172a"/>
+  <text x="1330" y="180" font-family="ui-monospace,monospace" font-size="12" fill="#94a3b8" text-anchor="middle" letter-spacing="0.06em">NEXT.JS CLIENT</text>
+  <text x="1130" y="208" font-family="ui-monospace,monospace" font-size="12" fill="#f8fafc">const res = await fetch(</text>
+  <text x="1150" y="226" font-family="ui-monospace,monospace" font-size="12" fill="#94a3b8">  '/api/agent',</text>
+  <text x="1150" y="244" font-family="ui-monospace,monospace" font-size="12" fill="#94a3b8">  { method: 'POST',</text>
+  <text x="1170" y="262" font-family="ui-monospace,monospace" font-size="12" fill="#64748b">    body: JSON.stringify(</text>
+  <text x="1190" y="280" font-family="ui-monospace,monospace" font-size="12" fill="#64748b">      { messages,</text>
+  <text x="1190" y="298" font-family="ui-monospace,monospace" font-size="12" fill="#64748b">        threadId })</text>
+  <text x="1150" y="316" font-family="ui-monospace,monospace" font-size="12" fill="#94a3b8">  })</text>
+
+  <text x="52" y="50" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#cbd5e1" letter-spacing="0.18em" font-weight="700">MASTRA · HARNESS</text>
+</svg>

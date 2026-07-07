@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 480" width="1600" height="480">
+  <rect width="1600" height="480" fill="#f8fafc"/>
+  <pattern id="dots" x="0" y="0" width="48" height="48" patternUnits="userSpaceOnUse">
+    <circle cx="2" cy="2" r="1.4" fill="#e2e8f0"/>
+  </pattern>
+  <rect width="1600" height="480" fill="url(#dots)"/>
+
+  <!-- ── Two agent harness architectures side by side ── -->
+
+  <!-- Divider label -->
+  <line x1="800" y1="60" x2="800" y2="430" stroke="#e2e8f0" stroke-width="1.5"/>
+  <rect x="734" y="216" width="132" height="48" rx="10" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1.5"/>
+  <text x="800" y="235" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10" fill="#94a3b8" text-anchor="middle" letter-spacing="0.12em">VS</text>
+  <text x="800" y="253" font-family="ui-monospace,monospace" font-size="10" fill="#94a3b8" text-anchor="middle">two designs</text>
+
+  <!-- ════ LEFT: Router + Worker (orchestrator pattern) ════ -->
+  <text x="400" y="80" font-family="ui-monospace,monospace" font-size="11" fill="#94a3b8" text-anchor="middle" letter-spacing="0.12em">ROUTER / WORKER</text>
+
+  <!-- Router agent -->
+  <rect x="52" y="104" width="220" height="96" rx="12" fill="#0f172a"/>
+  <text x="162" y="130" font-family="ui-monospace,monospace" font-size="12" fill="#94a3b8" text-anchor="middle">routerAgent</text>
+  <text x="162" y="152" font-family="ui-monospace,monospace" font-size="13" fill="#f8fafc" text-anchor="middle">classifies +</text>
+  <text x="162" y="170" font-family="ui-monospace,monospace" font-size="13" fill="#f8fafc" text-anchor="middle">routes task</text>
+  <text x="162" y="192" font-family="ui-monospace,monospace" font-size="11" fill="#64748b" text-anchor="middle">instructions: `route…`</text>
+
+  <!-- Fork to workers -->
+  <line x1="272" y1="152" x2="330" y2="152" stroke="#0f172a" stroke-width="2"/>
+  <line x1="330" y1="152" x2="330" y2="104" stroke="#0f172a" stroke-width="2"/>
+  <line x1="330" y1="152" x2="330" y2="200" stroke="#0f172a" stroke-width="2"/>
+  <line x1="330" y1="152" x2="330" y2="300" stroke="#0f172a" stroke-width="2"/>
+
+  <!-- Worker A -->
+  <line x1="330" y1="104" x2="380" y2="104" stroke="#0f172a" stroke-width="2"/>
+  <rect x="382" y="72" width="200" height="68" rx="10" fill="#f8fafc" stroke="#0f172a" stroke-width="2"/>
+  <text x="482" y="98"  font-family="ui-monospace,monospace" font-size="12" fill="#0f172a" text-anchor="middle">coderAgent</text>
+  <text x="482" y="116" font-family="ui-monospace,monospace" font-size="11" fill="#64748b" text-anchor="middle">tools: [runCode]</text>
+  <text x="482" y="132" font-family="ui-monospace,monospace" font-size="11" fill="#94a3b8" text-anchor="middle">model: claude</text>
+
+  <!-- Worker B -->
+  <line x1="330" y1="200" x2="380" y2="200" stroke="#0f172a" stroke-width="2"/>
+  <rect x="382" y="168" width="200" height="68" rx="10" fill="#f8fafc" stroke="#0f172a" stroke-width="2"/>
+  <text x="482" y="194" font-family="ui-monospace,monospace" font-size="12" fill="#0f172a" text-anchor="middle">researchAgent</text>
+  <text x="482" y="212" font-family="ui-monospace,monospace" font-size="11" fill="#64748b" text-anchor="middle">tools: [search]</text>
+  <text x="482" y="228" font-family="ui-monospace,monospace" font-size="11" fill="#94a3b8" text-anchor="middle">model: gemini</text>
+
+  <!-- Worker C -->
+  <line x1="330" y1="300" x2="380" y2="300" stroke="#0f172a" stroke-width="2"/>
+  <rect x="382" y="268" width="200" height="68" rx="10" fill="#f8fafc" stroke="#0f172a" stroke-width="2"/>
+  <text x="482" y="294" font-family="ui-monospace,monospace" font-size="12" fill="#0f172a" text-anchor="middle">writerAgent</text>
+  <text x="482" y="312" font-family="ui-monospace,monospace" font-size="11" fill="#64748b" text-anchor="middle">tools: [format]</text>
+  <text x="482" y="328" font-family="ui-monospace,monospace" font-size="11" fill="#94a3b8" text-anchor="middle">model: gpt-4</text>
+
+  <!-- Shared thread / memory label -->
+  <rect x="70" y="370" width="540" height="36" rx="8" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1.5"/>
+  <text x="340" y="393" font-family="ui-monospace,monospace" font-size="11" fill="#94a3b8" text-anchor="middle">shared threadId  ·  mastra.getAgent('router').generate(…)</text>
+
+  <!-- ════ RIGHT: Peer-to-peer (turn-based) ════ -->
+  <text x="1200" y="80" font-family="ui-monospace,monospace" font-size="11" fill="#94a3b8" text-anchor="middle" letter-spacing="0.12em">PEER-TO-PEER / DEBATE</text>
+
+  <!-- Agent A -->
+  <rect x="880" y="140" width="220" height="96" rx="12" fill="#0f172a"/>
+  <text x="990" y="166" font-family="ui-monospace,monospace" font-size="12" fill="#94a3b8" text-anchor="middle">agentA</text>
+  <text x="990" y="186" font-family="ui-monospace,monospace" font-size="13" fill="#f8fafc" text-anchor="middle">proposes</text>
+  <text x="990" y="204" font-family="ui-monospace,monospace" font-size="12" fill="#94a3b8" text-anchor="middle">model: gemini</text>
+  <text x="990" y="228" font-family="ui-monospace,monospace" font-size="11" fill="#64748b" text-anchor="middle">instructions:`advocate`</text>
+
+  <!-- Back-and-forth arrows -->
+  <line x1="1100" y1="182" x2="1200" y2="182" stroke="#0f172a" stroke-width="2"/>
+  <path d="M 1192,175 L 1208,182 L 1192,189" fill="none" stroke="#0f172a" stroke-width="2" stroke-linejoin="round"/>
+  <line x1="1200" y1="210" x2="1100" y2="210" stroke="#0f172a" stroke-width="2" stroke-dasharray="6 4"/>
+  <path d="M 1108,203 L 1092,210 L 1108,217" fill="none" stroke="#0f172a" stroke-width="2" stroke-linejoin="round"/>
+  <!-- round 2 -->
+  <line x1="1100" y1="234" x2="1200" y2="234" stroke="#0f172a" stroke-width="1.5" opacity="0.5"/>
+  <path d="M 1192,228 L 1208,234 L 1192,240" fill="none" stroke="#0f172a" stroke-width="1.5" opacity="0.5" stroke-linejoin="round"/>
+  <line x1="1200" y1="258" x2="1100" y2="258" stroke="#0f172a" stroke-width="1.5" stroke-dasharray="6 4" opacity="0.3"/>
+
+  <!-- Agent B -->
+  <rect x="1210" y="140" width="220" height="96" rx="12" fill="#f8fafc" stroke="#0f172a" stroke-width="2"/>
+  <text x="1320" y="166" font-family="ui-monospace,monospace" font-size="12" fill="#94a3b8" text-anchor="middle">agentB</text>
+  <text x="1320" y="186" font-family="ui-monospace,monospace" font-size="13" fill="#0f172a" text-anchor="middle">critiques</text>
+  <text x="1320" y="204" font-family="ui-monospace,monospace" font-size="12" fill="#64748b" text-anchor="middle">model: claude</text>
+  <text x="1320" y="228" font-family="ui-monospace,monospace" font-size="11" fill="#94a3b8" text-anchor="middle">instructions:`critique`</text>
+
+  <!-- Turn loop label -->
+  <rect x="880" y="370" width="570" height="36" rx="8" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1.5"/>
+  <text x="1165" y="393" font-family="ui-monospace,monospace" font-size="11" fill="#94a3b8" text-anchor="middle">for (let i=0; i &lt; turns; i++) { await agentA/B.generate(history) }</text>
+
+  <text x="52" y="50" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#cbd5e1" letter-spacing="0.18em" font-weight="700">MASTRA · TWO AGENT HARNESSES</text>
+</svg>

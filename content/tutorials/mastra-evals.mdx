@@ -4,22 +4,34 @@ description: "The finale. An agent that ships without evals is a vibe with a dep
 publishedAt: "2026-06-23"
 order: 7
 tags: ["mastra", "evals", "testing", "tutorial"]
-coverImage: "/cover-mastra-tutorial.png"
+coverImage: "/cover-mastra-evals.svg"
 draft: false
 ---
 
-You've built an [agent](/tutorials/mastra-agents), wrapped it in
-[workflows](/tutorials/mastra-workflows) and a [harness](/tutorials/mastra-harness),
-[streamed](/tutorials/mastra-streaming) it, [grounded it in RAG](/tutorials/mastra-rag),
-and made it [survive crashes and run on a schedule](/tutorials/mastra-durable-agents).
-One question decides whether any of that is safe to put in front of users:
+You tweak the prompt. The demo runs great — the answer sounds sharper, more
+confident, more *on-brand*. You ship it.
 
-**Is it actually good — and how would you know if a change made it worse?**
+Three days later, someone on support forwards a screenshot. The agent quoted a
+refund policy that doesn't exist.
 
-"It seems better" is not an answer you can ship on. You tweak a prompt, the demo
-looks great, you deploy, and three days later someone notices it started
-hallucinating refund policies. Without evals you're flying blind; every prompt
-edit is a coin flip you can't see land. This part replaces the vibe with numbers.
+Nothing crashed. No error fired. Nothing showed up in a log. It just quietly got
+worse, and the only reason anyone noticed was a user complaining.
+
+Over six parts of this series you built an [agent](/tutorials/mastra-agents),
+wrapped it in [workflows](/tutorials/mastra-workflows) and a
+[harness](/tutorials/mastra-harness), [streamed](/tutorials/mastra-streaming) it,
+[grounded it in RAG](/tutorials/mastra-rag), and made it
+[survive crashes and run on a schedule](/tutorials/mastra-durable-agents). Every
+one of those parts made the agent capable of something new.
+
+None of them answered the question that decides whether any of it is safe to put
+in front of real users:
+
+Is it actually good — and how would you know if a change made it worse?
+
+"It seems better" is not an answer you can ship on. Every prompt edit becomes a
+coin flip you can't see land, because the vibe replaces the metric, and vibes
+drift. This part replaces the vibe with numbers.
 
 <Callout type="info">
 **The series, completed**
@@ -31,8 +43,19 @@ edit is a coin flip you can't see land. This part replaces the vibe with numbers
 
 ## Two kinds of "is it good?"
 
-Agent quality splits into two questions that need two different tools, and the
-biggest early mistake is using a model to answer the first kind.
+Agent quality splits into two different questions, and each one needs its own
+tool.
+
+The first kind is factual. Did it call `search-docs`? Did it avoid tool errors?
+Did it call tools in the right order? Every one of those has a plain yes-or-no
+answer. You don't need a model's judgment for that — you need code. Fast, free,
+and it never has an off day. That's a check.
+
+The second kind is qualitative. Is the answer actually relevant to what was
+asked? Is it faithful to the retrieved passages, or did it quietly drift away
+from them? Is it toxic? None of those collapse into a simple equality check. They
+need judgment, so a model reads the output and hands back a score. That's a
+scorer.
 
 <LayerDiagram
   caption="Use the cheap deterministic check whenever the question has a definite answer. Save the model-graded scorer for the genuinely fuzzy ones."
@@ -42,21 +65,18 @@ biggest early mistake is using a model to answer the first kind.
   ]}
 />
 
-- **Checks** answer *factual* questions about a run. Did it call `search-docs`?
-  Did it avoid tool errors? Did it call tools in the right order? These have a
-  yes/no answer, so grade them with code — fast, free, and never flaky.
-- **Scorers** answer *qualitative* questions. Is the answer relevant to what was
-  asked? Is it faithful to the retrieved sources, or did it drift? Is it toxic?
-  These need judgment, so a model grades them and returns a score.
-
 Reach for a scorer only when a check genuinely can't answer the question. A
-model-graded eval is slower, costs tokens, and has its own variance — don't spend
-it on something `===` could decide.
+model-graded eval is slower, costs tokens, and has variance of its own — don't
+spend it on something `===` could decide for free.
+
+Checks are where every eval suite should start. Let's build one.
 
 ## Checks — deterministic, and where you start
 
 Say you want to guarantee the RAG agent from [Part 5](/tutorials/mastra-rag)
-*always* looks something up before answering — the "never guess" rule, enforced.
+*always* looks something up before answering — the "never guess" rule from that
+part, enforced.
+
 That's a check: did the run call `search-docs`?
 
 ```ts title="evals/basic.test.ts"
@@ -97,11 +117,16 @@ Because they're deterministic, checks belong in `gates` — they can hard-fail a
 run. That's what makes them CI-safe: no flakiness, no token cost, a clean
 pass/fail.
 
+Checks get you a long way. But some questions never reduce to a yes-or-no, no
+matter how you phrase them.
+
 ## Scorers — for the fuzzy questions
 
-Now the questions code can't answer. Was the answer actually *relevant*? Was it
-*faithful* to the retrieved passages? Mastra ships prebuilt, model-graded scorers
-for exactly these:
+Now for the questions code can't answer.
+
+Was the answer actually relevant to what was asked? Was it faithful to the
+retrieved passages, or did it wander? Mastra ships prebuilt, model-graded scorers
+for exactly these two questions.
 
 ```ts title="evals/quality.test.ts"
 import { runEvals } from "@mastra/evals";
@@ -132,10 +157,12 @@ toxicity           0.00  avg
 verdict: scored
 ```
 
-Note the verdict is `scored`, not `passed` — a scorer produces a *number*, and a
-number on its own doesn't fail a build. To make it a gate, put a threshold on it:
-"relevancy must average ≥ 0.8." Now a prompt change that quietly tanks relevancy
-to 0.62 fails CI instead of shipping.
+Notice the verdict is `scored`, not `passed`.
+
+A scorer produces a number, and a number on its own doesn't fail a build. To
+make it a gate, put a threshold on it: relevancy must average at least 0.8. Now
+a prompt change that quietly tanks relevancy to 0.62 fails CI instead of
+shipping.
 
 <Callout type="tip">
 Combine both in one run: `gates` for the deterministic checks that must pass, and
@@ -144,11 +171,16 @@ only reports `passed` when every gate held *and* every thresholded scorer cleare
 its bar.
 </Callout>
 
+Numbers on a screen are good. Numbers that block a bad deploy before it ships are
+better.
+
 ## Wiring it into CI
 
-The entire payoff of evals is that they run automatically on every change. A
-`runEvals` call is just code, so it drops straight into whatever test runner you
-already use — no special harness.
+The entire payoff of evals is that they run automatically, on every change,
+without anyone remembering to click a button.
+
+A `runEvals` call is just code. It drops straight into whatever test runner you
+already use — no special harness required.
 
 ```ts title="evals/agent.eval.ts"
 import { runEvals } from "@mastra/evals";
@@ -176,10 +208,11 @@ if (result.verdict === "failed") {
     OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 ```
 
-That `goldenQuestions` set is the asset that compounds. Every time the agent gets
-something wrong in production, you add that case to the set. The eval suite grows
-into a memory of every mistake the agent has ever made — and every one it's now
-provably guarded against.
+That `goldenQuestions` set is the asset that compounds.
+
+Every time the agent gets something wrong in production, you add that case to the
+set. The eval suite grows into a memory of every mistake the agent has ever
+made — and every one it's now provably guarded against.
 
 <SequenceDiagram
   caption="Evals turn a pull request into a quality gate. A prompt change that regresses relevancy fails before it reaches users."
@@ -198,11 +231,16 @@ provably guarded against.
   ]}
 />
 
+CI proves the agent is good on questions you thought of. It has nothing to say
+about the ones you didn't.
+
 ## Evals in production, not just CI
 
-CI proves the agent is good on questions you *thought of*. Production is where it
-meets the ones you didn't. So Mastra lets you attach scorers to a live agent and
-**sample** real traffic — score a fraction of actual runs, no golden set required:
+Production is where the agent meets the questions no one wrote into the golden
+set.
+
+So Mastra lets you attach scorers to a live agent and **sample** real
+traffic — score a fraction of actual runs, no golden set required:
 
 ```ts title="mastra/agents.ts"
 export const supportAgent = new Agent({
@@ -219,16 +257,28 @@ export const supportAgent = new Agent({
 });
 ```
 
-Now 10% of real conversations get a relevancy score in the background. The
-sampling rate is the knob: crank it up for a risky launch week, dial it down once
-the numbers are boring. This is how you catch the slow drift that a fixed CI set
-never will — the moment production relevancy starts sliding, you see it in the
-data instead of in a support escalation.
+Now 10% of real conversations get a relevancy score, quietly, in the background.
+
+The sampling rate is the knob. Crank it up for a risky launch week. Dial it down
+once the numbers get boring.
+
+This is how you catch the slow drift a fixed CI set never will. The moment
+production relevancy starts sliding, you see it in the data — not in a support
+escalation.
 
 ## What "good" actually means now
 
-Across seven parts the agent went from a loop that calls a model to a system you
-can *defend*:
+Go back to Part 1 for a second. The agent was a loop that called a model and
+handed back an answer. That was the whole system, and the only way to know if it
+was any good was to read the transcript yourself and shrug.
+
+Six parts later, it composes into workflows. It runs inside a harness. It
+streams. It's grounded in your own docs. It survives a crash and comes back to
+finish the job. Every one of those was a genuine improvement to what the agent
+could *do* — and not one of them, on its own, told you whether the agent was
+actually good.
+
+This part is what closes that loop:
 
 - **Checks** — deterministic, gating, free. Start here for anything with a
   definite answer.
@@ -238,9 +288,13 @@ can *defend*:
 - **Golden set** — a growing, version-controlled memory of every past mistake.
 - **Live sampling** — score real traffic to catch the drift CI can't.
 
-That's the whole arc: build it, orchestrate it, host it, stream it, ground it,
-keep it alive — and now, prove it's good and keep it that way. An agent you can
-put numbers on is an agent you can actually ship.
+Put those together and "it seems better" stops being an opinion. It becomes a
+number, checked against yesterday's number, gating a build. That's the whole
+difference between shipping on vibes and shipping on evidence.
+
+That's the arc, start to finish: build it, orchestrate it, host it, stream it,
+ground it, keep it alive — and now, prove it's good and keep it that way. An
+agent you can put numbers on is an agent you can actually ship.
 
 *Thanks for reading the series. Every code sample here runs on public Mastra and
 AI SDK APIs — go build something and put an eval on it.*

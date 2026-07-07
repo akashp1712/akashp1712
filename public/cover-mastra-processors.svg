@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 480" width="1600" height="480">
+  <rect width="1600" height="480" fill="#f8fafc"/>
+  <pattern id="dots" x="0" y="0" width="48" height="48" patternUnits="userSpaceOnUse">
+    <circle cx="2" cy="2" r="1.4" fill="#e2e8f0"/>
+  </pattern>
+  <rect width="1600" height="480" fill="url(#dots)"/>
+
+  <!-- Processors: message transform pipeline -->
+
+  <!-- Input message -->
+  <rect x="52" y="176" width="210" height="128" rx="12" fill="#0f172a"/>
+  <text x="157" y="204" font-family="ui-monospace,monospace" font-size="12" fill="#94a3b8" text-anchor="middle">INPUT MESSAGE</text>
+  <rect x="72" y="218" width="170" height="72" rx="6" fill="#1e293b"/>
+  <text x="157" y="241" font-family="ui-monospace,monospace" font-size="11" fill="#f8fafc"  text-anchor="middle">{</text>
+  <text x="157" y="257" font-family="ui-monospace,monospace" font-size="11" fill="#94a3b8" text-anchor="middle">  role: 'user',</text>
+  <text x="157" y="273" font-family="ui-monospace,monospace" font-size="11" fill="#94a3b8" text-anchor="middle">  content: '…'</text>
+  <text x="157" y="291" font-family="ui-monospace,monospace" font-size="11" fill="#f8fafc"  text-anchor="middle">}</text>
+
+  <!-- Arrow -->
+  <line x1="262" y1="240" x2="320" y2="240" stroke="#0f172a" stroke-width="2"/>
+  <path d="M 312,233 L 328,240 L 312,247" fill="none" stroke="#0f172a" stroke-width="2" stroke-linejoin="round"/>
+
+  <!-- Processor 1: Token trim -->
+  <rect x="330" y="152" width="220" height="176" rx="12" fill="#f8fafc" stroke="#0f172a" stroke-width="2"/>
+  <text x="440" y="178" font-family="ui-monospace,monospace" font-size="11" fill="#94a3b8" text-anchor="middle" letter-spacing="0.06em">PROCESSOR 1</text>
+  <text x="440" y="202" font-family="ui-monospace,monospace" font-size="13" fill="#0f172a" text-anchor="middle">tokenTrimmer</text>
+  <line x1="350" y1="218" x2="530" y2="218" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="440" y="242" font-family="ui-monospace,monospace" font-size="11" fill="#64748b" text-anchor="middle">maxTokens:</text>
+  <text x="440" y="260" font-family="ui-monospace,monospace" font-size="13" fill="#0f172a" text-anchor="middle">4000</text>
+  <text x="440" y="290" font-family="ui-monospace,monospace" font-size="11" fill="#94a3b8" text-anchor="middle">trims oldest msgs</text>
+  <text x="440" y="316" font-family="ui-monospace,monospace" font-size="11" fill="#94a3b8" text-anchor="middle">to fit context</text>
+
+  <!-- Arrow -->
+  <line x1="550" y1="240" x2="610" y2="240" stroke="#0f172a" stroke-width="2"/>
+  <path d="M 602,233 L 618,240 L 602,247" fill="none" stroke="#0f172a" stroke-width="2" stroke-linejoin="round"/>
+
+  <!-- Processor 2: System prompt inject -->
+  <rect x="620" y="152" width="220" height="176" rx="12" fill="#f8fafc" stroke="#0f172a" stroke-width="2"/>
+  <text x="730" y="178" font-family="ui-monospace,monospace" font-size="11" fill="#94a3b8" text-anchor="middle" letter-spacing="0.06em">PROCESSOR 2</text>
+  <text x="730" y="202" font-family="ui-monospace,monospace" font-size="13" fill="#0f172a" text-anchor="middle">systemPrompt</text>
+  <line x1="640" y1="218" x2="820" y2="218" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="730" y="242" font-family="ui-monospace,monospace" font-size="11" fill="#64748b" text-anchor="middle">inject:</text>
+  <text x="730" y="260" font-family="ui-monospace,monospace" font-size="11" fill="#64748b" text-anchor="middle">`Today is</text>
+  <text x="730" y="278" font-family="ui-monospace,monospace" font-size="11" fill="#64748b" text-anchor="middle"> ${date}`</text>
+  <text x="730" y="306" font-family="ui-monospace,monospace" font-size="11" fill="#94a3b8" text-anchor="middle">dynamic context</text>
+
+  <!-- Arrow -->
+  <line x1="840" y1="240" x2="900" y2="240" stroke="#0f172a" stroke-width="2"/>
+  <path d="M 892,233 L 908,240 L 892,247" fill="none" stroke="#0f172a" stroke-width="2" stroke-linejoin="round"/>
+
+  <!-- Processor 3: Custom transform -->
+  <rect x="910" y="152" width="220" height="176" rx="12" fill="#f8fafc" stroke="#0f172a" stroke-width="2"/>
+  <text x="1020" y="178" font-family="ui-monospace,monospace" font-size="11" fill="#94a3b8" text-anchor="middle" letter-spacing="0.06em">PROCESSOR 3</text>
+  <text x="1020" y="202" font-family="ui-monospace,monospace" font-size="13" fill="#0f172a" text-anchor="middle">customProcessor</text>
+  <line x1="930" y1="218" x2="1110" y2="218" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="1020" y="242" font-family="ui-monospace,monospace" font-size="11" fill="#64748b" text-anchor="middle">(messages) =&gt; {</text>
+  <text x="1020" y="260" font-family="ui-monospace,monospace" font-size="11" fill="#64748b" text-anchor="middle">  // your logic</text>
+  <text x="1020" y="278" font-family="ui-monospace,monospace" font-size="11" fill="#64748b" text-anchor="middle">  return msgs</text>
+  <text x="1020" y="296" font-family="ui-monospace,monospace" font-size="11" fill="#64748b" text-anchor="middle">}</text>
+
+  <!-- Arrow -->
+  <line x1="1130" y1="240" x2="1190" y2="240" stroke="#0f172a" stroke-width="2"/>
+  <path d="M 1182,233 L 1198,240 L 1182,247" fill="none" stroke="#0f172a" stroke-width="2" stroke-linejoin="round"/>
+
+  <!-- Output: processed messages → LLM -->
+  <rect x="1200" y="152" width="360" height="176" rx="12" fill="#0f172a"/>
+  <text x="1380" y="178" font-family="ui-monospace,monospace" font-size="11" fill="#94a3b8" text-anchor="middle" letter-spacing="0.06em">MODEL CALL</text>
+  <text x="1220" y="206" font-family="ui-monospace,monospace" font-size="12" fill="#f8fafc">new Agent({</text>
+  <text x="1240" y="224" font-family="ui-monospace,monospace" font-size="12" fill="#94a3b8">  model,</text>
+  <text x="1240" y="242" font-family="ui-monospace,monospace" font-size="12" fill="#94a3b8">  memory: new Memory({</text>
+  <text x="1260" y="260" font-family="ui-monospace,monospace" font-size="12" fill="#64748b">    processors: [</text>
+  <text x="1280" y="278" font-family="ui-monospace,monospace" font-size="12" fill="#64748b">      tokenTrimmer,</text>
+  <text x="1280" y="296" font-family="ui-monospace,monospace" font-size="12" fill="#64748b">      systemPrompt,</text>
+  <text x="1260" y="314" font-family="ui-monospace,monospace" font-size="12" fill="#64748b">    ]</text>
+  <text x="1240" y="332" font-family="ui-monospace,monospace" font-size="12" fill="#94a3b8">  })</text>
+
+  <text x="52" y="50" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#cbd5e1" letter-spacing="0.18em" font-weight="700">MASTRA · MEMORY PROCESSORS</text>
+</svg>

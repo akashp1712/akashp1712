@@ -4,14 +4,20 @@ description: "A streaming agent that answers from the model's memory is still gu
 publishedAt: "2026-06-09"
 order: 5
 tags: ["mastra", "rag", "embeddings", "tutorial"]
-coverImage: "/cover-mastra-tutorial.png"
+coverImage: "/cover-mastra-rag.svg"
 draft: false
 ---
 
-By [Part 4](/tutorials/mastra-streaming) the agent looked great: tokens
-streaming, tools narrating themselves, a live progress checklist. But watch what
-it does when you ask it about *your* documentation — an internal runbook, last
-week's changelog, a PDF it has never seen:
+Picture the agent from [Part 4](/tutorials/mastra-streaming). Tokens
+streaming in as they're generated. Tools narrating themselves while they run.
+A progress checklist ticking across the screen, live. On stage, it looks
+finished.
+
+Then someone actually uses it.
+
+Not a demo question. A real one — something specific to your company: an
+internal runbook, last week's changelog, a refund policy that lives in a PDF
+the model has never seen. Ask about that, and watch what happens.
 
 ```txt title="the problem"
 > What's our refund window for annual plans?
@@ -20,10 +26,20 @@ I don't have specific information about your refund policy, but
 typically SaaS companies offer 14–30 day refund windows...
 ```
 
-That "typically" is the agent guessing from its training data. Confident, plausible,
-and wrong. The fix isn't a bigger model — it's giving the model the actual text
-*before* it answers. That's **retrieval-augmented generation**, and Mastra has
-the whole pipeline built in.
+Read that answer again. It's fluent. It's plausible. It's also completely
+made up.
+
+"Typically" is the tell. The model doesn't know your refund policy — it's
+pattern-matching against every SaaS refund policy it saw during training and
+handing you the average. Confident and wrong is the worst combination an agent
+can produce, because it doesn't *look* wrong.
+
+The fix isn't a bigger model. A bigger model still doesn't know your refund
+policy. The fix is to put the actual text in front of the model *before* it
+answers — to give it something real to read instead of something to guess at.
+
+That's retrieval-augmented generation, RAG for short, and Mastra has the whole
+pipeline built in.
 
 <Callout type="info">
 **The series so far**
@@ -36,11 +52,16 @@ the whole pipeline built in.
 
 ## The shape of the whole thing
 
-RAG splits cleanly into two phases that run at different times. **Ingestion**
-happens once (or whenever your docs change): you take raw text, cut it into
-chunks, turn each chunk into a vector, and store it. **Retrieval** happens on
-every question: embed the question, find the nearest chunks, and hand them to the
-agent as context.
+Before any code, it's worth seeing the two phases RAG splits into — they run
+at completely different times.
+
+One phase happens once, or whenever your docs change. You take raw text, cut
+it into chunks, turn each chunk into a vector, and store it. Call that
+**ingestion**.
+
+The other phase happens on every single question a user asks. Embed the
+question, find the nearest chunks, hand them to the agent. Call that
+**retrieval**.
 
 <PipelineDiagram
   caption="Ingestion (top) runs offline when docs change. Retrieval (bottom) runs per-question. The vector store is the seam between them."
@@ -52,22 +73,36 @@ agent as context.
   ]}
 />
 
-Everything below is just filling in those four boxes, then adding the retrieval
-step that reads back out of the store.
+Everything below is just filling in those four boxes, one at a time, and then
+adding the retrieval step that reads back out of the store.
 
 ## Step 1 — Chunking with `MDocument`
 
-You can't embed a whole handbook as one vector; you'd lose all the local
-meaning. You also can't embed one word at a time; you'd lose all the context. So
-you split the text into passages big enough to mean something and small enough to
-be specific. Mastra's `MDocument` does this, and it understands structure —
-markdown headings, code fences — so it doesn't slice a sentence in half.
+Start with the first box: chunking.
+
+You can't hand the model your whole handbook as one giant vector — cram a
+hundred pages into a single embedding and you lose all the local meaning; it
+becomes an average of everything, useful for nothing specific. You also can't
+go the other way and embed one word at a time — now you've lost all the
+context, and a word alone means almost nothing.
+
+So you split the text into passages: big enough to mean something on their
+own, small enough to stay specific. That's a **chunk**.
+
+Mastra's `MDocument` does the splitting, and it isn't naive about it — it
+understands structure. Markdown headings, code fences, paragraph breaks. It
+won't slice a sentence in half just because the character count ran out.
 
 ```ts title="ingest.ts"
 import { MDocument } from "@mastra/rag";
 
 const doc = MDocument.fromText(runbookText);
+```
 
+That gives Mastra something it can reason about. The actual splitting happens
+in one call:
+
+```ts title="ingest.ts (continued)"
 const chunks = await doc.chunk({
   strategy: "recursive", // split on structure, then fall back to size
   size: 512,             // target tokens per chunk
@@ -83,10 +118,16 @@ console.log(chunks[0].text.slice(0, 80));
 ## Refunds. Annual plans are eligible for a full refund within 30 days
 ```
 
-That `overlap: 50` matters more than it looks. Without it, a fact that straddles
-a chunk boundary — "the refund window is" | "30 days" — gets split across two
-vectors and neither retrieves cleanly. The overlap repeats the trailing tokens
-into the next chunk so the boundary stops being a cliff.
+Three fields, three decisions. `strategy: "recursive"` splits on structure
+first — headings, paragraphs — and only falls back to raw size when it has
+to. `size: 512` is the target length of each chunk, in tokens.
+
+`overlap: 50` is the one that's easy to skim past, so slow down on it. Without
+overlap, a fact that straddles a chunk boundary — "the refund window is"
+landing at the end of one chunk, "30 days" starting the next — gets split
+across two vectors, and neither one retrieves cleanly on its own. `overlap:
+50` repeats the trailing 50 tokens into the start of the next chunk, so the
+boundary stops being a cliff the meaning can fall off of.
 
 <Callout type="tip">
 `strategy: "recursive"` is the sane default for prose and mixed content. Mastra
@@ -95,11 +136,17 @@ when your source is structured and you want chunks to respect that structure
 (one chunk per function, per section, etc.).
 </Callout>
 
+You now have 37 little passages of meaning. None of them are searchable yet —
+they're still just text. That's the next box.
+
 ## Step 2 — Embedding the chunks
 
-An embedding is the chunk's meaning as a vector — a list of numbers where "close
-together" means "similar meaning." `embedMany` runs the whole batch through an
-embedding model in one call, which is far cheaper and faster than looping.
+A vector store doesn't search by keyword. It searches by closeness in
+meaning, and "closeness" only means something once your chunks are numbers.
+
+That's an **embedding**: the chunk's meaning, expressed as a list of numbers,
+where two chunks about similar things end up close together in that space,
+and two unrelated chunks end up far apart.
 
 ```ts title="ingest.ts (continued)"
 import { embedMany } from "ai";
@@ -118,18 +165,29 @@ console.log(embeddings.length, "×", embeddings[0].length);
 37 × 1536
 ```
 
-Note this is `embedMany` from the AI SDK — the same `ai` package the rest of the
-series leans on. Retrieval quality lives and dies by the embedding model, so keep
-the *query* embedding (Step 4) and these *document* embeddings on the **same
-model**. Mixing models puts the two in different vector spaces and similarity
-becomes meaningless.
+Thirty-seven chunks in, thirty-seven vectors out, each one 1536 numbers long.
+`embedMany` — from the `ai` package, the same AI SDK the rest of this series
+has been using — runs the whole batch through the embedding model in one
+call, which is a lot cheaper and faster than looping over chunks one at a
+time.
+
+One thing to hold onto, because it comes back in Step 4: retrieval quality
+lives and dies by the embedding model. Whatever model you use to embed these
+document chunks, use the exact same model to embed the user's question later.
+Mix models and you're comparing vectors from two different spaces — the
+numbers won't mean the same thing, and similarity search quietly stops
+working.
+
+You've got vectors now. They still need somewhere to live.
 
 ## Step 3 — Storing vectors in `PgVector`
 
-The vectors need to live somewhere you can search by similarity. Mastra speaks to
-a dozen vector stores through one interface; I'll use `PgVector` because it's
-just Postgres with the `pgvector` extension — no new infrastructure if you
-already run Postgres.
+Mastra speaks to about a dozen vector stores through one interface. I'm
+reaching for `PgVector` here, because it's just Postgres with the `pgvector`
+extension turned on — if you already run Postgres, this is zero new
+infrastructure.
+
+First, connect to it:
 
 ```ts title="ingest.ts (continued)"
 import { PgVector } from "@mastra/pg";
@@ -138,10 +196,23 @@ const store = new PgVector({
   id: "docs",
   connectionString: process.env.POSTGRES_URL!,
 });
+```
 
+Then create an index to hold this particular set of vectors — you do this
+once, not on every ingestion run:
+
+```ts title="ingest.ts (continued)"
 // Create the index once; dimension must match the embedding model's output.
 await store.createIndex({ indexName: "runbook", dimension: 1536 });
+```
 
+That `dimension: 1536` isn't a random number — it has to match the length of
+the vectors your embedding model produces. Change embedding models later and
+you'll need a new index.
+
+Now write the vectors in:
+
+```ts title="ingest.ts (continued)"
 await store.upsert({
   indexName: "runbook",
   vectors: embeddings,
@@ -151,10 +222,12 @@ await store.upsert({
 console.log("indexed", embeddings.length, "chunks");
 ```
 
-The metadata is the part people forget. A vector store finds the *nearest
-vectors*, but a vector is just numbers — you need the original text to hand back
-to the model. Stash `text` (and anything else useful: source URL, section, last
-updated) in `metadata` at upsert time so it rides along with every search hit.
+That `metadata` field is the part people forget, and it's worth pausing on. A
+vector store finds you the *nearest vectors* — but a vector is just 1536
+floats, meaningless on its own. You need the original text to hand back to
+the model when there's a hit. So you stash `text` (and anything else worth
+keeping — a source URL, a section name, a last-updated date) in `metadata` at
+upsert time, and it rides along with every search result from here on.
 
 <LayerDiagram
   caption="What one row in the index actually holds. The vector is what you search by; the metadata is what you return."
@@ -165,10 +238,16 @@ updated) in `metadata` at upsert time so it rides along with every search hit.
   ]}
 />
 
+Ingestion is done. 37 chunks, 37 vectors, all sitting in Postgres with their
+original text attached. Now for the part that happens every time someone
+actually asks a question.
+
 ## Step 4 — Retrieving for a question
 
-Ingestion done. Now the per-question path: embed the question with the *same*
-model, then ask the store for the closest chunks.
+Same idea as ingestion, run in reverse, on a single piece of text: the
+question.
+
+Connect to the same store and index you just built:
 
 ```ts title="retrieve.ts"
 import { embed } from "ai";
@@ -176,12 +255,21 @@ import { openai } from "@ai-sdk/openai";
 import { PgVector } from "@mastra/pg";
 
 const store = new PgVector({ id: "docs", connectionString: process.env.POSTGRES_URL! });
+```
 
+Then embed the question — with the same model you used for the chunks,
+because that's the rule from Step 2 coming back around:
+
+```ts title="retrieve.ts (continued)"
 const { embedding } = await embed({
   model: openai.embedding("text-embedding-3-small"), // same model as ingestion
   value: "What's our refund window for annual plans?",
 });
+```
 
+And ask the store for whichever chunks are closest to it:
+
+```ts title="retrieve.ts (continued)"
 const results = await store.query({
   indexName: "runbook",
   queryVector: embedding,
@@ -199,18 +287,29 @@ for (const r of results) {
 0.377 → Cancellations take effect at the end of the current billing period
 ```
 
-That top hit — score `0.612`, the exact refund clause — is what the model was
-missing in the opening example. `topK: 3` is a deliberate balance: too few and
-you miss a relevant passage, too many and you drown the real answer in noise (and
-burn context tokens). Three to five is a good starting band; tune it against your
-own questions.
+There it is. Score `0.612`, top of the list — the exact refund clause the
+agent was missing back at the start of this article.
+
+`topK: 3` is a small number doing a real balancing act. Too few, and you risk
+missing the one passage that actually answers the question. Too many, and you
+drown that passage in noise while burning context tokens on chunks that don't
+help. Three to five is a reasonable starting band — tune it against your own
+real questions once you have some.
+
+You can now retrieve the right passage for a question. The only piece missing
+is wiring that into something the agent actually calls.
 
 ## Step 5 — Putting retrieval under the agent
 
-You could paste those chunks into the prompt yourself. But the whole point of an
-agent is that it decides *when* it needs to look something up. So expose
-retrieval as a **tool** and let the agent call it — exactly the pattern from
-[Part 1](/tutorials/mastra-agents), now backed by your vector store.
+You could take those three passages and paste them straight into the prompt
+yourself, every time. But that defeats the point of having an agent at all —
+the whole idea, going back to [Part 1](/tutorials/mastra-agents), is that the
+agent decides *when* it needs to go look something up.
+
+So retrieval becomes a tool. Same pattern as every other tool in this series,
+just backed by your vector store instead of an API.
+
+Start with its shape — what it's called, what it takes in, what it returns:
 
 ```ts title="tools/search-docs.ts"
 import { createTool } from "@mastra/core/tools";
@@ -226,6 +325,15 @@ export const searchDocs = createTool({
   outputSchema: z.object({
     passages: z.array(z.object({ text: z.string(), score: z.number() })),
   }),
+```
+
+A query string in, a list of scored passages out. Nothing surprising there —
+it's the same shape as `retrieve.ts` above, just declared as a contract
+instead of run as a script.
+
+The `execute` function is that script, dropped in as the tool's body:
+
+```ts title="tools/search-docs.ts (continued)"
   execute: async ({ query }) => {
     const { embedding } = await embed({
       model: openai.embedding("text-embedding-3-small"),
@@ -243,6 +351,9 @@ export const searchDocs = createTool({
 });
 ```
 
+Embed the query, hit the store, map the results into the shape the schema
+promised. Now the agent has something to call:
+
 ```ts title="mastra/agents.ts"
 import { Agent } from "@mastra/core/agent";
 import { openai } from "@ai-sdk/openai";
@@ -259,9 +370,14 @@ export const supportAgent = new Agent({
 });
 ```
 
-The instructions are doing real work here. "Answer only from the returned
-passages" and "never guess" are what convert a plausible-sounding model into a
-grounded one. Now the same question from the top of this page:
+Don't skim past the instructions — they're doing the real work. "Answer only
+from the returned passages" and "never guess" are the two lines that turn a
+plausible-sounding model back into a grounded one. The retrieval tool gives
+the agent access to the truth; the instructions are what make it actually use
+that access instead of falling back on training data out of habit.
+
+Ask it the same question from the top of this article, and this is what comes
+back:
 
 ```txt title="output"
 [calling search-docs]
@@ -273,10 +389,13 @@ billing period.
 Source: "Refunds. Annual plans are eligible for a full refund within 30 days…"
 ```
 
-No "typically." It searched, it found the clause, it answered from the clause,
-and it told you where the answer came from. Because retrieval is a tool call, it
-also streams through `fullStream` from Part 4 — that `[calling search-docs]` line
-renders live in your UI, so the user watches the agent go look it up.
+No "typically." It searched, it found the clause, it answered from the
+clause, and it told you exactly where the answer came from.
+
+And because retrieval is just a tool call, it rides on the same `fullStream`
+from [Part 4](/tutorials/mastra-streaming) — that `[calling search-docs]` line
+renders live in the UI, so the person asking actually watches the agent go
+look something up before it answers.
 
 <SequenceDiagram
   caption="The grounded answer path. The agent decides to retrieve, the tool embeds + queries the store, and the model answers from what came back."
@@ -298,23 +417,24 @@ renders live in your UI, so the user watches the agent go look it up.
 
 ## What you actually built
 
-The agent didn't get smarter — it got *sourced*. Same loop, same streaming, same
-harness from the earlier parts. All we added was a memory it can look things up
-in:
+The agent didn't get smarter. It got sourced. Same loop, same streaming, same
+harness as the earlier parts in this series — all that changed is it now has
+somewhere to look things up:
 
-- **`MDocument.chunk()`** — cut documents into meaningful, overlapping passages.
-- **`embedMany()`** — turn a batch of chunks into vectors in one call.
-- **`PgVector.upsert()`** — store vectors with the original text in metadata.
-- **`PgVector.query()`** — find the nearest chunks for a question.
-- **a retrieval tool** — so the agent decides when to look, and cites what it found.
+- `MDocument.chunk()` — cut documents into meaningful, overlapping passages.
+- `embedMany()` — turn a batch of chunks into vectors in one call.
+- `PgVector.upsert()` — store vectors with the original text in metadata.
+- `PgVector.query()` — find the nearest chunks for a question.
+- a retrieval tool — so the agent decides when to look, and cites what it found.
 
-The gap between "typically 14–30 days" and "30 days, here's the clause" is the
-entire difference between a demo and something a support team can put in front of
-customers.
+The distance between "typically 14–30 days" and "30 days, here's the clause"
+is the entire distance between a demo and something a support team is willing
+to put in front of a real customer.
 
-That's the five-part core of building with Mastra: an [agent](/tutorials/mastra-agents),
-[workflows](/tutorials/mastra-workflows) around it, a [harness](/tutorials/mastra-harness)
-to host it, [streaming](/tutorials/mastra-streaming) to show its work, and RAG to
-ground it. From here the interesting problems are operational — keeping
-long-running agents alive, and proving they're actually any good. Those are
-next.
+That's the five-part core of building with Mastra: an
+[agent](/tutorials/mastra-agents), [workflows](/tutorials/mastra-workflows)
+around it, a [harness](/tutorials/mastra-harness) to host it,
+[streaming](/tutorials/mastra-streaming) to show its work, and RAG to ground
+it. From here, the interesting problems stop being about capability and start
+being operational — keeping long-running agents alive, and proving they're
+actually any good. Those are next.

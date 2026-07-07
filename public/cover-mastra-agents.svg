@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 480" width="1600" height="480">
+  <rect width="1600" height="480" fill="#f8fafc"/>
+  <pattern id="dots" x="0" y="0" width="48" height="48" patternUnits="userSpaceOnUse">
+    <circle cx="2" cy="2" r="1.4" fill="#e2e8f0"/>
+  </pattern>
+  <rect width="1600" height="480" fill="url(#dots)"/>
+
+  <!-- All coordinates in absolute space, no outer translate -->
+
+  <!-- ── Central agent node at (800,240) ── -->
+  <circle cx="800" cy="240" r="88" fill="#0f172a"/>
+  <text x="800" y="218" font-family="ui-monospace,monospace" font-size="15" fill="#f8fafc" text-anchor="middle">new Agent({</text>
+  <text x="800" y="238" font-family="ui-monospace,monospace" font-size="13" fill="#94a3b8" text-anchor="middle">model,</text>
+  <text x="800" y="256" font-family="ui-monospace,monospace" font-size="13" fill="#94a3b8" text-anchor="middle">tools,</text>
+  <text x="800" y="276" font-family="ui-monospace,monospace" font-size="15" fill="#f8fafc" text-anchor="middle">})</text>
+
+  <!-- ── model box: top-left (460,80) ── -->
+  <line x1="728" y1="186" x2="558" y2="122" stroke="#0f172a" stroke-width="2"/>
+  <rect x="370" y="40" width="188" height="80" rx="10" fill="#f8fafc" stroke="#0f172a" stroke-width="2"/>
+  <text x="464" y="72"  font-family="ui-monospace,monospace" font-size="13" fill="#0f172a" text-anchor="middle">model:</text>
+  <text x="464" y="92"  font-family="ui-monospace,monospace" font-size="12" fill="#64748b" text-anchor="middle">google('gemini-2.0')</text>
+
+  <!-- ── instructions box: bottom-left (460,360) ── -->
+  <line x1="728" y1="294" x2="558" y2="358" stroke="#0f172a" stroke-width="2"/>
+  <rect x="370" y="320" width="188" height="80" rx="10" fill="#f8fafc" stroke="#0f172a" stroke-width="2"/>
+  <text x="464" y="352" font-family="ui-monospace,monospace" font-size="12" fill="#0f172a" text-anchor="middle">instructions:</text>
+  <text x="464" y="372" font-family="ui-monospace,monospace" font-size="12" fill="#64748b" text-anchor="middle">`You are helpful…`</text>
+
+  <!-- ── tools box: top-right (1140,80) ── -->
+  <line x1="872" y1="186" x2="1042" y2="122" stroke="#0f172a" stroke-width="2"/>
+  <rect x="1042" y="40" width="188" height="80" rx="10" fill="#f8fafc" stroke="#0f172a" stroke-width="2"/>
+  <text x="1136" y="72"  font-family="ui-monospace,monospace" font-size="13" fill="#0f172a" text-anchor="middle">.tools([</text>
+  <text x="1136" y="92"  font-family="ui-monospace,monospace" font-size="12" fill="#64748b" text-anchor="middle">searchTool, codeTool])</text>
+
+  <!-- ── memory box: bottom-right (1140,360) ── -->
+  <line x1="872" y1="294" x2="1042" y2="358" stroke="#0f172a" stroke-width="2"/>
+  <rect x="1042" y="320" width="188" height="80" rx="10" fill="#f8fafc" stroke="#0f172a" stroke-width="2"/>
+  <text x="1136" y="352" font-family="ui-monospace,monospace" font-size="13" fill="#0f172a" text-anchor="middle">.memory(</text>
+  <text x="1136" y="372" font-family="ui-monospace,monospace" font-size="12" fill="#64748b" text-anchor="middle">LibSQLStore)</text>
+
+  <!-- ── generate box: far right ── -->
+  <line x1="888" y1="240" x2="1300" y2="240" stroke="#0f172a" stroke-width="2"/>
+  <path d="M 1292,233 L 1308,240 L 1292,247" fill="none" stroke="#0f172a" stroke-width="2" stroke-linejoin="round"/>
+  <rect x="1310" y="196" width="232" height="88" rx="10" fill="#f8fafc" stroke="#0f172a" stroke-width="2"/>
+  <text x="1426" y="225" font-family="ui-monospace,monospace" font-size="13" fill="#0f172a" text-anchor="middle">agent.generate(</text>
+  <text x="1426" y="243" font-family="ui-monospace,monospace" font-size="12" fill="#64748b" text-anchor="middle">  messages,</text>
+  <text x="1426" y="261" font-family="ui-monospace,monospace" font-size="12" fill="#64748b" text-anchor="middle">  { threadId }</text>
+  <text x="1426" y="278" font-family="ui-monospace,monospace" font-size="13" fill="#0f172a" text-anchor="middle">)</text>
+
+  <!-- Corner label -->
+  <text x="52" y="50" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#cbd5e1" letter-spacing="0.18em" font-weight="700">MASTRA · AGENTS</text>
+</svg>

@@ -1,0 +1,247 @@
+---
+title: "Observational Memory in Mastra: How an Agent Remembers Without Re-Reading Everything"
+description: "Think about how you remember a long conversation. You don't replay every word — you keep the gist, and reach for details when you need them. Most agents can't do that. Mastra's observational memory can. Here's how it works, built up one piece at a time."
+publishedAt: "2026-07-07"
+tags: ["mastra", "agents", "memory", "context-engineering", "architecture"]
+coverImage: "/cover-mastra-observational-memory.svg"
+draft: false
+---
+
+Think about a conversation you had last week.
+
+You don't remember it word for word. You remember the gist — who said what,
+roughly, and how it landed. If someone asks about a specific detail, you reach
+back and try to reconstruct it. Most of the transcript is gone, and that's fine.
+Forgetting the exact words is what lets you hold a week of conversations in your
+head at all.
+
+Now here's the thing: most AI agents can't do that.
+
+An agent remembers a conversation by keeping the actual messages around and
+feeding them back to the model on every turn. Every word, verbatim, re-sent each
+time. It works beautifully for a short chat. And then the chat gets long, and it
+quietly falls apart.
+
+Let me show you where it breaks, and then how Mastra fixes it.
+
+<Callout type="info">
+Everything here comes from Mastra's public docs and a small config I put together
+for this post. Observational memory isn't beta — it's been around since
+`@mastra/memory@1.1.0`. Still, pin your version before copying anything.
+</Callout>
+
+## The wall every long conversation hits
+
+Say you keep the last 40 messages in context. Simple, and it works for a while.
+
+But a real conversation doesn't stop at 40. It goes to 400. And now you've got a
+choice, and both options are bad.
+
+Keep only the recent 40 and the agent forgets the beginning — the user's name,
+the decision you made ten minutes ago, the whole reason you're talking. Keep all
+400 and every single request now carries a small novel's worth of tokens. It's
+slow, it's expensive, and most of what you're paying to re-send is stuff the
+model glanced at once and never needs in full again.
+
+That's the wall. More memory means more cost; less cost means less memory. As
+long as memory *is* the raw transcript, you can't escape the tradeoff.
+
+So the fix isn't a bigger window. It's to stop treating memory as a transcript at
+all.
+
+## The idea: remember the gist, keep the details reachable
+
+Go back to how you remember that conversation from last week. The recent stuff is
+sharp. The older stuff has softened into a summary. And if you really need an
+exact detail, you can usually dig it back up.
+
+That's exactly what observational memory does. It keeps recent messages as they
+are, and as older ones pile up, it *compresses* them into short summaries called
+**observations**. The agent stops carrying the full transcript and starts
+carrying the gist — the same trick your own memory uses.
+
+Turning it on is one line:
+
+```ts title="memory.ts"
+import { Memory } from "@mastra/memory";
+
+const memory = new Memory({
+  options: {
+    lastMessages: 20,          // the recent turns, kept word-for-word
+    observationalMemory: true, // everything older gets compressed
+  },
+});
+```
+
+That's a complete, working setup. `lastMessages` is your sharp, verbatim window —
+the last 20 turns the agent always sees in full. Everything older than that is
+handed off to be summarized instead of carried around whole.
+
+For a lot of agents, this one flag is the entire answer. Before you touch another
+option, ship this and watch your token graph on a long thread. The line that used
+to climb forever flattens out.
+
+Now — what's actually doing the compressing?
+
+## Two quiet workers behind the scenes
+
+When you flip that flag on, Mastra starts running two background workers. You
+never call them directly; they just watch the conversation and tidy up.
+
+The first is the **Observer**. It watches the raw messages, and once they pile up
+past a certain size, it takes the older ones and writes them down as
+observations — dense little summaries of what happened.
+
+That handles a long conversation. But what about a *really* long one, where even
+the observations start to pile up?
+
+That's the second worker, the **Reflector**. It does to observations what the
+Observer did to messages: when they grow past their own threshold, it compresses
+them into even higher-level summaries called **reflections**.
+
+So you end up with three layers, each fuzzier than the one above it:
+
+<LayerDiagram
+  caption="Recent messages stay exact. Older ones become observations. Older observations become reflections. The further back you go, the more it's been compressed — exactly like your own memory of a long day."
+  layers={[
+    { label: "Recent messages", sub: "kept word-for-word" },
+    { label: "Observations", sub: "the Observer summarizes messages", accent: true },
+    { label: "Reflections", sub: "the Reflector summarizes observations", accent: true },
+  ]}
+/>
+
+Recent and exact at the top. Compressed and thematic underneath. It's compression
+on top of compression, and it's the whole idea. Everything else is just knobs.
+
+## Turning the knobs — only when you need to
+
+The single flag is the starting line, not the finish. When you want control, it
+expands into a config object. I'm going to show it to you in pieces, because
+seeing all of it at once is exactly the kind of wall that makes this feel harder
+than it is.
+
+Start with the one knob that matters most:
+
+```ts title="memory.ts"
+observationalMemory: {
+  model: "google/gemini-2.5-flash",
+}
+```
+
+Observations are *written* by a language model — something has to read the old
+messages and summarize them. This is that model.
+
+Here's the part worth pausing on: it does not have to be your main agent model.
+This model is doing quiet background summarization, not talking to your user. So
+use a cheap, fast one. Paying premium per-token rates to compress week-old chat
+logs is money set on fire, and `gemini-2.5-flash` is the sensible default for a
+reason.
+
+Next, the knob that decides *how hard* it compresses:
+
+```ts title="memory.ts"
+observationalMemory: {
+  model: "google/gemini-2.5-flash",
+  observation: {
+    messageTokens: 30_000,  // when raw messages cross this, the Observer runs
+  },
+}
+```
+
+This is your main dial. When the raw messages cross roughly 30K tokens, the
+Observer wakes up and compresses.
+
+Turn it *down* and the agent compresses sooner — leaner context, cheaper
+requests, but more summarizing and a little more blur. Turn it *up* and it keeps
+more messages verbatim — richer, sharper context, but you're paying to carry more.
+That's the cost-versus-fidelity trade, and now it's a number you control instead
+of a wall you hit.
+
+You'll rarely need more than these two. But two more are worth knowing about when
+a thread lives a long time:
+
+```ts title="memory.ts"
+observationalMemory: {
+  model: "google/gemini-2.5-flash",
+  observation: { messageTokens: 30_000 },
+
+  // The Reflector's trigger — only matters on very long threads.
+  reflection: { observationTokens: 40_000 },
+
+  // Tag each observation with WHEN it happened.
+  temporalMarkers: true,
+}
+```
+
+`reflection.observationTokens` is the Reflector's version of that same dial — it
+only kicks in once you've accumulated enough observations to need summarizing,
+which happens on genuinely long-lived conversations.
+
+`temporalMarkers` is small but saves you from a real annoyance. Without it, the
+agent can tell you *what* was discussed but has no idea *when* — five minutes ago
+or five days ago all blur together. Tagging observations with time fixes that for
+almost nothing. Turn it on.
+
+There are a handful of finer settings beyond these — buffering intervals, idle
+scheduling, cross-thread scope — but you can meet them the day you actually need
+them. The four above cover almost every real case.
+
+## But summaries forget things
+
+Here's the honest catch, and I want to be straight about it: compression loses
+detail. That's the deal you're signing. A summary of a conversation is not the
+conversation.
+
+Most of the time that's completely fine — you wanted the gist. But sometimes the
+exact wording matters. The precise refund amount. The specific plan the user
+picked. The order ID. And a summary might have smoothed right over it.
+
+So observational memory keeps a door back to the original:
+
+```ts title="memory.ts"
+observationalMemory: {
+  model: "google/gemini-2.5-flash",
+  observation: { messageTokens: 30_000 },
+  retrieval: { vector: true },   // gives the agent a `recall` tool
+}
+```
+
+With retrieval on, the agent gets a `recall` tool it can reach for on its own. It
+reads an observation, realizes it needs the exact detail behind it, and pulls the
+original messages back up.
+
+This is the safety valve that makes the whole scheme trustworthy. Summaries for
+the everyday case; the real transcript on demand when precision matters. And the
+agent decides which one it needs, in the moment.
+
+<Callout type="warn">
+Still — don't lean on a summary for anything that absolutely cannot be wrong. A
+legal figure, a confirmation number, a medical detail: put those in working
+memory or make sure they're recallable. Observational memory is lossy on purpose,
+and `recall` is a fallback, not a guarantee.
+</Callout>
+
+## Where to start
+
+If you take one thing from this: an agent's memory shouldn't be a transcript. It
+should be a hierarchy — sharp and recent at the top, softened and thematic
+underneath, with a way to dig back down when you need to.
+
+Here's the path I'd actually walk:
+
+Turn on `observationalMemory: true`, set a sane `lastMessages`, and measure a long
+thread. If your conversations stay short and cheap, you might stop right there —
+you may not even need it. If costs climb as threads grow, lower
+`observation.messageTokens` so it compresses sooner. If the agent starts losing
+details it needed, give it back some verbatim room or lean on `recall`. And
+whatever you do, keep a cheap model in `model` — it's the easiest win on this
+whole page.
+
+Do that, and a long conversation stops being a scaling problem you dread and
+turns into a couple of numbers you tune.
+
+Memory is only half of keeping an agent's context under control, though. Memory
+decides what's worth *keeping* across turns. What actually gets *sent* on any
+given turn is a separate lever —
+[processors](/articles/mastra-processors) — and together they're most of the
+context story for a real production agent.
