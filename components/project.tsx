@@ -71,9 +71,12 @@ export default function Project(props: ProjectProps) {
         </div>
       </div>
 
-      {/* Image column — full-width, framed under the text */}
-      <div
-        className="relative w-full aspect-[16/10] overflow-hidden"
+      {/* Image column — full-width, framed under the text and clickable */}
+      <a
+        href={hyperlink}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="relative w-full aspect-video block overflow-hidden cursor-pointer"
         style={{ borderTop: "1px solid var(--line)" }}
       >
         <Image
@@ -82,9 +85,9 @@ export default function Project(props: ProjectProps) {
           quality={95}
           fill
           sizes="(min-width: 768px) 720px, 100vw"
-          className="object-cover object-top transition duration-500 group-hover:scale-[1.015]"
+          className="object-contain object-top transition duration-500 group-hover:scale-[1.015]"
         />
-      </div>
+      </a>
     </motion.div>
   );
 }
