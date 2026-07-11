@@ -82,7 +82,7 @@ export default function Project(props: ProjectProps) {
           quality={95}
           fill
           sizes="(min-width: 640px) 45vw, 100vw"
-          className="object-cover object-left-top transition duration-500 group-hover:scale-[1.03]"
+          className="object-contain object-left transition duration-500 group-hover:scale-[1.03]"
         />
       </div>
     </motion.div>
