@@ -43,11 +43,11 @@ Plus standalone deep dives: *The AI SDK v7 features I'm actually excited about*,
 
 ## Flagship projects
 
-### [Evercall](https://evercall.app) — production voice AI agents
+### [Evercall](https://evercall.app) — after-hours AI receptionist
 
-A production-ready voice AI platform for deploying autonomous phone agents. Handles inbound support, outbound qualification, and CRM-synced scheduling with ultra-low latency, native barge-in detection, and real-time dashboard analytics.
+An after-hours AI receptionist for Australian emergency trades. Forward your line, and the AI answers instantly, triages emergencies (like burst hot water vs. dripping taps), books jobs, and sends SMS summaries to the business owner.
 
-`Voice AI` · `Twilio` · `Mastra Workflows` · `Real-time` · `SaaS`
+`Voice AI` · `Twilio` · `LLMs` · `Real-time` · `SaaS`
 
 ### [VibeFrames](https://github.com/akashp1712/vibeframes) — an agent that edits video
 

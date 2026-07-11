@@ -172,9 +172,9 @@ export const projectsData = [
   {
     title: "Evercall",
     description:
-      "A production-ready voice AI platform for deploying autonomous phone agents. Handles inbound support, outbound qualification, and CRM-synced scheduling with ultra-low latency, native barge-in detection, and real-time dashboard analytics.",
+      "An after-hours AI receptionist for Australian emergency trades. Forward your line, and the AI answers instantly, triages emergencies (like burst hot water vs. dripping taps), books jobs, and sends SMS summaries to the business owner.",
     hyperlink: "https://evercall.app",
-    tags: ["Voice AI", "Twilio", "Mastra Workflows", "Real-time", "LLMs", "SaaS"],
+    tags: ["Voice AI", "Twilio", "LLMs", "Real-time", "SaaS"],
     imageUrl: evercallImg,
   },
   {
