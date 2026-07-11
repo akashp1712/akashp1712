@@ -3,6 +3,7 @@ import { CgWorkAlt } from "react-icons/cg";
 import callGptImg from "@/public/call-gpt.png";
 import vibeframesImg from "@/public/vibeframes.png";
 import paymintImg from "@/public/paymint.png";
+import evercallImg from "@/public/evercall.png";
 
 export const links = [
   {
@@ -168,6 +169,14 @@ export const experiencesData = [
 ] as const;
 
 export const projectsData = [
+  {
+    title: "Evercall",
+    description:
+      "A production-ready voice AI platform for deploying autonomous phone agents. Handles inbound support, outbound qualification, and CRM-synced scheduling with ultra-low latency, native barge-in detection, and real-time dashboard analytics.",
+    hyperlink: "https://evercall.app",
+    tags: ["Voice AI", "Twilio", "Mastra Workflows", "Real-time", "LLMs", "SaaS"],
+    imageUrl: evercallImg,
+  },
   {
     title: "VibeFrames",
     description:

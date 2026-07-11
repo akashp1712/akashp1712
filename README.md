@@ -43,6 +43,12 @@ Plus standalone deep dives: *The AI SDK v7 features I'm actually excited about*,
 
 ## Flagship projects
 
+### [Evercall](https://evercall.app) — production voice AI agents
+
+A production-ready voice AI platform for deploying autonomous phone agents. Handles inbound support, outbound qualification, and CRM-synced scheduling with ultra-low latency, native barge-in detection, and real-time dashboard analytics.
+
+`Voice AI` · `Twilio` · `Mastra Workflows` · `Real-time` · `SaaS`
+
 ### [VibeFrames](https://github.com/akashp1712/vibeframes) — an agent that edits video
 
 An agentic video composition engine built on a custom **Mastra Harness**. The agent orchestrates LLM tools and skills to mutate complex timeline state and streams real-time UI updates back through the **Vercel AI SDK**. A working answer to "what does an agent that edits video actually look like?"
