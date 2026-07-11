@@ -24,9 +24,9 @@ export default function Project(props: ProjectProps) {
     <motion.div
       ref={ref}
       style={{ opacity: opacityProgess, y: yProgress }}
-      className="ed-card group mb-5 overflow-hidden last:mb-0 sm:grid sm:grid-cols-[1fr_1.1fr]"
+      className="ed-card group mb-8 overflow-hidden last:mb-0 flex flex-col"
     >
-      {/* Text column */}
+      {/* Text block */}
       <div className="flex flex-col p-6 sm:p-8">
         <h3
           className="font-display text-2xl"
@@ -71,18 +71,18 @@ export default function Project(props: ProjectProps) {
         </div>
       </div>
 
-      {/* Image column — framed in-flow, not a floating tilted screenshot. */}
+      {/* Image column — full-width, framed under the text */}
       <div
-        className="relative hidden min-h-[15rem] overflow-hidden sm:block"
-        style={{ borderLeft: "1px solid var(--line)" }}
+        className="relative w-full aspect-[16/10] overflow-hidden"
+        style={{ borderTop: "1px solid var(--line)" }}
       >
         <Image
           src={imageUrl}
           alt={`${title} preview`}
           quality={95}
           fill
-          sizes="(min-width: 640px) 45vw, 100vw"
-          className="object-contain object-left transition duration-500 group-hover:scale-[1.03]"
+          sizes="(min-width: 768px) 720px, 100vw"
+          className="object-cover object-top transition duration-500 group-hover:scale-[1.015]"
         />
       </div>
     </motion.div>
