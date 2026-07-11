@@ -51,15 +51,9 @@ An after-hours AI receptionist for Australian emergency trades. Forward your lin
 
 ### [VibeFrames](https://github.com/akashp1712/vibeframes) — an agent that edits video
 
-An agentic video composition engine built on a custom **Mastra Harness**. The agent orchestrates LLM tools and skills to mutate complex timeline state and streams real-time UI updates back through the **Vercel AI SDK**. A working answer to "what does an agent that edits video actually look like?"
+A Mastra Harness agent that generates Remotion videos. The agent orchestrates LLM tools and skills to mutate complex timeline state, rendering programmatic video compositions and streaming real-time UI updates back through the **Vercel AI SDK**.
 
-`Mastra Harness` · `Vercel AI SDK` · `Next.js` · `Streaming`
-
-### [Call GPT](https://github.com/akashp1712/call-gpt) — agentic phone calls
-
-Twilio Media Streams wired to an LLM with real-time speech-to-text and text-to-speech. Where I learned the hard problems in voice — latency, barge-in, turn-taking.
-
-`Voice AI` · `Twilio` · `Real-time` · `LLMs`
+`Mastra Harness` · `Remotion` · `Vercel AI SDK` · `Next.js` · `Streaming`
 
 ### [Paymint](https://paymint.dev) — payments, minus the plumbing
 

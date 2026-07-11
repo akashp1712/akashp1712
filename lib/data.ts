@@ -1,6 +1,5 @@
 import React from "react";
 import { CgWorkAlt } from "react-icons/cg";
-import callGptImg from "@/public/call-gpt.png";
 import vibeframesImg from "@/public/vibeframes.png";
 import paymintImg from "@/public/paymint.png";
 import evercallImg from "@/public/evercall.png";
@@ -180,19 +179,11 @@ export const projectsData = [
   {
     title: "VibeFrames",
     description:
-      "An agentic video composition engine built on a custom Mastra Harness. The agent orchestrates LLM tools and skills to mutate complex timeline state and streams real-time UI updates back through the Vercel AI SDK — a working answer to \"what does an agent that edits video actually look like?\"",
+      "A Mastra Harness agent that generates Remotion videos. The agent orchestrates LLM tools and skills to mutate complex timeline state, rendering programmatic video compositions and streaming real-time UI updates back through the Vercel AI SDK.",
     hyperlink: "https://vibeframes.vercel.app",
     githubUrl: "https://github.com/akashp1712/vibeframes",
-    tags: ["Mastra Harness", "Vercel AI SDK", "Agentic", "Next.js", "Streaming"],
+    tags: ["Mastra Harness", "Remotion", "Vercel AI SDK", "Agentic", "Next.js", "Streaming"],
     imageUrl: vibeframesImg,
-  },
-  {
-    title: "Call GPT — Generative AI Phone Calling",
-    description:
-      "A toolkit for building agentic phone calls: Twilio Media Streams wired to an LLM with real-time speech-to-text and text-to-speech. This is where I learned the hard problems in voice — latency, barge-in, turn-taking — the ones no demo warns you about.",
-    hyperlink: "https://github.com/akashp1712/call-gpt",
-    tags: ["Voice AI", "Twilio", "Real-time", "Node.js", "LLMs"],
-    imageUrl: callGptImg,
   },
   {
     title: "Paymint",
