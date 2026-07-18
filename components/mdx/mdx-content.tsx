@@ -11,6 +11,8 @@ import { LayerDiagram } from "./layer-diagram";
 import { SequenceDiagram } from "./sequence-diagram";
 import { LatencyBar } from "./latency-bar";
 import { FlowDiagram } from "./flow-diagram";
+import { StateDiagram } from "./state-diagram";
+import { CompareDiagram } from "./compare-diagram";
 
 // Velite compiles MDX to a function body string. This turns it into a component.
 function useMDXComponent(code: string) {
@@ -28,6 +30,8 @@ const components = {
   SequenceDiagram,
   LatencyBar,
   FlowDiagram,
+  StateDiagram,
+  CompareDiagram,
   Image,
 };
 

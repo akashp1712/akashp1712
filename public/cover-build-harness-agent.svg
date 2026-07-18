@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <rect width="1200" height="630" fill="#f8fafc"/>
+  <pattern id="dots" x="0" y="0" width="48" height="48" patternUnits="userSpaceOnUse">
+    <circle cx="2" cy="2" r="1.4" fill="#e2e8f0"/>
+  </pattern>
+  <rect width="1200" height="630" fill="url(#dots)"/>
+
+  <text x="48" y="54" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#cbd5e1" letter-spacing="0.18em" font-weight="700">AGENTS / FROM SCRATCH</text>
+
+  <!-- Agent loop (left) -->
+  <text x="250" y="118" font-family="ui-monospace,monospace" font-size="11" fill="#94a3b8" text-anchor="middle" letter-spacing="0.12em">THE LOOP</text>
+  <circle cx="250" cy="340" r="100" fill="none" stroke="#e2e8f0" stroke-width="2"/>
+  <circle cx="250" cy="240" r="42" fill="#0f172a"/>
+  <text x="250" y="236" font-family="ui-monospace,monospace" font-size="11" fill="#94a3b8" text-anchor="middle">Perceive</text>
+  <text x="250" y="252" font-family="ui-monospace,monospace" font-size="10" fill="#64748b" text-anchor="middle">messages</text>
+
+  <circle cx="350" cy="340" r="42" fill="#f8fafc" stroke="#0f172a" stroke-width="2"/>
+  <text x="350" y="336" font-family="ui-monospace,monospace" font-size="11" fill="#0f172a" text-anchor="middle">Decide</text>
+  <text x="350" y="352" font-family="ui-monospace,monospace" font-size="10" fill="#64748b" text-anchor="middle">model</text>
+
+  <circle cx="250" cy="440" r="42" fill="#f8fafc" stroke="#0f172a" stroke-width="2"/>
+  <text x="250" y="436" font-family="ui-monospace,monospace" font-size="11" fill="#0f172a" text-anchor="middle">Act</text>
+  <text x="250" y="452" font-family="ui-monospace,monospace" font-size="10" fill="#64748b" text-anchor="middle">tools</text>
+
+  <circle cx="150" cy="340" r="42" fill="#f8fafc" stroke="#0f172a" stroke-width="2"/>
+  <text x="150" y="336" font-family="ui-monospace,monospace" font-size="11" fill="#0f172a" text-anchor="middle">Observe</text>
+  <text x="150" y="352" font-family="ui-monospace,monospace" font-size="10" fill="#64748b" text-anchor="middle">results</text>
+
+  <!-- Arrow -->
+  <line x1="430" y1="340" x2="500" y2="340" stroke="#0f172a" stroke-width="2"/>
+  <path d="M492,333 L508,340 L492,347" fill="none" stroke="#0f172a" stroke-width="2" stroke-linejoin="round"/>
+
+  <!-- Harness stack (right) -->
+  <text x="850" y="118" font-family="ui-monospace,monospace" font-size="11" fill="#94a3b8" text-anchor="middle" letter-spacing="0.12em">THE HARNESS</text>
+
+  <rect x="520" y="168" width="660" height="68" rx="10" fill="#f8fafc" stroke="#0f172a" stroke-width="2"/>
+  <text x="850" y="198" font-family="ui-monospace,monospace" font-size="12" fill="#0f172a" text-anchor="middle">UI - render displayState</text>
+  <text x="850" y="218" font-family="ui-monospace,monospace" font-size="11" fill="#64748b" text-anchor="middle">subscribe to session events</text>
+
+  <rect x="520" y="252" width="660" height="68" rx="10" fill="#0f172a"/>
+  <text x="850" y="282" font-family="ui-monospace,monospace" font-size="12" fill="#94a3b8" text-anchor="middle">Session host</text>
+  <text x="850" y="302" font-family="ui-monospace,monospace" font-size="11" fill="#64748b" text-anchor="middle">thread / mode / approvals / persist</text>
+
+  <rect x="520" y="336" width="660" height="68" rx="10" fill="#f8fafc" stroke="#0f172a" stroke-width="2"/>
+  <text x="850" y="366" font-family="ui-monospace,monospace" font-size="12" fill="#0f172a" text-anchor="middle">Agent loop + tools</text>
+  <text x="850" y="386" font-family="ui-monospace,monospace" font-size="11" fill="#64748b" text-anchor="middle">what you build in Part 1</text>
+
+  <rect x="520" y="432" width="660" height="40" rx="8" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1.5"/>
+  <text x="850" y="458" font-family="ui-monospace,monospace" font-size="11" fill="#94a3b8" text-anchor="middle">demo = loop only / product = loop + session + gates</text>
+</svg>

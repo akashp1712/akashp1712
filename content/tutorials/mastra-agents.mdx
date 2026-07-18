@@ -1,6 +1,6 @@
 ---
-title: "Mastra, Part 1: Agents"
-description: "The first part of a hands-on series on Mastra. I start where everything else builds from — defining a typed agent, giving it tools with createTool, and wiring memory so it remembers across turns."
+title: "Build a Mastra Agent From Scratch — Tools, Memory, and the Loop (Part 1)"
+description: "Every new agent project starts with the same hand-rolled loop. Part 1 of the Mastra series: define a typed agent, wire tools with createTool, and add memory so it survives the next turn — without rebuilding the plumbing again."
 publishedAt: "2026-05-12"
 order: 1
 tags: ["mastra", "agents", "typescript", "tutorial"]
@@ -8,10 +8,11 @@ coverImage: "/cover-mastra-agents.svg"
 draft: false
 ---
 
-I've built agents from scratch before.
+Every new agent project starts with the same hand-rolled loop — and ends with
+the same edge cases you already solved last time.
 
-The loop. The message list. The stop condition. All of it wired by hand,
-one project at a time.
+I've built agents from scratch before. The loop. The message list. The stop
+condition. All of it wired by hand, one project at a time.
 
 It's the best way to actually understand what an agent *is*. You stop
 treating it like magic the moment you've written the retry logic yourself.

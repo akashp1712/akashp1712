@@ -1,0 +1,256 @@
+---
+title: "Stop Re-Reading Huge Tool Outputs: Breadcrumbs Over Blobs"
+description: "Your agent just called searchDocs() and got back 48KB of JSON. On the next turn it re-reads all of it — or worse, silently drops the detail it needs. Store signatures and pointers instead of blobs."
+publishedAt: "2026-07-18"
+tags: ["agents", "memory", "context-window", "architecture"]
+coverImage: "/cover-breadcrumbs-over-blobs.svg"
+draft: false
+---
+
+Your agent calls `searchDocs({ query: "refund policy" })`.
+
+The tool returns twelve pages of markdown — forty-eight kilobytes, easy. The
+model reads it, answers the user, everyone nods. Then the user asks a follow-up:
+*"What about partial refunds on sale items?"*
+
+The agent still has the first answer in thread history. What it does *not*
+still have is room to think. That forty-eight kilobyte tool result is sitting
+in the message list, getting re-sent on every subsequent turn, crowding out
+everything else you actually need in context.
+
+This is one of the quietest ways agent quality falls off a cliff. Nothing
+errors. Nothing crashes. The agent just gets dumber three turns later because
+you stored a **blob** where you should have stored a **breadcrumb**.
+
+<Callout type="info">
+**You'll learn**
+- Why full tool payloads in thread history are a footgun
+- The breadcrumb shape: call signature + pointer + short summary
+- Where to trim (tool boundary, recall path, compaction)
+- A minimal TypeScript pattern you can drop into any agent stack
+</Callout>
+
+## Blobs: the default that doesn't scale
+
+Most first agent implementations do the obvious thing: append the tool's raw
+return value to the conversation as a `tool_result` message. It works in a demo.
+It stops working the moment the tool can return anything larger than a paragraph.
+
+<CompareDiagram
+  caption="Same tool call, two storage strategies. The blob strategy looks fine until turn four."
+  left={{
+    title: "Blob in thread",
+    subtitle: "what most demos do",
+    variant: "bad",
+    items: [
+      {
+        label: "tool_result: searchDocs()",
+        sub: '{ "pages": [ … 48KB … ] }',
+        mono: true,
+      },
+      {
+        label: "Re-sent every turn",
+        sub: "~12,000 tokens before the user even speaks again",
+      },
+      {
+        label: "Failure modes",
+        sub: "OOM · rate limits · stale verbatim text · lost nuance after compaction",
+      },
+    ],
+  }}
+  right={{
+    title: "Breadcrumb in thread",
+    subtitle: "what production needs",
+    variant: "good",
+    items: [
+      {
+        label: "tool_result: searchDocs()",
+        sub: 'call + pointer + 2-sentence summary',
+        mono: true,
+      },
+      {
+        label: "Re-sent every turn",
+        sub: "~45 tokens — room left for actual reasoning",
+      },
+      {
+        label: "Full payload",
+        sub: "Fetched on demand via pointer, not replayed from history",
+      },
+    ],
+  }}
+/>
+
+Three failure modes show up over and over:
+
+1. **Context crowding.** The blob eats the window. System prompt, earlier user
+   intent, and recent turns get truncated first — exactly the stuff that keeps
+   an agent coherent.
+
+2. **Stale verbatim replay.** The model re-reads old tool output as if it's
+   still authoritative, even when the underlying data changed two turns ago.
+
+3. **Compaction surprises.** When you finally summarize or trim history, the
+   blob is the first thing that gets mangled — and it's usually the thing that
+   held the precise detail the user is now asking about.
+
+The fix isn't "never return big results from tools." Tools *should* be able to
+return big results. The fix is **don't keep the big result in the conversation
+permanently**.
+
+## Breadcrumbs: what to store instead
+
+A breadcrumb is a deliberately small record of a tool call that preserves
+*enough* for the model to reason about what happened — and a *pointer* to fetch
+more when it needs to.
+
+<LayerDiagram
+  caption="Three layers in a breadcrumb. The thread keeps the top two; the store holds the blob."
+  layers={[
+    { label: "Call signature", sub: "name + args (reproducible)" },
+    { label: "Short summary", sub: "what the tool found, in ~1–3 sentences" },
+    { label: "Pointer", sub: "doc-store/id, s3://…, cache key", accent: true },
+    { label: "Full payload", sub: "outside the thread — fetch on demand" },
+  ]}
+/>
+
+Concretely, instead of this in thread history:
+
+```json
+{
+  "role": "tool",
+  "tool_call_id": "call_abc",
+  "content": "{ \"pages\": [ /* 48KB */ ] }"
+}
+```
+
+…store something like this:
+
+```json
+{
+  "role": "tool",
+  "tool_call_id": "call_abc",
+  "content": "searchDocs({ query: \"refund policy\" })\nfound: 3 pages (policy.md, faq.md, exceptions.md)\nstored: doc-store/7f3a9c\nsummary: Returns within 30 days; sale items prorated; digital goods excluded unless required by law.\n(full text available via fetchDoc(id))"
+}
+```
+
+The model can answer most follow-ups from the summary alone. When the user
+asks something the summary doesn't cover, the agent calls a **recall tool**
+— `fetchDoc("7f3a9c")` or `fetchDocSection(id, heading)` — instead of hoping
+the blob survived compaction.
+
+<SequenceDiagram
+  caption="Write path: trim at the tool boundary. Read path: fetch only when the model asks."
+  actors={[
+    { id: "store", label: "Side store" },
+    { id: "tool", label: "Tool" },
+    { id: "thread", label: "Thread" },
+  ]}
+  steps={[
+    { from: "tool", to: "store", label: "write blob" },
+    { from: "tool", to: "thread", label: "write breadcrumb" },
+    { from: "thread", to: "tool", label: "fetchDoc()" },
+    { from: "tool", to: "store", label: "read blob" },
+  ]}
+/>
+
+## A minimal pattern in TypeScript
+
+The shape is always the same: **tool writes big, thread stays small, recall
+tool reads big**.
+
+```ts title="tools/search-docs.ts"
+type StoredDoc = { id: string; title: string; body: string };
+
+const docStore = new Map<string, StoredDoc>();
+
+export async function searchDocs({ query }: { query: string }) {
+  const pages = await searchBackend(query); // however you search — vector, grep, API
+
+  const ids = pages.map((p) => {
+    const id = crypto.randomUUID().slice(0, 8);
+    docStore.set(id, p);
+    return { id, title: p.title };
+  });
+
+  const summary = await summarizeForThread(pages); // short — even a cheap model works
+
+  return {
+    breadcrumb: [
+      `searchDocs({ query: ${JSON.stringify(query)} })`,
+      `found: ${ids.map((x) => x.title).join(", ")}`,
+      `stored: ${ids.map((x) => x.id).join(", ")}`,
+      `summary: ${summary}`,
+      `(use fetchDoc(id) for full text)`,
+    ].join("\n"),
+    // optional: keep ids for your own telemetry
+    ids: ids.map((x) => x.id),
+  };
+}
+
+export function fetchDoc({ id }: { id: string }) {
+  const doc = docStore.get(id);
+  if (!doc) return `No document stored with id ${id}.`;
+  return `# ${doc.title}\n\n${doc.body}`;
+}
+```
+
+Wire the agent so the tool handler stores the blob and **only the breadcrumb
+string** goes into the message list:
+
+```ts title="agent/run-turn.ts"
+const result = await searchDocs(args);
+
+messages.push({
+  role: "tool",
+  tool_call_id: call.id,
+  content: result.breadcrumb, // not JSON.stringify(pages)
+});
+```
+
+<Callout type="warn">
+**In production**, `docStore` is not an in-memory `Map`. It's Redis, Postgres,
+S3, or whatever you already use for session state — keyed by `(threadId, ref)`.
+The pattern is the same; only the store changes.
+</Callout>
+
+## Where to trim (the rule of one boundary)
+
+Pick **one** place where large payloads get replaced by breadcrumbs. If you trim
+in three places inconsistently, you'll debug ghosts for a week.
+
+| Boundary | Trim here when… |
+|----------|-----------------|
+| **Tool return** | You control the tool — best default |
+| **Before model call** | Third-party tools return huge JSON you can't change |
+| **Compaction job** | You already have a summarization pass — replace blobs with summaries + pointers retroactively |
+
+I trim at the **tool return** boundary whenever I can. It's the easiest place
+to guarantee the thread never sees the blob in the first place.
+
+## When breadcrumbs aren't enough
+
+Breadcrumbs assume the model can reason from a short summary most of the time
+and reach for a recall tool when it can't. That breaks down when:
+
+- The task requires line-level fidelity across many documents in one turn
+  (large code refactors, legal clause comparison). Consider a **subagent with
+  its own window** instead of stuffing everything into the parent thread.
+- The summary step lies — if your summarizer drops negations or exceptions,
+  the agent will confidently wrong-answer. Gate summaries on structured fields
+  when precision matters (dates, amounts, IDs).
+
+For the parent-thread case, breadcrumbs plus a recall tool cover the majority
+of support, research, and ops agents I've shipped.
+
+## Where to go next
+
+This pattern is one slice of a broader memory stack — breadcrumbs for tool I/O,
+rolling windows for chat, optional summarization above that. If you're building
+on Mastra, [Part 5: RAG](/tutorials/mastra-rag) shows the retrieval pipeline
+end-to-end; breadcrumbs are what keep that pipeline from flooding the thread
+after the first query.
+
+The flagship follow-up — [Build a Harness Agent From Scratch](/tutorials/build-a-harness-agent-from-scratch) —
+covers the session layer that makes recall, persistence, and approvals hang
+together. Breadcrumbs keep each turn small; the harness keeps the *conversation*
+alive across them.

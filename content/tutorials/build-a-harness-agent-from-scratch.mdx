@@ -1,0 +1,478 @@
+---
+title: "Build a Harness Agent From Scratch"
+description: "Picture the demo — model, tools, while loop, done. Then someone refreshes the browser and it's gone. This tutorial builds the layer around the loop: sessions, persistence, approvals, and a UI contract — by hand, with the OpenAI SDK."
+publishedAt: "2026-07-18"
+tags: ["agents", "architecture", "typescript", "tutorial", "harness"]
+coverImage: "/cover-build-harness-agent.svg"
+draft: false
+---
+
+Picture the demo. You wire up a model, give it a couple of tools, drop it in a
+`while` loop. You ask it something, it calls a tool, it answers. It looks great.
+You show it to your team.
+
+Then someone actually uses it.
+
+They refresh the browser mid-task, and the whole thing is gone — no memory of
+what it was doing. They want to nudge it sideways while it's mid-run, and
+there's no way to do that short of killing it and starting over. It's about to
+delete a file, and nothing stops it to ask first.
+
+None of that showed up in the demo. All of it shows up in production.
+
+The pattern has a name by now: **an agent loop is not an application.** A model
+calling tools in a loop is a fine proof of concept. The gap between that and a
+product is sessions, interruption, approval, and persistence — the **harness**
+around the loop.
+
+This tutorial builds both layers. First the loop, by hand, so you know exactly
+what you're wrapping. Then the harness — enough of a session host that a real
+UI could talk to it.
+
+<Callout type="info">
+**You'll build**
+- A typed agent loop with tool calling (OpenAI SDK)
+- A session object that survives refresh (in-memory → pluggable store)
+- Human-in-the-loop approval before destructive tools run
+- A `displayState` snapshot your UI can render
+
+**You'll need** Node 20+, an `OPENAI_API_KEY`, and TypeScript. Code is fresh
+against public APIs — not pasted from any internal codebase.
+</Callout>
+
+## Part 1 — The agent loop
+
+Every harness sits on top of the same four-step cycle:
+
+<LoopDiagram
+  caption="The agent loop. Every framework implements this ring; few teams can draw it from memory on a whiteboard."
+  nodes={[
+    { label: "Perceive", sub: "messages in" },
+    { label: "Decide", sub: "model call" },
+    { label: "Act", sub: "run tools" },
+    { label: "Observe", sub: "tool results" },
+  ]}
+/>
+
+**Perceive** — assemble the messages the model should see this turn.
+**Decide** — call the model; it returns text and/or tool calls.
+**Act** — execute each tool call.
+**Observe** — append tool results and loop until the model stops calling tools.
+
+That's the whole agent. Everything in Part 2 is what turns this into something
+a user can depend on.
+
+### Step 1: Messages and a single turn
+
+Start with the smallest possible types:
+
+```ts title="agent/types.ts"
+export type Role = "system" | "user" | "assistant" | "tool";
+
+export type Message =
+  | { role: "system" | "user"; content: string }
+  | { role: "assistant"; content: string; tool_calls?: ToolCall[] }
+  | { role: "tool"; tool_call_id: string; content: string };
+
+export type ToolCall = {
+  id: string;
+  type: "function";
+  function: { name: string; arguments: string };
+};
+```
+
+One turn = one model call, optionally followed by tool execution:
+
+```ts title="agent/turn.ts"
+import OpenAI from "openai";
+import type { Message, ToolCall } from "./types";
+
+const client = new OpenAI();
+
+export async function runModel(
+  messages: Message[],
+  tools: OpenAI.Chat.ChatCompletionTool[],
+) {
+  const res = await client.chat.completions.create({
+    model: "gpt-4.1-mini",
+    messages: messages as OpenAI.Chat.ChatCompletionMessageParam[],
+    tools: tools.length ? tools : undefined,
+  });
+
+  const choice = res.choices[0]?.message;
+  if (!choice) throw new Error("Empty model response");
+
+  const assistant: Message = {
+    role: "assistant",
+    content: choice.content ?? "",
+    tool_calls: choice.tool_calls as ToolCall[] | undefined,
+  };
+
+  return assistant;
+}
+```
+
+### Step 2: Tools with schemas
+
+Tools are just named functions with JSON Schema inputs. Keep them boring and
+testable:
+
+```ts title="tools/read-file.ts"
+import fs from "node:fs/promises";
+
+export const readFileTool = {
+  definition: {
+    type: "function" as const,
+    function: {
+      name: "readFile",
+      description: "Read a UTF-8 text file from disk.",
+      parameters: {
+        type: "object",
+        properties: { path: { type: "string" } },
+        required: ["path"],
+      },
+    },
+  },
+  async execute(args: { path: string }) {
+    return fs.readFile(args.path, "utf8");
+  },
+};
+```
+
+Register tools in a map so the loop can dispatch by name:
+
+```ts title="tools/index.ts"
+import { readFileTool } from "./read-file";
+
+export const tools = {
+  readFile: readFileTool,
+};
+
+export const toolDefinitions = Object.values(tools).map((t) => t.definition);
+```
+
+### Step 3: The loop itself
+
+Tie perceive → decide → act → observe together with a stop condition:
+
+```ts title="agent/loop.ts"
+import { runModel } from "./turn";
+import { toolDefinitions, tools } from "../tools";
+import type { Message } from "./types";
+
+const MAX_STEPS = 8;
+
+export async function runAgent(initial: Message[]) {
+  const messages: Message[] = [...initial];
+
+  for (let step = 0; step < MAX_STEPS; step++) {
+    const assistant = await runModel(messages, toolDefinitions);
+    messages.push(assistant);
+
+    const calls = assistant.tool_calls ?? [];
+    if (calls.length === 0) break; // model is done
+
+    for (const call of calls) {
+      const name = call.function.name as keyof typeof tools;
+      const tool = tools[name];
+      if (!tool) {
+        messages.push({
+          role: "tool",
+          tool_call_id: call.id,
+          content: `Unknown tool: ${name}`,
+        });
+        continue;
+      }
+
+      const args = JSON.parse(call.function.arguments);
+      const result = await tool.execute(args);
+      messages.push({
+        role: "tool",
+        tool_call_id: call.id,
+        content: typeof result === "string" ? result : JSON.stringify(result),
+      });
+    }
+  }
+
+  return messages;
+}
+```
+
+Run it from a script:
+
+```ts title="scripts/demo-loop.ts"
+import { runAgent } from "../agent/loop";
+
+const out = await runAgent([
+  { role: "system", content: "You are a concise assistant with file tools." },
+  { role: "user", content: "What's in package.json?" },
+]);
+
+console.log(out.at(-1));
+```
+
+You now have the demo. Part 2 is why the demo isn't enough.
+
+<Callout type="tip">
+Before you wrap this in a harness, read [Breadcrumbs Over Blobs](/articles/breadcrumbs-over-blobs)
+— large tool outputs belong in a side store, not in `messages[]` forever.
+</Callout>
+
+## Part 2 — The harness
+
+The harness is everything **around** the loop that a UI needs:
+
+<LayerDiagram
+  caption="You built the bottom layer in Part 1. The harness adds session state, gates, and a render snapshot."
+  layers={[
+    { label: "UI", sub: "render displayState" },
+    { label: "Session host", sub: "thread · approvals · events", accent: true },
+    { label: "Agent loop", sub: "Part 1" },
+    { label: "Tools + store", sub: "filesystem, DB, APIs" },
+  ]}
+/>
+
+### Step 4: Session state
+
+A **session** is the live conversation — not the controller, not the model, the
+*running state* inside a thread:
+
+```ts title="harness/session.ts"
+import type { Message } from "../agent/types";
+
+export type DisplayState = {
+  status: "idle" | "running" | "awaiting_approval";
+  messages: Message[];
+  pendingApproval?: { tool: string; args: unknown };
+};
+
+export class Session {
+  threadId: string;
+  messages: Message[] = [];
+  status: DisplayState["status"] = "idle";
+  pendingApproval?: DisplayState["pendingApproval"];
+
+  constructor(threadId: string, seed: Message[] = []) {
+    this.threadId = threadId;
+    this.messages = seed;
+  }
+
+  getDisplayState(): DisplayState {
+    return {
+      status: this.status,
+      messages: this.messages,
+      pendingApproval: this.pendingApproval,
+    };
+  }
+}
+```
+
+The UI reads **one snapshot** — `getDisplayState()` — instead of reaching into
+five different fields.
+
+### Step 5: Lifecycle
+
+A turn isn't fire-and-forget. It moves through states:
+
+<StateDiagram
+  caption="Session lifecycle for one user message. Approval gates are optional branches on destructive tools."
+  states={[
+    { id: "idle", label: "idle", sub: "waiting" },
+    { id: "run", label: "running", sub: "loop active", accent: true },
+    { id: "approve", label: "approval", sub: "HITL gate", branch: "right" },
+    { id: "persist", label: "persist", sub: "save thread" },
+  ]}
+  transitions={[
+    { from: "idle", to: "run", label: "sendMessage" },
+    { from: "run", to: "approve", label: "destructive tool" },
+    { from: "approve", to: "run", label: "approved" },
+    { from: "run", to: "persist", label: "turn done" },
+    { from: "persist", to: "idle", label: "saved" },
+  ]}
+/>
+
+### Step 6: The session host
+
+The host owns sessions, routes messages, and emits events:
+
+```ts title="harness/host.ts"
+import { Session } from "./session";
+import { runAgentStep } from "./run-step";
+import type { Message } from "../agent/types";
+
+type Listener = (event: { type: string; session: Session }) => void;
+
+export class SessionHost {
+  private sessions = new Map<string, Session>();
+  private listeners = new Set<Listener>();
+
+  subscribe(fn: Listener) {
+    this.listeners.add(fn);
+    return () => this.listeners.delete(fn);
+  }
+
+  private emit(type: string, session: Session) {
+    for (const fn of this.listeners) fn({ type, session });
+  }
+
+  getOrCreate(threadId: string, seed: Message[] = []) {
+    if (!this.sessions.has(threadId)) {
+      this.sessions.set(threadId, new Session(threadId, seed));
+    }
+    return this.sessions.get(threadId)!;
+  }
+
+  async sendMessage(threadId: string, content: string) {
+    const session = this.getOrCreate(threadId);
+    session.messages.push({ role: "user", content });
+    session.status = "running";
+    this.emit("display_state_changed", session);
+
+    await runAgentStep(session, {
+      onApprovalRequired: (tool, args) => {
+        session.status = "awaiting_approval";
+        session.pendingApproval = { tool, args };
+        this.emit("approval_required", session);
+      },
+    });
+
+    session.status = "idle";
+    session.pendingApproval = undefined;
+    this.emit("display_state_changed", session);
+  }
+
+  approve(threadId: string) {
+    const session = this.getOrCreate(threadId);
+    session.pendingApproval = undefined;
+    session.status = "running";
+    this.emit("display_state_changed", session);
+    return runAgentStep(session, { resumeAfterApproval: true });
+  }
+}
+```
+
+### Step 7: Approval before destructive tools
+
+Human-in-the-loop is a **gate in the Act step**, not a separate app:
+
+```ts title="harness/run-step.ts"
+import { runModel } from "../agent/turn";
+import { toolDefinitions, tools } from "../tools";
+import type { Session } from "./session";
+
+const DESTRUCTIVE = new Set(["deleteFile"]);
+
+export async function runAgentStep(
+  session: Session,
+  opts: {
+    onApprovalRequired?: (tool: string, args: unknown) => void;
+    resumeAfterApproval?: boolean;
+  } = {},
+) {
+  const assistant = await runModel(session.messages, toolDefinitions);
+  session.messages.push(assistant);
+
+  for (const call of assistant.tool_calls ?? []) {
+    const name = call.function.name;
+    const args = JSON.parse(call.function.arguments);
+
+    if (DESTRUCTIVE.has(name) && !opts.resumeAfterApproval) {
+      opts.onApprovalRequired?.(name, args);
+      return; // pause the loop — UI shows approval card
+    }
+
+    const tool = tools[name as keyof typeof tools];
+    const result = await tool.execute(args);
+    session.messages.push({
+      role: "tool",
+      tool_call_id: call.id,
+      content: String(result),
+    });
+  }
+}
+```
+
+<SequenceDiagram
+  caption="One turn with an approval gate. The UI subscribes once; events drive re-renders."
+  actors={[
+    { id: "ui", label: "UI" },
+    { id: "host", label: "SessionHost" },
+    { id: "loop", label: "Agent loop" },
+  ]}
+  steps={[
+    { from: "ui", to: "host", label: "sendMessage()" },
+    { from: "host", to: "loop", label: "runModel + tools" },
+    { from: "loop", to: "host", label: "deleteFile → gate", dashed: true },
+    { from: "host", to: "ui", label: "approval_required" },
+    { from: "ui", to: "host", label: "approve()" },
+    { from: "host", to: "loop", label: "resume Act step" },
+    { from: "host", to: "ui", label: "display_state_changed" },
+  ]}
+/>
+
+### Step 8: Persistence (pluggable store)
+
+In-memory sessions die on restart. Swap the map for an interface:
+
+```ts title="harness/store.ts"
+import type { Message } from "../agent/types";
+
+export interface ThreadStore {
+  load(threadId: string): Promise<Message[] | null>;
+  save(threadId: string, messages: Message[]): Promise<void>;
+}
+
+export class MemoryStore implements ThreadStore {
+  private data = new Map<string, Message[]>();
+  async load(id: string) {
+    return this.data.get(id) ?? null;
+  }
+  async save(id: string, messages: Message[]) {
+    this.data.set(id, messages);
+  }
+}
+
+// Production: PostgresThreadStore, RedisThreadStore — same interface
+```
+
+Hydrate on `getOrCreate`, persist after each turn. The harness doesn't care
+which database you pick — only that load/save are explicit.
+
+## Part 3 — What you have now
+
+<LayerDiagram
+  caption="End state: UI talks to the host; the host owns sessions; the loop stays dumb and testable."
+  layers={[
+    { label: "Browser", sub: "send / approve / render" },
+    { label: "SessionHost", sub: "threads + events", accent: true },
+    { label: "Session", sub: "messages + status" },
+    { label: "Agent loop", sub: "Part 1" },
+  ]}
+/>
+
+You can now:
+
+- **Refresh the page** — reload `threadId`, hydrate from the store, render
+  `getDisplayState()`.
+- **Pause mid-run** — approval gate stops the loop without losing messages.
+- **Test the loop alone** — `runAgent()` has no UI dependencies; the harness
+  is a thin wrapper.
+
+This is the same shape every production agent platform ends up at — whether you
+build it by hand or reach for a framework.
+
+## Where to go next
+
+If you want the framework version of what you just built — modes, subagents,
+streaming, durable runs — the [Mastra series](/tutorials/mastra-agents) walks
+through it in seven parts. Part 3 ([The Harness](/tutorials/mastra-harness))
+maps directly onto this tutorial's `SessionHost`, with `AgentController`
+instead of hand-rolled glue.
+
+For the comparison angle — interactive session host vs autonomous graph —
+read [Two Agent Harnesses](/articles/two-agent-harnesses).
+
+And before you ship anything with big tool outputs, wire
+[Breadcrumbs Over Blobs](/articles/breadcrumbs-over-blobs) into your tool
+layer. The harness keeps the conversation alive; breadcrumbs keep each turn
+small enough to think.

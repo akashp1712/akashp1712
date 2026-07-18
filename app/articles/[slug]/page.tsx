@@ -134,9 +134,10 @@ export default function ArticlePage({ params }: Props) {
                   src={post.coverImage}
                   alt={post.title}
                   width={1200}
-                  height={675}
+                  height={630}
                   priority
-                  className="w-full object-cover"
+                  className="h-auto w-full object-contain"
+                  style={{ aspectRatio: "1200 / 630", background: "var(--paper-raised)" }}
                 />
               </div>
             )}
