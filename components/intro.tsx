@@ -51,7 +51,7 @@ export default function Intro() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.08 }}
       >
-        AI Software Engineer
+        AI Systems Engineer &amp; Founder
       </motion.p>
 
       <motion.p

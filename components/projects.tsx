@@ -14,7 +14,7 @@ export default function Projects() {
 
   return (
     <section ref={ref} id="projects" className="mb-24 w-full max-w-3xl scroll-mt-28 px-4 sm:px-6">
-      <SectionHeading eyebrow="03 / Selected work">Things I&apos;ve built</SectionHeading>
+      <SectionHeading eyebrow="02 / Selected work">Things I&apos;ve built</SectionHeading>
       <div>
         {projectsData.map((project, index) => (
           <React.Fragment key={index}>

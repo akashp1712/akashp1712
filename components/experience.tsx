@@ -115,7 +115,7 @@ export default function Experience() {
 
   return (
     <section id="experience" ref={ref} className="mb-24 w-full max-w-3xl scroll-mt-28 px-4 sm:px-6">
-      <SectionHeading eyebrow="02 / Experience">Where I&apos;ve worked</SectionHeading>
+      <SectionHeading eyebrow="03 / Experience">Where I&apos;ve worked</SectionHeading>
 
       <div className="grid grid-cols-1 gap-4">
         {experiencesData.map((experience, index) => (

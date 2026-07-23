@@ -3,6 +3,7 @@ import { CgWorkAlt } from "react-icons/cg";
 import vibeframesImg from "@/public/vibeframes.png";
 import paymintImg from "@/public/paymint.png";
 import evercallImg from "@/public/evercall.png";
+import oncecueImg from "@/public/oncecue.png";
 
 export const links = [
   {
@@ -18,12 +19,12 @@ export const links = [
     hash: "#skills",
   },
   {
-    name: "Experience",
-    hash: "#experience",
-  },
-  {
     name: "Projects",
     hash: "#projects",
+  },
+  {
+    name: "Experience",
+    hash: "#experience",
   },
   {
     name: "Writing",
@@ -168,6 +169,14 @@ export const experiencesData = [
 ] as const;
 
 export const projectsData = [
+  {
+    title: "OneCue",
+    description:
+      "For founders who save tweets, screenshots, and chats—then lose them. Capture in 2 seconds. OneCue surfaces one cue when context matches.",
+    hyperlink: "https://oncecue.app",
+    tags: ["Capture App", "AI Search", "Context Matching", "SaaS", "Productivity"],
+    imageUrl: oncecueImg,
+  },
   {
     title: "Evercall",
     description:

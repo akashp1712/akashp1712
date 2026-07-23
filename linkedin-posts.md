@@ -513,6 +513,88 @@ most broadly useful and the least framework-insider, so it travels furthest.
 
 ---
 
+## Post 8 — Breadcrumbs Over Blobs (new essay)
+
+> Your agent calls a search tool. It gets back 48KB of JSON. The demo looks great.
+>
+> Three turns later the follow-up answer is worse — and nothing crashed.
+>
+> The tool result is still sitting in thread history, getting re-sent every turn. ~12,000 tokens of context eaten before the user even speaks again. The agent isn't broken. You stored a blob where you should have stored a breadcrumb.
+>
+> A breadcrumb is three things:
+> — the call signature (reproducible)
+> — a one-line summary (enough for most follow-ups)
+> — a pointer to the full payload (fetch on demand, not replay from history)
+>
+> Trim at the tool boundary. Keep the thread small. Add a recall tool for when the model needs the full text.
+>
+> Wrote the pattern with a minimal TypeScript example here:
+> https://akashpanchal.com/articles/breadcrumbs-over-blobs
+>
+> #AI #Agents #LLM #ContextEngineering
+
+---
+
+## Post 9 — Build a Harness Agent From Scratch (flagship tutorial)
+
+> Picture the demo. Model, tools, while loop. It calls a tool, it answers. You show it to your team.
+>
+> Then someone refreshes the browser mid-task and everything is gone.
+>
+> They want to nudge it sideways while it's running — can't. It's about to delete a file — nothing stops it.
+>
+> None of that showed up in the demo. All of it shows up in production.
+>
+> An agent loop is not an application. The gap is the harness around the loop: sessions that survive a refresh, approval before destructive tools, a displayState snapshot your UI can render, persistence you can swap from memory to Postgres without rewriting the agent.
+>
+> I wrote a from-scratch tutorial that builds both layers by hand — the loop first (OpenAI SDK), then the session host — so you can see exactly what frameworks like Mastra's AgentController are wrapping.
+>
+> https://akashpanchal.com/tutorials/build-a-harness-agent-from-scratch
+>
+> Pairs well with the breadcrumbs essay if you're storing big tool outputs:
+> https://akashpanchal.com/articles/breadcrumbs-over-blobs
+>
+> #AI #Agents #TypeScript #SystemDesign
+
+---
+
+## Post 10 — Code post: breadcrumb shape (interleave between 8 and 9)
+
+> Most agent codebases do this after a tool call:
+>
+> messages.push({ role: "tool", content: JSON.stringify(hugeResult) })
+>
+> That works until the result is bigger than a paragraph. Then every subsequent turn re-reads the whole thing — or your compaction step mangles the one detail the user asks about next.
+>
+> What I store instead:
+>
+> tool_result: searchDocs({ query: "refund policy" })
+> found: 3 pages · stored: doc-store/7f3a9c
+> summary: Returns within 30 days; sale items prorated...
+> (use fetchDoc(id) for full text)
+>
+> ~45 tokens in history instead of ~12,000. Full payload lives in a side store; the model reaches for it only when it needs to.
+>
+> Full write-up + runnable pattern:
+> https://akashpanchal.com/articles/breadcrumbs-over-blobs
+>
+> #AI #Agents #LLM
+
+---
+
+## Suggested drip for the two new pieces (Week 0)
+
+Post these **interleaved** — never two "read my article" posts back-to-back:
+
+| Day | Post | Why |
+|-----|------|-----|
+| 1 | Post 10 (code: breadcrumb shape) | Hook without feeling like a launch |
+| 3 | Post 8 (breadcrumbs essay) | Shorter piece, broad appeal |
+| 6 | Post 9 (harness tutorial) | Flagship — lands after they've seen you on memory |
+| 8 | Code post from Part A (e.g. steer vs followUp) | Keeps feed from going announcement-heavy |
+
+---
+
 # ============================================================
 # NOTES
 # ============================================================

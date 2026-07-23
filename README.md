@@ -43,11 +43,21 @@ Plus standalone deep dives: *The AI SDK v7 features I'm actually excited about*,
 
 ## Flagship projects
 
+### [OneCue](https://oncecue.app) — capture app for founders
+
+For founders who save tweets, screenshots, and chats—then lose them. Capture in 2 seconds. OneCue surfaces one cue when context matches.
+
+`Capture App` · `AI Search` · `Context Matching` · `SaaS` · `Productivity`
+
+<img src="public/oncecue.png" alt="OneCue" style="border: 2px solid #e1e4e8; border-radius: 8px;">
+
 ### [Evercall](https://evercall.app) — after-hours AI receptionist
 
 An after-hours AI receptionist for Australian emergency trades. Forward your line, and the AI answers instantly, triages emergencies (like burst hot water vs. dripping taps), books jobs, and sends SMS summaries to the business owner.
 
 `Voice AI` · `Twilio` · `LLMs` · `Real-time` · `SaaS`
+
+<img src="public/evercall.png" alt="Evercall" style="border: 2px solid #e1e4e8; border-radius: 8px;">
 
 ### [VibeFrames](https://github.com/akashp1712/vibeframes) — an agent that edits video
 
@@ -55,11 +65,15 @@ A Mastra Harness agent that generates Remotion videos. The agent orchestrates LL
 
 `Mastra Harness` · `Remotion` · `Vercel AI SDK` · `Next.js` · `Streaming`
 
+<img src="public/vibeframes.png" alt="VibeFrames" style="border: 2px solid #e1e4e8; border-radius: 8px;">
+
 ### [Paymint](https://paymint.dev) — payments, minus the plumbing
 
 A drop-in Paddle payments integration for indie developers — turning days of billing-API wrangling into minutes. Handles checkout, webhooks, and subscription state so you can ship the product instead of the plumbing.
 
 `Payments` · `Paddle` · `SaaS` · `TypeScript` · `DX`
+
+<img src="public/paymint.png" alt="Paymint" style="border: 2px solid #e1e4e8; border-radius: 8px;">
 
 <sub>Also shipped: **[AI SDK Patterns](https://ai-sdk-patterns.dev)** — a reference library of production patterns for building with the Vercel AI SDK.</sub>
 
