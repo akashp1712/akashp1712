@@ -43,7 +43,7 @@ Plus standalone deep dives: *The AI SDK v7 features I'm actually excited about*,
 
 ## Flagship projects
 
-### [OneCue](https://oncecue.app) — capture app for founders
+### [OneCue](https://onecue.app) — capture app for founders
 
 For founders who save tweets, screenshots, and chats—then lose them. Capture in 2 seconds. OneCue surfaces one cue when context matches.
 

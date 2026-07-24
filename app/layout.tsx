@@ -122,7 +122,7 @@ const jsonLd = {
     {
       "@type": "SoftwareApplication",
       name: "OneCue",
-      url: "https://oncecue.app",
+      url: "https://onecue.app",
       applicationCategory: "ProductivityApplication",
       operatingSystem: "Web",
       description:

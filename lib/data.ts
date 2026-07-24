@@ -173,7 +173,7 @@ export const projectsData = [
     title: "OneCue",
     description:
       "For founders who save tweets, screenshots, and chats—then lose them. Capture in 2 seconds. OneCue surfaces one cue when context matches.",
-    hyperlink: "https://oncecue.app",
+    hyperlink: "https://onecue.app",
     tags: ["Capture App", "AI Search", "Context Matching", "SaaS", "Productivity"],
     imageUrl: oncecueImg,
   },
