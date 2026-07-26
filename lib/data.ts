@@ -170,20 +170,20 @@ export const experiencesData = [
 
 export const projectsData = [
   {
+    title: "Evercall",
+    description:
+      "An after-hours AI receptionist for Australian emergency trades. Forward your line, and the AI answers instantly, triages emergencies (like burst hot water vs. dripping taps), books jobs, and sends SMS summaries to the business owner.",
+    hyperlink: "https://evercall.app",
+    tags: ["Voice AI", "LiveKit", "Twilio", "LLMs", "Real-time", "SaaS"],
+    imageUrl: evercallImg,
+  },
+  {
     title: "OneCue",
     description:
       "For founders who save tweets, screenshots, and chats—then lose them. Capture in 2 seconds. OneCue surfaces one cue when context matches.",
     hyperlink: "https://onecue.app",
     tags: ["Capture App", "AI Search", "Context Matching", "SaaS", "Productivity"],
     imageUrl: oncecueImg,
-  },
-  {
-    title: "Evercall",
-    description:
-      "An after-hours AI receptionist for Australian emergency trades. Forward your line, and the AI answers instantly, triages emergencies (like burst hot water vs. dripping taps), books jobs, and sends SMS summaries to the business owner.",
-    hyperlink: "https://evercall.app",
-    tags: ["Voice AI", "Twilio", "LLMs", "Real-time", "SaaS"],
-    imageUrl: evercallImg,
   },
   {
     title: "VibeFrames",
@@ -194,18 +194,15 @@ export const projectsData = [
     tags: ["Mastra Harness", "Remotion", "Vercel AI SDK", "Agentic", "Next.js", "Streaming"],
     imageUrl: vibeframesImg,
   },
-  {
-    title: "Paymint",
-    description:
-      "A drop-in Paddle payments integration for indie developers — turning days of billing-API wrangling into minutes. Handles checkout, webhooks, and subscription state so you can ship the product instead of the plumbing.",
-    hyperlink: "https://paymint.dev",
-    tags: ["Payments", "Paddle", "SaaS", "TypeScript", "DX"],
-    imageUrl: paymintImg,
-  },
 ] as const;
 
 // Smaller shipped work — shown as a compact timeline under the flagship projects.
 export const projectTimelineData = [
+  {
+    title: "Paymint",
+    description: "A drop-in Paddle payments integration for indie developers — turning days of billing-API wrangling into minutes.",
+    hyperlink: "https://paymint.dev",
+  },
   {
     title: "AI SDK Patterns",
     description: "A reference library of production patterns for building with the Vercel AI SDK.",
