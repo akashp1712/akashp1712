@@ -228,12 +228,12 @@ when they change an answer. That's the feature you'd otherwise encode in
 <FlowDiagram
   caption="Intake group: forward order, regression arrow, early exit when dates are sold out."
   nodes={[
-    { id: "stay", label: "Stay", sub: "dates & guests", col: 0, accent: true },
-    { id: "room", label: "Room", sub: "catalog choice", col: 1 },
-    { id: "contact", label: "Contact", sub: "phone + confirm", col: 2 },
-    { id: "extras", label: "Extras", sub: "breakfast, notes", col: 3 },
-    { id: "waitlist", label: "Waitlist", sub: "NoAvailability", col: 2, accent: true },
-    { id: "book", label: "book_room()", sub: "plain function", col: 4, accent: true },
+    { id: "stay", label: "Stay", sub: "dates & guests", col: 0, row: 0, accent: true },
+    { id: "room", label: "Room", sub: "catalog choice", col: 1, row: 0 },
+    { id: "contact", label: "Contact", sub: "phone + confirm", col: 2, row: 0 },
+    { id: "extras", label: "Extras", sub: "breakfast, notes", col: 3, row: 0 },
+    { id: "book", label: "book_room()", sub: "plain function", col: 4, row: 0, accent: true },
+    { id: "waitlist", label: "Waitlist", sub: "NoAvailability", col: 1, row: 1, accent: true },
   ]}
   edges={[
     { from: "stay", to: "room", label: "next" },
@@ -241,7 +241,7 @@ when they change an answer. That's the feature you'd otherwise encode in
     { from: "contact", to: "extras", label: "next" },
     { from: "extras", to: "book", label: "all done" },
     { from: "room", to: "stay", label: '"change dates"' },
-    { from: "stay", to: "waitlist", label: "blocked window" },
+    { from: "stay", to: "waitlist", label: "sold out" },
   ]}
 />
 

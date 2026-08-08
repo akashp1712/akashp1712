@@ -8,7 +8,14 @@
 import { useId } from "react";
 import { DiagramFrame } from "./diagram-frame";
 
-type FNode = { id: string; label: string; sub?: string; col: number; accent?: boolean };
+type FNode = {
+  id: string;
+  label: string;
+  sub?: string;
+  col: number;
+  row?: number;
+  accent?: boolean;
+};
 type FEdge = { from: string; to: string; label?: string };
 
 export function FlowDiagram({
@@ -34,12 +41,26 @@ export function FlowDiagram({
 
   const byCol: FNode[][] = Array.from({ length: cols }, () => []);
   nodes.forEach((n) => byCol[n.col].push(n));
-  const maxRows = Math.max(...byCol.map((c) => c.length));
-  const height = padY * 2 + maxRows * nodeH + (maxRows - 1) * gapY + 40;
+
+  // When any node declares a `row`, all columns share one row grid so a main
+  // path stays on a straight line. Otherwise each column centres itself.
+  const gridMode = nodes.some((n) => n.row !== undefined);
+  const rows = gridMode
+    ? Math.max(...nodes.map((n) => n.row ?? 0)) + 1
+    : Math.max(...byCol.map((c) => c.length));
+  const height = padY * 2 + rows * nodeH + (rows - 1) * gapY + 40;
   const width = padX * 2 + (cols - 1) * colW + nodeW;
+  const gridTop = (height - (rows * nodeH + (rows - 1) * gapY)) / 2;
 
   function pos(id: string) {
     const n = nodes.find((x) => x.id === id)!;
+    if (gridMode) {
+      return {
+        x: padX + n.col * colW,
+        y: gridTop + (n.row ?? 0) * (nodeH + gapY),
+        col: n.col,
+      };
+    }
     const colNodes = byCol[n.col];
     const idx = colNodes.findIndex((x) => x.id === id);
     const colHeight = colNodes.length * nodeH + (colNodes.length - 1) * gapY;
@@ -69,6 +90,19 @@ export function FlowDiagram({
         d: `M${sx},${sy} C${sx + 50},${arcY} ${ex - 50},${arcY} ${ex - 8},${ey}`,
         lx: midX,
         ly: arcY - 8,
+      };
+    }
+
+    // On a grid, backward edges hop over the top so the space below the main
+    // row stays clear for branch nodes.
+    if (gridMode && colDelta < 0) {
+      const arcY = Math.min(a.y, b.y) - 34;
+      const cxA = a.x + nodeW / 2;
+      const cxB = b.x + nodeW / 2;
+      return {
+        d: `M${cxA},${a.y} C${cxA},${arcY} ${cxB},${arcY} ${cxB},${b.y - 8}`,
+        lx: (cxA + cxB) / 2,
+        ly: arcY + 2,
       };
     }
 
