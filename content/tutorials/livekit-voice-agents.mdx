@@ -1,0 +1,471 @@
+---
+title: "The State Machine You Were About to Write Already Exists — LiveKit Voice Agents"
+description: "Phone agents need dates, room types, and callback numbers. The instinct is a CallState dataclass and next_question(). LiveKit Agents already solved that with AgentTask and TaskGroup — here's the hotel receptionist that shows how."
+publishedAt: "2026-08-08"
+order: 1
+tags: ["livekit", "voice-ai", "python", "tutorial"]
+coverImage: "/cover-livekit-voice-agents.svg"
+draft: false
+---
+
+You're building a phone agent. It needs check-in and check-out dates, a room
+type, a phone number, maybe breakfast. So you sketch a `CallState` dataclass,
+track which fields are filled, and write a `next_question()` that returns the
+next slot to ask for.
+
+That instinct feels rigorous. It's also the mistake.
+
+You end up with two systems deciding what happens next — yours and whatever the
+voice framework already runs — and when they disagree, the bug is invisible from
+either side. [LiveKit Agents](https://docs.livekit.io/agents/) for Python gives
+you a different shape: one agent for the call, [tasks](https://docs.livekit.io/agents/logic/tasks/)
+for multi-turn collection, and a [TaskGroup](https://docs.livekit.io/agents/logic/tasks/#taskgroup)
+for ordered intake with backtracking. The group's order *is* the state machine.
+
+This walkthrough follows a small repo I published so you can read the code, not
+just the ideas: [livekit-hotel-receptionist](https://github.com/akashp1712/livekit-hotel-receptionist).
+**livekit-agents 1.6.9**, Python 3.12, **uv**. Everything below is copied from
+that project.
+
+## What we're building
+
+A fictional hotel answers the phone, runs an intake conversation, writes a
+booking, and confirms. The interesting bit is regression: the caller can change
+their mind mid-flow.
+
+```
+"Hi, I'd like a room for the 14th to the 16th, two of us."
+     → dates and guests
+     → room that fits two people
+     → callback number, read back
+     → breakfast and late checkout
+     → booked, then confirmed
+
+"Actually, make it the 15th."     ← works, at any point in the group
+```
+
+Read `tasks.py` → `receptionist.py` → `hotel.py` → `agent.py`. The hotel
+backend never imports LiveKit.
+
+## Why voice is not chat with a microphone
+
+A text agent is mostly LLM latency. A voice agent is a pipeline, and every stage
+adds time the caller feels in their ear.
+
+<PipelineDiagram
+  caption="One turn: speech in, your logic in the middle, speech out. Turn detection closes the loop."
+  stages={[
+    { label: "STT", sub: "hearing" },
+    { label: "LLM", sub: "thinking" },
+    { label: "Your code", sub: "tools & tasks" },
+    { label: "TTS", sub: "speaking" },
+  ]}
+/>
+
+You don't get to hide behind "the model was slow." If STT endpointing fires
+early, you interrupt the caller. If TTS starts before you've finished thinking,
+you sound eager and wrong. If your booking write is a tool the model can call
+whenever it feels like it, you can confirm a reservation that never happened.
+
+The numbers below are **illustrative**, not benchmarks — they show why each stage
+matters in a single turn budget:
+
+<LatencyBar
+  caption="Illustrative per-turn latency budget (ms) — real values depend on models, region, and network."
+  unit="ms"
+  rows={[
+    {
+      name: "Caller hears you",
+      segments: [
+        { label: "STT", ms: 120 },
+        { label: "LLM", ms: 450 },
+        { label: "Code", ms: 40 },
+        { label: "TTS", ms: 280 },
+      ],
+    },
+  ]}
+/>
+
+Voice forces you to be explicit about *when* a turn ends. That's turn detection,
+not prompt engineering.
+
+## Turn detection is the hard problem
+
+Most sample agents use a silence timer: "500 ms quiet means they're done." That
+works until someone says a phone number, an address, or anything with deliberate
+pauses.
+
+<CompareDiagram
+  caption="Same utterance, two endpointing strategies."
+  left={{
+    title: "Silence timer",
+    subtitle: "0.5s quiet → end of turn",
+    variant: "bad",
+    items: [
+      { label: '"My number is oh four one two…"', sub: "caller still spelling" },
+      { label: "Agent jumps in", sub: "interrupts mid-digit", mono: true },
+    ],
+  }}
+  right={{
+    title: "Audio turn detector",
+    subtitle: "inference.TurnDetector()",
+    variant: "good",
+    items: [
+      { label: '"My number is oh four one two…"', sub: "intonation says not done" },
+      { label: "Agent waits", sub: "then collects the full number", mono: true },
+    ],
+  }}
+/>
+
+LiveKit's current default is the **audio** turn detector —
+[`inference.TurnDetector()`](https://docs.livekit.io/agents/logic/turns/turn-detector/)
+— built into the SDK since 1.6.1. It reads words and prosody, not just gaps.
+
+Endpointing, end-of-utterance (EOU), barge-in, and backchannel handling all
+live in that layer — see the [turn detector docs](https://docs.livekit.io/agents/logic/turns/turn-detector/)
+for vocabulary. The hotel demo wires this through `TurnHandlingOptions` in
+`agent.py` rather
+than scattered kwargs — turn detector, dynamic endpointing, adaptive interruption:
+
+```python title="agent.py"
+turn_handling = TurnHandlingOptions(
+    turn_detection=inference.TurnDetector(),
+    endpointing={"mode": "dynamic"},
+    interruption={
+        "mode": "adaptive",
+        "min_duration": 0.5,
+        "min_words": 0,
+    },
+    preemptive_generation={
+        "preemptive_tts": False,
+    },
+)
+```
+
+Leave the old VAD-era `min_delay: 0.5, max_delay: 3.0` numbers out when the
+audio detector is active. The session already tightens defaults; copying blog
+posts makes the agent slower for no gain.
+
+## Start with one agent and tools
+
+The [workflows docs](https://docs.livekit.io/agents/logic/workflows/) are blunt:
+start with **one** agent and a few tools. Split only on a concrete limitation —
+instruction bloat, conflicting tool access, multi-turn collection, or
+backtracking. "We might need handoffs later" is not on the list.
+
+The receptionist is that single agent: hotel-wide instructions, an end-call tool,
+and the intake group inside `on_enter`:
+
+```python title="receptionist.py"
+class Receptionist(Agent):
+    def __init__(self) -> None:
+        end_call_tool = EndCallTool(
+            extra_description="End the call after the guest is finished or says goodbye.",
+        )
+        super().__init__(
+            instructions=(
+                f"You are the voice receptionist for {HOTEL_NAME}. "
+                "Help with room bookings, take messages, and end calls politely."
+            ),
+            tools=end_call_tool.tools,
+        )
+```
+
+Rule of thumb I'll repeat because it saves design arguments:
+
+**If the model needs to ask a follow-up question, it's a task. If it's one call
+with arguments, it's a tool.**
+
+`take_message` is a tool. Collecting check-in, check-out, and guest count — with
+corrections along the way — is not.
+
+## Where one agent breaks: AgentTask
+
+An [`AgentTask`](https://docs.livekit.io/agents/logic/tasks/) is a focused
+sub-conversation that returns a typed result. The framework handles "what do I
+still need?" inside the task — you expose tools that call `self.complete(...)`
+when the slot is filled.
+
+`StayTask` is the smallest example in the repo:
+
+```python title="tasks.py"
+class StayTask(AgentTask[Stay]):
+    def __init__(self, chat_ctx=None) -> None:
+        super().__init__(
+            instructions=stay_task_instructions(),
+            chat_ctx=chat_ctx,
+        )
+
+    async def on_enter(self) -> None:
+        await self.session.generate_reply(
+            instructions="Ask for check-in date, check-out date, and number of guests."
+        )
+
+    @function_tool()
+    async def record_stay(
+        self,
+        context: RunContext,
+        check_in: str,
+        check_out: str,
+        guests: int,
+    ) -> None:
+        """Record check-in, check-out (YYYY-MM-DD), and guest count."""
+        if guests < 1:
+            raise ToolError("Guest count must be at least 1.")
+        self.complete(Stay(check_in=check_in, check_out=check_out, guests=guests))
+```
+
+`GetPhoneNumberTask` is a [prebuilt task](https://docs.livekit.io/agents/prebuilt/tasks/)
+with confirmation built in.
+
+## TaskGroup: order, context, regression
+
+[`TaskGroup`](https://docs.livekit.io/agents/logic/tasks/#taskgroup) runs tasks in
+sequence, shares chat context, and lets the caller jump back to an earlier step
+when they change an answer. That's the feature you'd otherwise encode in
+`CallState`.
+
+<FlowDiagram
+  caption="Intake group: forward order, regression arrow, early exit when dates are sold out."
+  nodes={[
+    { id: "stay", label: "Stay", sub: "dates & guests", col: 0, accent: true },
+    { id: "room", label: "Room", sub: "catalog choice", col: 1 },
+    { id: "contact", label: "Contact", sub: "phone + confirm", col: 2 },
+    { id: "extras", label: "Extras", sub: "breakfast, notes", col: 3 },
+    { id: "waitlist", label: "Waitlist", sub: "NoAvailability", col: 2, accent: true },
+    { id: "book", label: "book_room()", sub: "plain function", col: 4, accent: true },
+  ]}
+  edges={[
+    { from: "stay", to: "room", label: "next" },
+    { from: "room", to: "contact", label: "next" },
+    { from: "contact", to: "extras", label: "next" },
+    { from: "extras", to: "book", label: "all done" },
+    { from: "room", to: "stay", label: '"change dates"' },
+    { from: "stay", to: "waitlist", label: "blocked window" },
+  ]}
+/>
+
+The real `add()` calls from `receptionist.py`:
+
+```python title="receptionist.py"
+intake = TaskGroup(
+    chat_ctx=chat_ctx,
+    on_task_completed=on_task_completed,
+)
+intake.add(
+    lambda: StayTask(chat_ctx=chat_ctx),
+    id="stay",
+    description="Collect check-in, check-out, and guest count",
+)
+intake.add(
+    lambda: RoomTask(chat_ctx=chat_ctx, guests=stay_guests),
+    id="room",
+    description="Choose a room type from the catalog",
+)
+intake.add(
+    lambda: GetPhoneNumberTask(
+        chat_ctx=chat_ctx,
+        extra_instructions=(
+            f"Collect a callback number for the {HOTEL_NAME} reservation."
+        ),
+        require_confirmation=True,
+    ),
+    id="contact",
+    description="Collect and confirm phone number",
+)
+intake.add(
+    lambda: ExtrasTask(chat_ctx=chat_ctx),
+    id="extras",
+    description="Breakfast, late checkout, and notes",
+)
+
+try:
+    results = await intake
+except NoAvailability:
+    await self.session.generate_reply(instructions=waitlist_instructions())
+    return
+```
+
+The `description` on each `add()` is for the model when the caller regresses —
+not a label for you.
+
+<Callout type="info">
+`TaskGroup` is marked **experimental** upstream. The ideas are stable; the API
+may shift. Check the [tasks docs](https://docs.livekit.io/agents/logic/tasks/)
+before you bet a production roadmap on the exact import path.
+</Callout>
+
+## Two mechanics that look like ceremony
+
+**Factory lambdas run when the task starts**, not when you register it:
+
+```python
+intake.add(lambda: RoomTask(chat_ctx=chat_ctx, guests=stay_guests), id="room", ...)
+```
+
+`stay_guests` is updated in `on_task_completed` when `"stay"` finishes. If you
+constructed `RoomTask` eagerly at the top of `on_enter`, you'd freeze
+`guests=1` forever. The lambda is how later tasks read values earlier tasks
+produced — and how a task gets rebuilt cleanly when the caller regresses.
+
+**Early exit is an exception, not `session.shutdown()` inside the callback.**
+
+```python title="receptionist.py"
+async def on_task_completed(event: TaskCompletedEvent) -> None:
+    nonlocal stay_guests
+    if event.task_id == "stay":
+        stay = event.result
+        stay_guests = stay.guests
+        if not any_room_available(stay.check_in, stay.check_out):
+            raise NoAvailability()
+```
+
+`on_task_completed` runs while the group is still iterating. Calling
+`session.shutdown()` there raises `RuntimeError` because the stack isn't done.
+Raise a custom exception, catch it where you `await intake`, and handle the
+branch in normal async code — as with `NoAvailability` above.
+
+Cancellation can surface as `ToolError`; the intake test uses `suppress(ToolError)`.
+
+## Don't make the write a tool
+
+This is the opinionated bit, and it's the strongest idea in the repo.
+
+`book_room` is a plain function in `hotel.py`, called **after** the group
+returns:
+
+```python title="receptionist.py"
+confirmation = book_room(
+    check_in=stay.check_in,
+    check_out=stay.check_out,
+    room_type=room.room_type,
+    guests=stay.guests,
+    phone_number=contact.phone_number,
+    breakfast=extras.breakfast,
+    late_checkout=extras.late_checkout,
+    notes=extras.notes,
+)
+
+room_name = ROOM_CATALOG[room.room_type].display_name
+await self.session.generate_reply(
+    instructions=booking_confirmation_instructions(confirmation, room_name),
+)
+```
+
+If booking were a `@function_tool`, the model would choose **when** to call it.
+It can say "you're all booked" before the write, or skip the write and say it
+anyway. Prompting "never confirm unless the tool succeeded" does not fix that
+reliably — it's the most damaging failure mode in a reservation agent.
+
+As plain code, confirmation is the next statement after a successful write. The
+failure mode is designed out, not argued against in the system prompt.
+
+**Tools are for actions the model should decide to take. Consequences of a
+completed flow are just code.**
+
+## The realism layer
+
+**Keyterms + `keyterm_detection`** — biggest STT accuracy lever; distinctive
+names break bookings when transcribed wrong:
+
+```python title="agent.py"
+keyterms = [HOTEL_NAME, "Harborview", "suite", "deluxe", "standard"]
+keyterms.extend(room_type_ids())
+# ...
+stt_context_options=STTContextOptions(
+    keyterms=keyterms,
+    keyterm_detection={"enabled": True},
+),
+```
+
+See [keyterms in the docs](https://docs.livekit.io/agents/models/stt/keyterms/).
+
+**`BVCTelephony()`** for SIP, not `BVC()` from web samples. **`BackgroundAudioPlayer`** for ambience and a
+thinking sound. **`min_consecutive_speech_delay`** around 0.2–0.4 so `say()` and
+`generate_reply()` don't stack with no breath. **`user_away_timeout`** plus
+`user_state_changed` to end abandoned calls. Fixed copy (the greeting) uses
+`session.say()`, not `generate_reply()`.
+
+## Three deprecated patterns still in sample code
+
+Copy-paste from older posts will land you here:
+
+1. **`UsageCollector` / `UsageSummary`** → use `session.usage`. Each entry in
+   `session.usage.model_usage` has `.provider` and `.model`:
+
+```python title="agent.py"
+async def log_usage() -> None:
+    for usage in session.usage.model_usage:
+        logger.info("%s/%s: %s", usage.provider, usage.model, usage)
+
+ctx.add_shutdown_callback(log_usage)
+```
+
+2. **Session-level `metrics_collected`** → prefer `session_usage_updated` and
+   `ChatMessage.metrics` for per-turn latency. **Per-plugin** `metrics_collected`
+   is *not* deprecated — only the session-level event.
+
+3. **Text turn detector `MultilingualModel` and `livekit-agents[turn-detector]`**
+   → the audio `inference.TurnDetector()` needs no extra and replaces the text
+   model slated for removal in 2.0. The extra pulls a large deprecated weights
+   package you almost certainly don't want.
+
+## Testing, and a flaky test worth learning from
+
+After `session.start()`, `await asyncio.sleep(0.5)` before the first
+`session.run()` — TaskGroup briefly clears the session LLM during transitions.
+Pass `userdata` into `AgentSession(...)` or get `ValueError: AgentSession userdata
+is not set`. Don't assert on greeting output from `on_enter`; it's outside the
+first `RunResult`.
+
+Now the flaky one. `test_intake_raises_no_availability_for_blocked_dates`
+asserted `contains_function_call(name="record_stay")` after a **single**
+`session.run()`. It passed most of the time and failed roughly one run in five,
+with `AssertionError: No FunctionCallEvent satisfying criteria found`.
+
+The cause wasn't a race. Given the dates, the model usually called `record_stay`
+straight away — but sometimes read them back first ("To confirm, check-in is
+2026-12-24… is that correct?") and called the tool on the **next** turn.
+`contains_function_call()` searches the whole response, but only of one
+`session.run()`.
+
+The fix is to drive the conversation until the outcome appears:
+
+```python title="tests/test_intake_flow.py"
+await session.start(_IntakeRunner())
+await asyncio.sleep(0.5)
+replies = ["December 24 2026 to December 26 2026, two guests.", "Yes, that's correct."]
+for reply in replies:
+    if hotel_userdata.messages:
+        break
+    with suppress(ToolError):
+        await session.run(user_input=reply)
+    await asyncio.sleep(0.5)
+
+assert hotel_userdata.messages == ["waitlist"]
+```
+
+**Assert on outcomes, not conversational choreography.** Anything that assumes
+the model needs exactly N turns is a test that fails on Fridays.
+
+<Callout type="warn">
+Run **`uv run -m livekit.agents download-files`** once to fetch weights for
+locally-run plugins (Silero VAD here). `uv run agent.py download-files` still
+works but is **deprecated as of 1.5.10** — use the module form in scripts and
+CI.
+</Callout>
+
+## How to read the repo
+
+Clone [livekit-hotel-receptionist](https://github.com/akashp1712/livekit-hotel-receptionist),
+`uv sync`, download files, copy `.env.example`, then `uv run agent.py console`
+to talk on your mic.
+
+I'd read in this order: `tasks.py` (what a task is), `receptionist.py` (the
+group and booking boundary), `hotel.py` (fake backend), `agent.py` (session
+wiring), `tests/` (especially `test_intake_flow.py`). `docs/ARCHITECTURE.md` and
+`docs/NOTES.md` go deeper on lifecycle and the choices this article compresses.
+
+You don't need to hand-roll `CallState`. You need to know when the framework's
+task group is doing the job your notebook sketch was trying to do — and when to
+keep writes out of the model's hands. That's the whole game.
