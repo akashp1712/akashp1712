@@ -35,17 +35,32 @@ export function StateDiagram({
   const padX = 32;
   const padY = 28;
   const rowGap = 92;
-  const branchOffset = 188;
-  const spineX = padX + 24;
+  // Left gutter keeps the return lane and its label clear of the spine, and the
+  // branch sits far enough right that transition labels fit in the gap.
+  const laneGutter = 56;
+  const branchOffset = 300;
+  const spineX = padX + laneGutter;
+  const laneX = padX + 4;
 
   const spineStates = states.filter((s) => !s.branch);
   const spineIndex = (id: string) => spineStates.findIndex((s) => s.id === id);
 
+  // A branch node sits on the row of the spine state it connects to, so layout
+  // follows the transitions rather than assuming a fixed anchor.
+  const branchRow = (id: string) => {
+    const link = transitions.find(
+      (t) =>
+        (t.to === id && spineIndex(t.from) >= 0) ||
+        (t.from === id && spineIndex(t.to) >= 0)
+    );
+    if (!link) return 1;
+    return Math.max(0, spineIndex(link.to === id ? link.from : link.to));
+  };
+
   const pos = (id: string) => {
     const state = states.find((s) => s.id === id)!;
     if (state.branch === "right") {
-      const runIdx = spineIndex("run");
-      const anchor = runIdx >= 0 ? runIdx : 1;
+      const anchor = branchRow(id);
       return {
         x: spineX + branchOffset,
         y: padY + anchor * (nodeH + rowGap),
@@ -63,7 +78,9 @@ export function StateDiagram({
   };
 
   const maxSpineRow = spineStates.length - 1;
-  const width = spineX + nodeW + branchOffset + nodeW + padX;
+  const hasBranch = states.some((s) => s.branch);
+  const width =
+    (hasBranch ? spineX + branchOffset : spineX) + nodeW + padX;
   const height = padY * 2 + maxSpineRow * (nodeH + rowGap) + nodeH;
 
   const nodeCenter = (id: string) => {
@@ -133,13 +150,17 @@ export function StateDiagram({
           let ly: number;
 
           if (fromBranch && !toBranch) {
-            d = `M${a.x},${a.cy} C${a.x - 36},${a.cy} ${b.x + nodeW + 24},${b.cy} ${b.x + nodeW},${b.cy}`;
+            // Return leg of a spine/branch pair: ride below so it never shares
+            // a line or a label position with the outgoing leg.
+            const y = a.cy + 11;
+            d = `M${a.x},${y} L${b.x + nodeW},${y}`;
             lx = (a.x + b.x + nodeW) / 2;
-            ly = a.cy - 14;
+            ly = y + 20;
           } else if (!fromBranch && toBranch) {
-            d = `M${a.x + nodeW},${a.cy} C${a.x + nodeW + 36},${a.cy} ${b.x - 24},${b.cy} ${b.x},${b.cy}`;
+            const y = a.cy - 11;
+            d = `M${a.x + nodeW},${y} L${b.x},${y}`;
             lx = (a.x + nodeW + b.x) / 2;
-            ly = a.cy - 14;
+            ly = y - 12;
           } else if (b.row > a.row && !fromBranch && !toBranch) {
             d = `M${a.cx},${a.y + nodeH} C${a.cx},${a.y + nodeH + 34} ${b.cx},${b.y - 34} ${b.cx},${b.y}`;
             lx = a.cx + 58;
