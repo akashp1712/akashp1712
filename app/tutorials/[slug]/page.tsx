@@ -23,7 +23,7 @@ export function generateMetadata({ params }: Props) {
   const post = getTutorial(params.slug);
   if (!post) return {};
 
-  const ogImage = post.coverImage ?? "/cover-mastra-tutorial.png";
+  const ogImage = post.coverImage ?? "/cover-voice-agents.png";
 
   return {
     title: post.title,
@@ -117,7 +117,7 @@ export default function TutorialPage({ params }: Props) {
               <span>{formatDate(post.publishedAt)}</span>
               <span aria-hidden>·</span>
               <span>{post.readingMinutes} min read</span>
-              {post.order != null && (
+              {post.order != null && post.slugAsParams.startsWith("mastra-") && (
                 <>
                   <span aria-hidden>·</span>
                   <span style={{ color: "var(--accent)" }}>Part {post.order} of 7</span>

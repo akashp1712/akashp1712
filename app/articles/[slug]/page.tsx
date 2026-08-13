@@ -23,7 +23,7 @@ export function generateMetadata({ params }: Props) {
   const post = getArticle(params.slug);
   if (!post) return {};
 
-  const ogImage = post.coverImage ?? "/cover-mastra-series.png";
+  const ogImage = post.coverImage ?? "/cover-voice-agents.png";
 
   return {
     title: post.title,

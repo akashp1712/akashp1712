@@ -5,13 +5,16 @@ import { projectsData } from "@/lib/data";
 import Image from "next/image";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { BsArrowRight } from "react-icons/bs";
-import { FaGithub } from "react-icons/fa";
 
 type ProjectProps = (typeof projectsData)[number];
 
-export default function Project(props: ProjectProps) {
-  const { title, description, hyperlink, tags, imageUrl } = props;
-  const githubUrl = "githubUrl" in props ? props.githubUrl : undefined;
+export default function Project({
+  title,
+  description,
+  hyperlink,
+  tags,
+  imageUrl,
+}: ProjectProps) {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -58,16 +61,6 @@ export default function Project(props: ProjectProps) {
             Visit
             <BsArrowRight className="transition group-hover/link:translate-x-0.5" />
           </a>
-          {githubUrl && (
-            <a
-              href={githubUrl as string}
-              target="_blank"
-              className="ed-link inline-flex items-center gap-1.5"
-            >
-              <FaGithub />
-              Source
-            </a>
-          )}
         </div>
       </div>
 

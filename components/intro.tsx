@@ -60,12 +60,11 @@ export default function Intro() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.12 }}
       >
-        I build multi-turn agent platforms at{" "}
-        <span className="ed-strong">Salesforce</span> — the runtime, tools, and
-        memory that turn a model in a loop into something people depend on. On
-        the side I ship voice agents and write code-heavy deep dives on how all
-        of it actually works: the streaming, grounding, and evals that most
-        tutorials skip.
+        I build production AI agents and write about the hard problems —
+        latency, barge-in, tool timing, evals. Currently:{" "}
+        <span className="ed-strong">Evercall</span> — when an Australian
+        emergency plumber can&apos;t answer, we book the job. Day job is
+        agent runtimes at Salesforce.
       </motion.p>
 
       {/* Primary path: read the series. */}
@@ -76,25 +75,21 @@ export default function Intro() {
         transition={{ delay: 0.16 }}
       >
         <Link
-          href="#blog"
+          href="/articles/voice-agents-hard-problems"
           onClick={() => {
             setActiveSection("Writing");
             setTimeOfLastClick(Date.now());
           }}
           className="ed-btn group inline-flex items-center gap-2 px-6 py-3 text-sm font-medium"
         >
-          Read the Mastra series
+          Voice agents: the hard problems
           <BsArrowRight className="transition group-hover:translate-x-1" />
         </Link>
         <Link
-          href="#projects"
-          onClick={() => {
-            setActiveSection("Projects");
-            setTimeOfLastClick(Date.now());
-          }}
+          href="/building-evercall"
           className="ed-btn-ghost inline-flex items-center px-6 py-3 text-sm font-medium"
         >
-          See what I&apos;ve built
+          Building Evercall
         </Link>
       </motion.div>
 

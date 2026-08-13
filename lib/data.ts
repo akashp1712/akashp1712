@@ -1,9 +1,6 @@
 import React from "react";
 import { CgWorkAlt } from "react-icons/cg";
-import vibeframesImg from "@/public/vibeframes.png";
-import paymintImg from "@/public/paymint.png";
 import evercallImg from "@/public/evercall.png";
-import oncecueImg from "@/public/oncecue.png";
 
 export const links = [
   {
@@ -38,7 +35,7 @@ export const links = [
 
 // Icons used by experience logos + the focused skills list.
 import { FaSalesforce } from "react-icons/fa";
-import { SiAmazon, SiMcafee, SiBroadcom, SiChainlink } from "react-icons/si";
+import { SiAmazon, SiMcafee, SiBroadcom } from "react-icons/si";
 import { FaAws, FaPython, FaMicrophone, FaRobot } from "react-icons/fa";
 import { SiNextdotjs, SiTypescript } from "react-icons/si";
 
@@ -172,51 +169,42 @@ export const projectsData = [
   {
     title: "Evercall",
     description:
-      "An after-hours AI receptionist for Australian emergency trades. Forward your line, and the AI answers instantly, triages emergencies (like burst hot water vs. dripping taps), books jobs, and sends SMS summaries to the business owner.",
+      "When you can't answer, Evercall books the job. Divert for Australian emergency plumbers: triage, book, SMS the owner. Browser agent is live; the phone wire (DID → SIP → Neon) is what I'm closing now.",
     hyperlink: "https://evercall.app",
-    tags: ["Voice AI", "LiveKit", "Twilio", "LLMs", "Real-time", "SaaS"],
+    tags: ["Voice AI", "LiveKit", "Production agents", "AU trades"],
     imageUrl: evercallImg,
-  },
-  {
-    title: "OneCue",
-    description:
-      "For founders who save tweets, screenshots, and chats—then lose them. Capture in 2 seconds. OneCue surfaces one cue when context matches.",
-    hyperlink: "https://onecue.app",
-    tags: ["Capture App", "AI Search", "Context Matching", "SaaS", "Productivity"],
-    imageUrl: oncecueImg,
-  },
-  {
-    title: "VibeFrames",
-    description:
-      "A Mastra Harness agent that generates Remotion videos. The agent orchestrates LLM tools and skills to mutate complex timeline state, rendering programmatic video compositions and streaming real-time UI updates back through the Vercel AI SDK.",
-    hyperlink: "https://vibeframes.vercel.app",
-    githubUrl: "https://github.com/akashp1712/vibeframes",
-    tags: ["Mastra Harness", "Remotion", "Vercel AI SDK", "Agentic", "Next.js", "Streaming"],
-    imageUrl: vibeframesImg,
   },
 ] as const;
 
 // Smaller shipped work — shown as a compact timeline under the flagship projects.
 export const projectTimelineData = [
   {
+    title: "OneCue",
+    description: "Capture in two seconds; surface one cue when context matches. Parked.",
+    hyperlink: "https://onecue.app",
+  },
+  {
+    title: "VibeFrames",
+    description: "Mastra harness agent that mutates Remotion timelines.",
+    hyperlink: "https://vibeframes.vercel.app",
+  },
+  {
     title: "Paymint",
-    description: "A drop-in Paddle payments integration for indie developers — turning days of billing-API wrangling into minutes.",
+    description: "Drop-in Paddle payments for indie developers.",
     hyperlink: "https://paymint.dev",
   },
   {
     title: "AI SDK Patterns",
-    description: "A reference library of production patterns for building with the Vercel AI SDK.",
+    description: "Production patterns for the Vercel AI SDK.",
     hyperlink: "https://ai-sdk-patterns.dev",
   },
 ] as const;
 
 export const skillsData = [
+  { name: "Voice AI (LiveKit)", icon: React.createElement(FaMicrophone) },
   { name: "Agents", icon: React.createElement(FaRobot) },
-  { name: "Mastra AI", icon: React.createElement(FaRobot) },
-  { name: "LangChain", icon: React.createElement(SiChainlink) },
   { name: "Python", icon: React.createElement(FaPython) },
   { name: "TypeScript", icon: React.createElement(SiTypescript) },
   { name: "NextJS", icon: React.createElement(SiNextdotjs) },
   { name: "AWS", icon: React.createElement(FaAws) },
-  { name: "Voice AI (LiveKit)", icon: React.createElement(FaMicrophone) },
 ] as const;

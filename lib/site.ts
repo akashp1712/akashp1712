@@ -5,5 +5,5 @@ export const siteConfig = {
     "https://akashpanchal.com",
   author: "Akash Panchal",
   description:
-    "AI Systems Engineer at Salesforce. Creator of OneCue, Evercall, and VibeFrames. Tutorials & deep dives on Mastra harness runtimes, agentic systems, and voice AI.",
+    "I build production AI agents and document the hard engineering problems. Currently: Evercall — when an Australian emergency plumber can't answer, we book the job.",
 } as const;

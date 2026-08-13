@@ -1,4 +1,3 @@
-import Header from "@/components/header";
 import "./globals.css";
 import "./_reading/reading.css";
 import { fraunces, jetbrainsMono, hankenGrotesk } from "./_reading/fonts";
@@ -18,20 +17,14 @@ export const metadata = {
   description: siteConfig.description,
   keywords: [
     "AI Systems Engineer",
-    "Agentic AI Systems",
-    "Mastra AI",
-    "Mastra Harness",
-    "Voice AI",
-    "OneCue",
     "Evercall",
-    "VibeFrames",
-    "Paymint",
-    "AI SDK Patterns",
-    "Vercel AI SDK",
+    "Voice AI",
+    "LiveKit",
+    "Production agents",
+    "Voice agents",
     "Salesforce AI Engineer",
-    "AI Founder",
-    "LLM Runtimes",
     "TypeScript",
+    "Python",
     "Next.js",
   ],
   authors: [{ name: "Akash Panchal", url: siteConfig.url }],
@@ -45,7 +38,7 @@ export const metadata = {
     description: siteConfig.description,
     images: [
       {
-        url: "/cover-mastra-series.png",
+        url: "/cover-voice-agents.png",
         width: 1200,
         height: 630,
         alt: "Akash Panchal — AI Systems Engineer & Founder",
@@ -57,7 +50,7 @@ export const metadata = {
     title: "Akash Panchal — AI Systems Engineer & Founder",
     description: siteConfig.description,
     creator: "@akashp1712",
-    images: ["/cover-mastra-series.png"],
+    images: ["/cover-voice-agents.png"],
   },
   alternates: {
     canonical: siteConfig.url,
@@ -79,26 +72,31 @@ const jsonLd = {
       "@type": "Person",
       "@id": `${siteConfig.url}/#person`,
       name: "Akash Panchal",
-      jobTitle: "AI Software Engineer & Founder",
-      worksFor: {
-        "@type": "Organization",
-        name: "Salesforce",
-        sameAs: "https://www.salesforce.com",
-      },
+      jobTitle: "AI Systems Engineer & Founder",
+      worksFor: [
+        {
+          "@type": "Organization",
+          name: "Evercall",
+          sameAs: "https://evercall.app",
+        },
+        {
+          "@type": "Organization",
+          name: "Salesforce",
+          sameAs: "https://www.salesforce.com",
+        },
+      ],
       alumniOf: [
         { "@type": "Organization", name: "Amazon" },
         { "@type": "Organization", name: "McAfee" },
       ],
       knowsAbout: [
-        "Agentic AI Systems",
-        "Mastra AI Framework",
         "Voice AI",
-        "LLM Runtimes",
-        "Vercel AI SDK",
-        "High-Throughput Distributed Systems",
+        "LiveKit",
+        "Production agents",
+        "Evercall",
         "TypeScript",
-        "Next.js",
         "Python",
+        "Next.js",
       ],
       sameAs: [
         "https://github.com/akashp1712",
@@ -107,27 +105,17 @@ const jsonLd = {
       ],
       url: siteConfig.url,
       description:
-        "Senior AI Software Engineer at Salesforce specializing in multi-turn agent platforms, Mastra harness runtimes, voice AI systems, and founder tools.",
+        "AI systems engineer building Evercall — when an Australian emergency plumber can't answer, we book the job. Day job: agent runtimes at Salesforce.",
     },
     {
       "@type": "WebSite",
       "@id": `${siteConfig.url}/#website`,
       url: siteConfig.url,
-      name: "Akash Panchal — AI Engineering & Agent Systems",
+      name: "Akash Panchal — Voice Agents & Evercall",
       description: siteConfig.description,
       publisher: {
         "@id": `${siteConfig.url}/#person`,
       },
-    },
-    {
-      "@type": "SoftwareApplication",
-      name: "OneCue",
-      url: "https://onecue.app",
-      applicationCategory: "ProductivityApplication",
-      operatingSystem: "Web",
-      description:
-        "OneCue is a capture app for founders that surfaces one saved insight when context matches — not a notes app.",
-      author: { "@id": `${siteConfig.url}/#person` },
     },
     {
       "@type": "SoftwareApplication",
@@ -136,27 +124,7 @@ const jsonLd = {
       applicationCategory: "BusinessApplication",
       operatingSystem: "Web",
       description:
-        "An after-hours AI receptionist for Australian emergency trades. Forward your line, and the AI answers instantly, triages emergencies, books jobs, and sends SMS summaries.",
-      author: { "@id": `${siteConfig.url}/#person` },
-    },
-    {
-      "@type": "SoftwareApplication",
-      name: "VibeFrames",
-      url: "https://vibeframes.vercel.app",
-      applicationCategory: "MultimediaApplication",
-      operatingSystem: "Web",
-      description:
-        "A Mastra Harness agent that generates Remotion videos by mutating timeline state and streaming real-time UI updates.",
-      author: { "@id": `${siteConfig.url}/#person` },
-    },
-    {
-      "@type": "SoftwareApplication",
-      name: "Paymint",
-      url: "https://paymint.dev",
-      applicationCategory: "DeveloperApplication",
-      operatingSystem: "Web",
-      description:
-        "A drop-in Paddle payments integration for indie developers that handles checkout, webhooks, and subscription state.",
+        "When an Australian emergency plumber can't answer, Evercall books the job. Divert, triage, book, SMS the owner.",
       author: { "@id": `${siteConfig.url}/#person` },
     },
   ],

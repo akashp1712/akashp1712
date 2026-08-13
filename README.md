@@ -2,9 +2,9 @@
   <img src="https://github.com/akashp1712.png" alt="Akash Panchal" width="120" style="border-radius: 50%;">
 
   <h1>Akash Panchal</h1>
-  <p><strong>Building agentic systems. Writing about how they work.</strong></p>
+  <p><strong>I build production voice agents. Currently: Evercall.</strong></p>
 
-  <p>AI Software Engineer at Salesforce. I build multi-turn agent platforms by day and publish deep-dive tutorials on Mastra, the AI SDK, and voice agents by night.</p>
+  <p>When an Australian emergency plumber can't answer, we book the job. Day job: agent runtimes at Salesforce.</p>
 
   [![Website](https://img.shields.io/badge/Read_the_writing-akashpanchal.com-111?style=flat-square&logo=google-chrome&logoColor=white)](https://akashpanchal.com)
   [![LinkedIn](https://img.shields.io/badge/LinkedIn-akashpanchal-0A66C2?style=flat-square&logo=linkedin&logoColor=white)](https://linkedin.com/in/akashp1712)
@@ -15,59 +15,35 @@
 
 ## What I work on
 
-I build **agentic AI systems** — and I write about the parts most tutorials skip.
+**[Evercall](https://evercall.app)** — divert for Australian emergency plumbers: triage, book the job, SMS the owner. Browser agent is live; the phone wire (DID → SIP → Neon) is what I'm closing now.
 
-At Salesforce I lead a multi-turn agent platform built on the **Mastra Harness**: per-thread state, tool catalogs, human-in-the-loop, image generation — the connective tissue that turns a model-in-a-loop into something people can depend on. Before that: SMS platforms serving billions of messages, app-certification systems scanning hundreds of thousands of apps, home-network security. Nine-plus years across **Salesforce, Amazon, and McAfee**.
+At Salesforce I work on agent runtimes. Before that: SMS platforms serving billions of messages, app-certification systems, home-network security. Nine-plus years across **Salesforce, Amazon, and McAfee**.
 
-The writing is where I go deep on the hard problems: streaming to a real UI, grounding agents in your own docs, keeping long-running agents alive, proving they're any good, and the brutal timing of voice — all with runnable code and real output.
+The writing is the part most tutorials skip: latency, barge-in, turn-taking, tools that must not lie — with runnable code.
 
 ---
 
 ## Writing
 
-A **7-part series on building with Mastra**, front to back — each part is runnable, with real output, and assumes you already know what an LLM is:
+- **[Voice Agents: The Hard Problems](https://akashpanchal.com/articles/voice-agents-hard-problems)** — latency, barge-in, turn-taking
+- **[LiveKit Voice Agents](https://akashpanchal.com/tutorials/livekit-voice-agents)** — the state machine you were about to write already exists
+- **[Building Evercall](https://akashpanchal.com/building-evercall)** — one line per week that actually shipped
 
-1. **Agents** — the loop, tools, memory
-2. **Workflows** — orchestration with guarantees
-3. **The Harness** — the runtime that hosts it all
-4. **Streaming** — get the agent's work to a UI as it happens
-5. **RAG** — answer from real documents, not vibes
-6. **Durable & long-running agents** — background tasks, crash recovery, heartbeats
-7. **Evals & scorers** — put numbers on quality and gate on them in CI
-
-Plus standalone deep dives: *The AI SDK v7 features I'm actually excited about*, *letting an agent write and run code safely in a Vercel Sandbox*, and *voice agents — the hard problems nobody warns you about*.
-
-**→ [Read it all at akashpanchal.com](https://akashpanchal.com)**
+**→ [akashpanchal.com](https://akashpanchal.com)**
 
 ---
 
-## Flagship projects
+## The company
 
-### [Evercall](https://evercall.app) — after-hours AI receptionist
+### [Evercall](https://evercall.app) — when they can't answer, we book the job
 
-An after-hours AI receptionist for Australian emergency trades. Forward your line, and the AI answers instantly, triages emergencies (like burst hot water vs. dripping taps), books jobs, and sends SMS summaries to the business owner.
+AU divert line for emergency plumbers. Not an "AI receptionist" landing page. The product is a booked job and an SMS to the owner.
 
-`Voice AI` · `LiveKit` · `Twilio` · `LLMs` · `Real-time` · `SaaS`
+`Voice AI` · `LiveKit` · `Python` · `Next.js`
 
 <img src="public/evercall.png" alt="Evercall" style="border: 2px solid #e1e4e8; border-radius: 8px;">
 
-### [OneCue](https://onecue.app) — capture app for founders
-
-For founders who save tweets, screenshots, and chats—then lose them. Capture in 2 seconds. OneCue surfaces one cue when context matches.
-
-`Capture App` · `AI Search` · `Context Matching` · `SaaS` · `Productivity`
-
-<img src="public/oncecue.png" alt="OneCue" style="border: 2px solid #e1e4e8; border-radius: 8px;">
-
-### [VibeFrames](https://github.com/akashp1712/vibeframes) — an agent that edits video
-
-A Mastra Harness agent that generates Remotion videos. The agent orchestrates LLM tools and skills to mutate complex timeline state, rendering programmatic video compositions and streaming real-time UI updates back through the **Vercel AI SDK**.
-
-`Mastra Harness` · `Remotion` · `Vercel AI SDK` · `Next.js` · `Streaming`
-
-<img src="public/vibeframes.png" alt="VibeFrames" style="border: 2px solid #e1e4e8; border-radius: 8px;">
-
-<sub>Also shipped: **[Paymint](https://paymint.dev)** — a drop-in Paddle payments integration for indie developers. | **[AI SDK Patterns](https://ai-sdk-patterns.dev)** — a reference library of production patterns for building with the Vercel AI SDK.</sub>
+<sub>Also shipped, parked: **[OneCue](https://onecue.app)** · **[VibeFrames](https://github.com/akashp1712/vibeframes)** · **[Paymint](https://paymint.dev)** · **[AI SDK Patterns](https://ai-sdk-patterns.dev)**</sub>
 
 ---
 

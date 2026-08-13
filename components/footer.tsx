@@ -12,6 +12,9 @@ export default function Footer() {
       style={{ borderTop: "1px solid var(--line)", paddingTop: "2rem" }}
     >
       <nav className="mb-4 flex items-center gap-5">
+        <Link href="/building-evercall" className="ed-link">
+          Building Evercall
+        </Link>
         <Link href="/tutorials" className="ed-link">
           Tutorials
         </Link>
