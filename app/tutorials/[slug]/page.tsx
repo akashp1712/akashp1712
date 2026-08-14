@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
+import { CoverImage } from "@/components/cover-image";
 import { tutorials } from "#site/content";
 import { MDXContent } from "@/components/mdx/mdx-content";
 import { TableOfContents } from "@/components/mdx/toc";
@@ -131,11 +131,9 @@ export default function TutorialPage({ params }: Props) {
                 className="mt-10 overflow-hidden rounded-2xl"
                 style={{ border: "1px solid var(--line)" }}
               >
-                <Image
+                <CoverImage
                   src={post.coverImage}
                   alt={post.title}
-                  width={1200}
-                  height={630}
                   priority
                   className="h-auto w-full object-contain"
                   style={{ aspectRatio: "1200 / 630", background: "var(--paper-raised)" }}

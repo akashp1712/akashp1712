@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Image from "next/image";
+import { CoverImage } from "@/components/cover-image";
 import { BsArrowRight } from "react-icons/bs";
 
 export type IndexPost = {
@@ -57,11 +57,9 @@ export function FeaturedPost({
       </div>
       {post.coverImage && (
         <Link href={post.url} className="tut-featured-cover block overflow-hidden rounded-xl">
-          <Image
+          <CoverImage
             src={post.coverImage}
             alt={post.title}
-            width={1200}
-            height={630}
             priority
             className="h-auto w-full object-contain"
             style={{ aspectRatio: "1200 / 630", background: "var(--paper-raised)" }}

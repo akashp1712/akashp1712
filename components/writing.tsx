@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Image from "next/image";
+import { CoverImage } from "@/components/cover-image";
 import { tutorials, articles } from "#site/content";
 import { BsArrowRight } from "react-icons/bs";
 import {
@@ -70,11 +70,10 @@ export default function Writing() {
                 className="relative h-40 w-full sm:h-48"
                 style={{ borderBottom: "1px solid var(--line)" }}
               >
-                <Image
+                <CoverImage
                   src={item.coverImage}
                   alt={item.title}
-                  fill
-                  className="object-cover"
+                  className="absolute inset-0 h-full w-full object-cover"
                 />
               </div>
             )}
