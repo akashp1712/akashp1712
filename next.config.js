@@ -22,6 +22,18 @@ const nextConfig = {
   experimental: {
     serverActions: true,
   },
+  async rewrites() {
+    return [
+      {
+        source: "/articles/:slug.md",
+        destination: "/md/articles/:slug",
+      },
+      {
+        source: "/tutorials/:slug.md",
+        destination: "/md/tutorials/:slug",
+      },
+    ];
+  },
 };
 
 module.exports = nextConfig;

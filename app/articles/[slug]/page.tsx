@@ -110,7 +110,11 @@ export default function ArticlePage({ params }: Props) {
       <div className="gap-12 lg:grid lg:grid-cols-[minmax(0,1fr)_14rem] xl:gap-20">
         <article className="min-w-0">
           <header className="mb-14">
-            <p className="tut-kicker mb-4">Essay</p>
+            <p className="tut-kicker mb-4">
+              {post.tags.includes("voice-internals")
+                ? "Voice internals"
+                : "Essay"}
+            </p>
             <h1 className="tut-title text-4xl sm:text-5xl">{post.title}</h1>
             <p className="tut-lede mt-5 text-xl">{post.description}</p>
             <div className="tut-meta mt-6 flex flex-wrap items-center gap-3">

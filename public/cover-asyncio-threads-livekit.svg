@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630" role="img" aria-labelledby="t d">
+  <title id="t">LiveKit worker, job processes, and the asyncio loop</title>
+  <desc id="d">A worker supervises idle job processes. Each job has its own event loop. ONNX sits off that loop.</desc>
+  <rect width="1200" height="630" fill="#f8fafc"/>
+  <text x="48" y="56" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#94a3b8" letter-spacing="0.18em" font-weight="700">VOICE INTERNALS / 04</text>
+  <text x="48" y="100" font-family="ui-sans-serif,system-ui,sans-serif" font-size="28" fill="#0f172a" font-weight="700">async def is not a runtime.</text>
+
+  <rect x="48" y="156" width="1104" height="88" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="72" y="192" font-family="ui-monospace,monospace" font-size="12" fill="#94a3b8" letter-spacing="0.12em">WORKER</text>
+  <text x="72" y="224" font-family="ui-sans-serif,system-ui,sans-serif" font-size="16" fill="#64748b">AgentServer · idle pool · inference executor</text>
+
+  <rect x="48" y="268" width="536" height="280" rx="8" fill="#f8fafc" stroke="#0f172a" stroke-width="2"/>
+  <text x="72" y="312" font-family="ui-monospace,monospace" font-size="12" fill="#0f172a" letter-spacing="0.12em">JOB PROCESS</text>
+  <text x="72" y="352" font-family="ui-sans-serif,system-ui,sans-serif" font-size="18" fill="#0f172a">entrypoint + AgentSession</text>
+  <text x="72" y="396" font-family="ui-sans-serif,system-ui,sans-serif" font-size="14" fill="#64748b">own asyncio loop · own crash domain</text>
+  <text x="72" y="444" font-family="ui-monospace,monospace" font-size="13" fill="#0f172a">prewarmed VAD in userdata</text>
+  <text x="72" y="500" font-family="ui-monospace,monospace" font-size="12" fill="#94a3b8">JobExecutorType.PROCESS</text>
+
+  <rect x="616" y="268" width="536" height="128" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="640" y="312" font-family="ui-monospace,monospace" font-size="12" fill="#94a3b8" letter-spacing="0.12em">EVENT LOOP</text>
+  <text x="640" y="352" font-family="ui-sans-serif,system-ui,sans-serif" font-size="16" fill="#64748b">STT · LLM · TTS websockets</text>
+  <text x="640" y="384" font-family="ui-sans-serif,system-ui,sans-serif" font-size="14" fill="#94a3b8">await I/O · never ONNX</text>
+
+  <rect x="616" y="420" width="536" height="128" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="640" y="464" font-family="ui-monospace,monospace" font-size="12" fill="#94a3b8" letter-spacing="0.12em">OFF-LOOP</text>
+  <text x="640" y="504" font-family="ui-sans-serif,system-ui,sans-serif" font-size="16" fill="#64748b">asyncio.to_thread · inference proc</text>
+  <text x="640" y="536" font-family="ui-sans-serif,system-ui,sans-serif" font-size="14" fill="#94a3b8">Silero · EOT · sync SDKs</text>
+</svg>

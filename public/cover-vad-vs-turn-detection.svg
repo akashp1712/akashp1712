@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630" role="img" aria-labelledby="t d">
+  <title id="t">VAD versus turn detection</title>
+  <desc id="d">Energy and Silero see speech frames. Turn detection decides the thought is finished.</desc>
+  <rect width="1200" height="630" fill="#f8fafc"/>
+  <text x="48" y="56" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#94a3b8" letter-spacing="0.18em" font-weight="700">VOICE INTERNALS / 02</text>
+  <text x="48" y="100" font-family="ui-sans-serif,system-ui,sans-serif" font-size="28" fill="#0f172a" font-weight="700">Silence is not the end of a turn.</text>
+
+  <!-- waveform -->
+  <rect x="48" y="156" width="1104" height="160" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <polyline fill="none" stroke="#cbd5e1" stroke-width="2" points="72,236 96,220 120,248 144,200 168,252 192,188 216,244 240,210 264,236 288,236 312,236 336,236 360,236 384,200 408,248 432,192 456,240 480,216 504,236 528,236 552,236 576,236 600,236 624,236"/>
+  <text x="72" y="188" font-family="ui-monospace,monospace" font-size="11" fill="#94a3b8">PCM · 20ms frames</text>
+  <text x="200" y="292" font-family="ui-monospace,monospace" font-size="11" fill="#0f172a">SPEECH</text>
+  <text x="430" y="292" font-family="ui-monospace,monospace" font-size="11" fill="#94a3b8">PAUSE</text>
+  <text x="72" y="292" font-family="ui-monospace,monospace" font-size="11" fill="#94a3b8">idle</text>
+
+  <rect x="48" y="340" width="536" height="212" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="72" y="384" font-family="ui-monospace,monospace" font-size="12" fill="#94a3b8" letter-spacing="0.12em">VAD</text>
+  <text x="72" y="428" font-family="ui-sans-serif,system-ui,sans-serif" font-size="18" fill="#64748b">Is this frame speech?</text>
+  <text x="72" y="468" font-family="ui-sans-serif,system-ui,sans-serif" font-size="14" fill="#94a3b8">Silero · energy · hysteresis</text>
+  <text x="72" y="508" font-family="ui-monospace,monospace" font-size="13" fill="#94a3b8">answers a physical question</text>
+
+  <rect x="616" y="340" width="536" height="212" rx="8" fill="#f8fafc" stroke="#0f172a" stroke-width="2"/>
+  <text x="640" y="384" font-family="ui-monospace,monospace" font-size="12" fill="#0f172a" letter-spacing="0.12em">TURN DETECTION</text>
+  <text x="640" y="428" font-family="ui-sans-serif,system-ui,sans-serif" font-size="18" fill="#0f172a">Is the thought finished?</text>
+  <text x="640" y="468" font-family="ui-sans-serif,system-ui,sans-serif" font-size="14" fill="#64748b">transcript + acoustics · ~20ms</text>
+  <text x="640" y="508" font-family="ui-monospace,monospace" font-size="13" fill="#0f172a">answers a conversational question</text>
+</svg>

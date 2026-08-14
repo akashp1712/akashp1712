@@ -10,6 +10,8 @@ import { useActiveSectionContext } from "@/context/active-section-context";
 // Quiet, mono, underline-on-hover text links — the "engineer, not vendor"
 // treatment. Replaces the old row of social pill buttons + resume CTA.
 const quietLinks = [
+  { label: "Articles", href: "/articles" },
+  { label: "Tutorials", href: "/tutorials" },
   { label: "GitHub", href: "https://github.com/akashp1712" },
   { label: "LinkedIn", href: "https://www.linkedin.com/in/akashp1712" },
   { label: "X", href: "https://twitter.com/akashp1712" },

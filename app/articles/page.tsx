@@ -1,86 +1,91 @@
-import Link from "next/link";
-import Image from "next/image";
 import { articles } from "#site/content";
-import { BsArrowRight } from "react-icons/bs";
 import { siteConfig } from "@/lib/site";
-import { FEATURED_ARTICLE_SLUG } from "@/lib/content-focus";
+import {
+  FEATURED_ARTICLE_SLUG,
+  VOICE_INTERNALS_SLUGS,
+  isVoiceInternalsSlug,
+} from "@/lib/content-focus";
+import {
+  FeaturedPost,
+  PostRow,
+  TopicStrip,
+  type IndexPost,
+} from "@/components/writing-index";
 
 export const metadata = {
   title: "Articles",
   description:
-    "Field notes on production voice agents — latency, barge-in, turn-taking — and the engineering around them.",
-  keywords: ["voice agents", "LiveKit", "production agents", "build log"],
+    "Voice AI internals — WebRTC, VAD, STT, TTS, asyncio — and field notes from shipping agents.",
+  keywords: [
+    "voice agents",
+    "WebRTC",
+    "VAD",
+    "STT",
+    "TTS",
+    "LiveKit",
+    "asyncio",
+  ],
   alternates: { canonical: `${siteConfig.url}/articles` },
   openGraph: {
     title: "Articles | Akash Panchal",
     description:
-      "Field notes on production voice agents — the hard problems, not the demo.",
+      "Voice AI internals — WebRTC, VAD, STT, TTS, asyncio — and field notes from shipping agents.",
     url: `${siteConfig.url}/articles`,
     type: "website",
-    images: [{ url: "/cover-voice-agents.png", width: 1200, height: 630 }],
+    images: [{ url: "/cover-asyncio-threads-livekit.svg", width: 1200, height: 630 }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Articles | Akash Panchal",
     description:
-      "Field notes on production voice agents — the hard problems, not the demo.",
-    images: ["/cover-voice-agents.png"],
+      "Voice AI internals — WebRTC, VAD, STT, TTS, asyncio — and field notes from shipping agents.",
+    images: ["/cover-asyncio-threads-livekit.svg"],
   },
 };
 
-function formatDate(d: string) {
-  return new Date(d).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-}
-
-function ArticleCard({ post }: { post: (typeof articles)[number] }) {
-  return (
-    <Link href={post.url} className="tut-card group block py-8">
-      {post.coverImage && (
-        <div
-          className="mb-5 overflow-hidden rounded-xl"
-          style={{ border: "1px solid var(--line)" }}
-        >
-          <Image
-            src={post.coverImage}
-            alt={post.title}
-            width={800}
-            height={450}
-            className="w-full object-cover transition duration-300 group-hover:scale-[1.02]"
-          />
-        </div>
-      )}
-      <div className="tut-meta mb-3 flex items-center gap-3">
-        <span>{formatDate(post.publishedAt)}</span>
-        <span aria-hidden>·</span>
-        <span>{post.readingMinutes} min</span>
-      </div>
-      <h2 className="tut-card-title mb-2 text-2xl">{post.title}</h2>
-      <p className="tut-lede mb-4">{post.description}</p>
-      <div className="flex items-center gap-3">
-        {post.tags.slice(0, 3).map((tag) => (
-          <span key={tag} className="tut-tag">
-            {tag}
-          </span>
-        ))}
-        <BsArrowRight className="tut-arrow ml-auto text-lg" />
-      </div>
-    </Link>
-  );
+function asIndex(post: (typeof articles)[number]): IndexPost {
+  return {
+    slug: post.slug,
+    slugAsParams: post.slugAsParams,
+    url: post.url,
+    title: post.title,
+    description: post.description,
+    publishedAt: post.publishedAt,
+    readingMinutes: post.readingMinutes,
+    tags: post.tags,
+    coverImage: post.coverImage,
+  };
 }
 
 export default function ArticlesPage() {
-  const published = articles.filter((t) => !t.draft);
-  const featured = published.find((a) => a.slugAsParams === FEATURED_ARTICLE_SLUG);
+  const published = articles.filter((t) => !t.draft).map(asIndex);
+
+  const series = VOICE_INTERNALS_SLUGS.map((slug) =>
+    published.find((a) => a.slugAsParams === slug)
+  ).filter((a): a is IndexPost => a != null);
+
+  const latest = [...series].sort(
+    (a, b) => +new Date(b.publishedAt) - +new Date(a.publishedAt)
+  )[0];
+
+  const signature = published.find(
+    (a) => a.slugAsParams === FEATURED_ARTICLE_SLUG
+  );
+
   const rest = published
-    .filter((a) => a.slugAsParams !== FEATURED_ARTICLE_SLUG)
+    .filter(
+      (a) =>
+        !isVoiceInternalsSlug(a.slugAsParams) &&
+        a.slugAsParams !== FEATURED_ARTICLE_SLUG
+    )
     .sort((a, b) => +new Date(b.publishedAt) - +new Date(a.publishedAt));
 
+  const topics = Array.from(
+    new Set(published.flatMap((p) => p.tags))
+  ).sort((a, b) => a.localeCompare(b));
+
   return (
-    <main className="mx-auto w-full max-w-4xl px-5 py-20 sm:px-8 sm:py-28">
+    <main className="mx-auto w-full max-w-3xl px-5 py-20 sm:px-8 sm:py-28">
       <header className="mb-16">
         <p className="tut-kicker mb-4">Articles</p>
         <h1 className="tut-title text-5xl sm:text-6xl">
@@ -88,18 +93,44 @@ export default function ArticlesPage() {
           <br />
           the build log.
         </h1>
-        <p className="tut-lede mt-6 text-lg">
-          Voice first. The rest is field notes from shipping agents — kept
-          because they are still true, not because they are the brand.
+        <p className="tut-lede mt-6 max-w-xl text-lg">
+          Voice first. Internals when the demo stops working — transport,
+          hearing, speech, the runtime under the loop.
         </p>
       </header>
 
-      {featured && (
-        <ul>
-          <li>
-            <ArticleCard post={featured} />
-          </li>
-        </ul>
+      {latest && (
+        <FeaturedPost post={latest} kicker="The latest" kind="Essay" />
+      )}
+
+      {signature && signature.slugAsParams !== latest?.slugAsParams && (
+        <section className="mt-16">
+          <p className="tut-kicker mb-3">Start here</p>
+          <h2 className="tut-title mb-6 text-2xl sm:text-3xl">
+            The signature essay
+          </h2>
+          <PostRow post={signature} />
+        </section>
+      )}
+
+      {series.length > 0 && (
+        <section className="mt-16">
+          <p className="tut-kicker mb-3">Series</p>
+          <h2 className="tut-title mb-2 text-2xl sm:text-3xl">
+            Voice AI internals
+          </h2>
+          <p className="tut-lede mb-8 text-base">
+            Four essays. WebRTC, then VAD, then the models, then the process
+            that has to stay out of the way.
+          </p>
+          <ul>
+            {series.map((post, i) => (
+              <li key={post.slug}>
+                <PostRow post={post} part={i + 1} />
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
 
       {rest.length > 0 && (
@@ -111,12 +142,14 @@ export default function ArticlesPage() {
           <ul>
             {rest.map((post) => (
               <li key={post.slug}>
-                <ArticleCard post={post} />
+                <PostRow post={post} />
               </li>
             ))}
           </ul>
         </section>
       )}
+
+      <TopicStrip tags={topics} />
     </main>
   );
 }

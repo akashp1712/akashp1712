@@ -1,0 +1,205 @@
+---
+title: "STT and TTS Eat the Latency Budget You Don't Have"
+description: "Humans expect the next turn in ~200–500ms. A sequential transcribe-then-think-then-speak pipeline is already over budget before the first phoneme. Streaming STT partials and TTS first-audio are the only way the math works."
+publishedAt: "2026-08-13"
+tags: ["voice-internals", "stt", "tts", "latency"]
+coverImage: "/cover-stt-tts-streaming.svg"
+draft: false
+---
+
+Put the naive pipeline on a clock.
+
+<LatencyBar
+  caption="Illustrative. Real numbers move with region, model, and network — the shape does not."
+  unit="ms"
+  rows={[
+    {
+      name: "Sequential (full STT → full LLM → full TTS)",
+      segments: [
+        { label: "STT", ms: 450 },
+        { label: "LLM", ms: 700 },
+        { label: "TTS", ms: 280 },
+      ],
+    },
+    {
+      name: "Streamed (partials + first sentence)",
+      segments: [
+        { label: "STT", ms: 140 },
+        { label: "LLM", ms: 180 },
+        { label: "TTS", ms: 90 },
+      ],
+    },
+  ]}
+/>
+
+Conversation research puts the average gap between human turns around
+**200ms**. The [workshop](https://worksh.app/tutorials/livekit-voice-agent/foundations)
+says callers start to notice around **500ms**. Either way, 1.4 seconds of
+silence after "what's the Wi-Fi?" is not a slow model. It is a pipeline that
+waited for "done" three times.
+
+I wrote about that feeling in
+[Voice Agents: The Hard Problems](/articles/voice-agents-hard-problems).
+This piece is the machinery: what streaming STT actually emits, when you are
+allowed to start the LLM, how TTS gets first audio out, and what barge-in
+has to cancel.
+
+<Callout type="info">
+**Series**
+1. [WebRTC](/articles/webrtc-for-voice-agents)
+2. [VAD vs turn detection](/articles/vad-vs-turn-detection)
+3. STT and TTS streaming (this piece)
+4. [Asyncio, threads, LiveKit jobs](/articles/asyncio-threads-livekit)
+</Callout>
+
+## STT is a websocket, not a file upload
+
+Batch transcription is a WAV in, a string out. Streaming STT is a session:
+
+1. You open a websocket (or LiveKit Inference does it for you).
+2. You send 20ms PCM frames as they arrive from the
+   [WebRTC track](/articles/webrtc-for-voice-agents).
+3. You receive **partial** transcripts that rewrite themselves.
+4. You receive a **final** when the STT — or your
+   [turn detector](/articles/vad-vs-turn-detection) — decides the utterance
+   ended.
+
+```
+frame  →  "I'd"
+frame  →  "I'd like a"
+frame  →  "I'd like a room for"
+final  →  "I'd like a room for the 14th."
+```
+
+Partials are hypotheses. They will change. "for the 14th" might have been
+"for Thursday" two frames ago. If you fire the LLM on every partial, you
+spend money and you start saying the wrong date. If you wait for the final
+before the LLM sees a single token, you added the entire endpointing delay
+to time-to-first-audio.
+
+The production pattern is **speculative**: start generating on a stable
+partial (or as soon as turn detection looks likely), and commit — actually
+speak — only when the turn is confirmed. LiveKit's
+`preemptive_generation=True` is that pattern. The LLM thinks during the last
+200ms of the caller's sentence. If they keep talking, you throw the draft
+away. If they stop, TTS already has a head start.
+
+That only works if STT is streaming. A batch `transcribe(buffer)` call has
+nothing to speculate on.
+
+### What to look at in an STT event
+
+Not all providers expose the same fields. The ones that change agent quality:
+
+| Field | Why it matters |
+| --- | --- |
+| Interim vs final | Whether you may speak yet |
+| Word timings | Align barge-in; know *which* word was interrupted |
+| Confidence | Drop garbage instead of sending "um asdf" to the LLM |
+| End-of-utterance | Some STTs (AssemblyAI Universal-Streaming, Deepgram Flux) *are* the turn detector |
+| Language / keyterms | Proper nouns, "LiveKit", your hotel's name |
+
+Endpointing inside the STT is a second VAD. If you also run Silero and a
+semantic turn model, pick one authority. I spelled out the modes in
+[part 2](/articles/vad-vs-turn-detection). Double endpointing feels like
+the agent is politely ignoring you.
+
+## TTS is time-to-first-byte, then a clock
+
+The metric that matters is not "how long to synthesize this paragraph." It
+is **when the caller hears the first phoneme.**
+
+A good streaming TTS:
+
+1. Accepts text in chunks (sentences, even clauses).
+2. Returns PCM (or Opus) before the rest of the text exists.
+3. Lets you abort in-flight synthesis without draining a 4-second buffer.
+
+<SequenceDiagram
+  caption="First audio should leave before the LLM has finished the thought."
+  actors={[
+    { id: "stt", label: "STT" },
+    { id: "llm", label: "LLM" },
+    { id: "tts", label: "TTS" },
+    { id: "spk", label: "Track" },
+  ]}
+  steps={[
+    { from: "stt", to: "llm", label: "stable partial" },
+    { from: "llm", to: "tts", label: "first sentence" },
+    { from: "tts", to: "spk", label: "PCM 20ms" },
+    { from: "llm", to: "tts", label: "rest of tokens", dashed: true },
+    { from: "tts", to: "spk", label: "continue" },
+  ]}
+/>
+
+Chunking is the whole game. If you wait for the model to emit a 90-word
+answer and then POST it to TTS, you have recreated the sequential bar at
+the top of this page. Split on sentence boundaries — `"Sure."` is enough
+to start Cartesia or ElevenLabs — and keep feeding.
+
+LiveKit's `tts_text_transforms` exist because spoken text is not markdown.
+Filter emoji, strip bullets, rewrite "LiveKit" into phonemes. A voice that
+says "star star bold star star" is a TTS bug you introduced in the prompt.
+
+Aligned transcripts (`use_tts_aligned_transcript`) give you word timings on
+the *outbound* audio. That is how you highlight captions, and how you know
+exactly what the caller heard before they interrupted.
+
+## Barge-in has to cancel three things
+
+When VAD (and maybe the adaptive interruption model) says the user is
+talking over you, "stop speaking" is three operations:
+
+1. **Playout** — stop publishing frames on the outbound WebRTC track. This
+   is the only step the caller hears instantly.
+2. **TTS session** — abort the synthesis websocket so you do not pay for
+   audio nobody will hear, and so old PCM cannot sneak onto the track.
+3. **LLM** — cancel the in-flight completion, or at least stop forwarding
+   tokens to TTS. Otherwise the agent finishes the paragraph in its head
+   and you have a context mess on the next turn.
+
+Do (2) and (3) without (1) and the caller hears another 200–400ms of the
+agent talking over them. That is the "it never lets me interrupt" review.
+
+Do (1) without (3) and the transcript of what the agent *meant* to say
+diverges from what was heard. The next LLM turn is lying.
+
+This is why a voice agent is an event loop, not a function. There is no
+`await speak(full_text)` that is safe. There is a `SpeechHandle` with
+semantics close to `asyncio.Future`: you can wait, you can cancel, you can
+chain. LiveKit's session owns that handle so your tool code does not have
+to.
+
+## Provider swap is real. Timing contracts are not.
+
+The workshop's starter agent is AssemblyAI + GPT-4.1-mini + Cartesia
+behind LiveKit Inference. You can change those strings. You cannot change
+the contract:
+
+- STT must stream partials.
+- LLM must stream tokens.
+- TTS must stream first audio.
+- All three must be abortable.
+
+A "better" TTS with 600ms time-to-first-byte loses to a worse voice that
+starts in 90ms. Callers judge the gap, not the spectrogram. Same for STT:
+a model with slightly higher WER that emits a usable partial at 150ms will
+beat a batch-accurate model that needs the full utterance.
+
+Failover belongs at this layer too. If Cartesia 500s, the next TTS provider
+has to pick up *the remaining text*, not restart the whole turn. LiveKit's
+session is built for that swap. Your sequential `audio = tts(text)` script
+is not.
+
+## What to take into the next piece
+
+Streaming only helps if the event loop is free to move frames. Silero ONNX,
+a sync Postgres call in a tool, `time.sleep`, a blocking SDK — any of those
+on the asyncio loop and the 90ms TTS first-byte sits in a queue behind a
+thread that is busy.
+
+That is the last internals piece:
+[your voice agent cannot live on one asyncio loop](/articles/asyncio-threads-livekit).
+How LiveKit actually runs a job — processes, idle pools, inference
+executors, `asyncio.to_thread` — and why "but it's async" is not a
+runtime strategy.

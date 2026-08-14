@@ -22,10 +22,16 @@ export default function Writing() {
     (t) => !t.draft && t.slugAsParams === FEATURED_TUTORIAL_SLUG
   );
 
+  const internalsLatest = articles
+    .filter((a) => !a.draft && a.tags.includes("voice-internals"))
+    .sort((a, b) => +new Date(b.publishedAt) - +new Date(a.publishedAt))[0];
+
   const featured = [
-    voiceArticle
-      ? { ...voiceArticle, kind: "Essay" as const }
-      : null,
+    internalsLatest
+      ? { ...internalsLatest, kind: "Essay" as const }
+      : voiceArticle
+        ? { ...voiceArticle, kind: "Essay" as const }
+        : null,
     livekitTutorial
       ? { ...livekitTutorial, kind: "Tutorial" as const }
       : null,
@@ -46,6 +52,10 @@ export default function Writing() {
         <h2 className="ed-section-title text-3xl sm:text-4xl">
           Voice, then the rest
         </h2>
+        <p className="tut-lede mt-3 max-w-xl text-base">
+          Internals when the demo stops working — WebRTC, VAD, STT, TTS, the
+          process under the loop.
+        </p>
       </div>
 
       <div className="flex flex-col gap-3">
