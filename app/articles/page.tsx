@@ -2,8 +2,7 @@ import { articles } from "#site/content";
 import { siteConfig } from "@/lib/site";
 import {
   FEATURED_ARTICLE_SLUG,
-  VOICE_INTERNALS_SLUGS,
-  isVoiceInternalsSlug,
+  WEBRTC_ARTICLE_SLUG,
 } from "@/lib/content-focus";
 import {
   FeaturedPost,
@@ -15,31 +14,29 @@ import {
 export const metadata = {
   title: "Articles",
   description:
-    "Voice AI internals — WebRTC, VAD, STT, TTS, asyncio — and field notes from shipping agents.",
+    "Field notes on production voice agents — WebRTC, latency, barge-in, turn-taking — and the engineering around them.",
   keywords: [
     "voice agents",
     "WebRTC",
-    "VAD",
-    "STT",
-    "TTS",
     "LiveKit",
-    "asyncio",
+    "production agents",
+    "real-time audio",
   ],
   alternates: { canonical: `${siteConfig.url}/articles` },
   openGraph: {
     title: "Articles | Akash Panchal",
     description:
-      "Voice AI internals — WebRTC, VAD, STT, TTS, asyncio — and field notes from shipping agents.",
+      "Field notes on production voice agents — the hard problems, not the demo.",
     url: `${siteConfig.url}/articles`,
     type: "website",
-    images: [{ url: "/cover-asyncio-threads-livekit.svg", width: 1200, height: 630 }],
+    images: [{ url: "/cover-webrtc-for-voice-agents.svg", width: 1200, height: 630 }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Articles | Akash Panchal",
     description:
-      "Voice AI internals — WebRTC, VAD, STT, TTS, asyncio — and field notes from shipping agents.",
-    images: ["/cover-asyncio-threads-livekit.svg"],
+      "Field notes on production voice agents — the hard problems, not the demo.",
+    images: ["/cover-webrtc-for-voice-agents.svg"],
   },
 };
 
@@ -60,13 +57,7 @@ function asIndex(post: (typeof articles)[number]): IndexPost {
 export default function ArticlesPage() {
   const published = articles.filter((t) => !t.draft).map(asIndex);
 
-  const series = VOICE_INTERNALS_SLUGS.map((slug) =>
-    published.find((a) => a.slugAsParams === slug)
-  ).filter((a): a is IndexPost => a != null);
-
-  const latest = [...series].sort(
-    (a, b) => +new Date(b.publishedAt) - +new Date(a.publishedAt)
-  )[0];
+  const webrtc = published.find((a) => a.slugAsParams === WEBRTC_ARTICLE_SLUG);
 
   const signature = published.find(
     (a) => a.slugAsParams === FEATURED_ARTICLE_SLUG
@@ -75,7 +66,7 @@ export default function ArticlesPage() {
   const rest = published
     .filter(
       (a) =>
-        !isVoiceInternalsSlug(a.slugAsParams) &&
+        a.slugAsParams !== WEBRTC_ARTICLE_SLUG &&
         a.slugAsParams !== FEATURED_ARTICLE_SLUG
     )
     .sort((a, b) => +new Date(b.publishedAt) - +new Date(a.publishedAt));
@@ -94,42 +85,22 @@ export default function ArticlesPage() {
           the build log.
         </h1>
         <p className="tut-lede mt-6 max-w-xl text-lg">
-          Voice first. Internals when the demo stops working — transport,
-          hearing, speech, the runtime under the loop.
+          Voice first. Transport, timing, and the parts that break when a real
+          person talks to your agent.
         </p>
       </header>
 
-      {latest && (
-        <FeaturedPost post={latest} kicker="The latest" kind="Essay" />
+      {webrtc && (
+        <FeaturedPost post={webrtc} kicker="Deep dive" kind="Essay" />
       )}
 
-      {signature && signature.slugAsParams !== latest?.slugAsParams && (
+      {signature && (
         <section className="mt-16">
           <p className="tut-kicker mb-3">Start here</p>
           <h2 className="tut-title mb-6 text-2xl sm:text-3xl">
             The signature essay
           </h2>
           <PostRow post={signature} />
-        </section>
-      )}
-
-      {series.length > 0 && (
-        <section className="mt-16">
-          <p className="tut-kicker mb-3">Series</p>
-          <h2 className="tut-title mb-2 text-2xl sm:text-3xl">
-            Voice AI internals
-          </h2>
-          <p className="tut-lede mb-8 text-base">
-            Four essays. WebRTC, then VAD, then the models, then the process
-            that has to stay out of the way.
-          </p>
-          <ul>
-            {series.map((post, i) => (
-              <li key={post.slug}>
-                <PostRow post={post} part={i + 1} />
-              </li>
-            ))}
-          </ul>
         </section>
       )}
 

@@ -3,9 +3,8 @@ import { siteConfig } from "@/lib/site";
 import {
   FEATURED_ARTICLE_SLUG,
   FEATURED_TUTORIAL_SLUG,
-  VOICE_INTERNALS_SLUGS,
+  WEBRTC_ARTICLE_SLUG,
   isMastraSlug,
-  isVoiceInternalsSlug,
   markdownUrl,
 } from "@/lib/content-focus";
 
@@ -28,17 +27,16 @@ export function buildLlmsTxt() {
   const featuredTutorial = tutorials.find(
     (t) => !t.draft && t.slugAsParams === FEATURED_TUTORIAL_SLUG
   );
-
-  const internals = VOICE_INTERNALS_SLUGS.map((slug) =>
-    articles.find((a) => !a.draft && a.slugAsParams === slug)
-  ).filter((a): a is (typeof articles)[number] => a != null);
+  const webrtcArticle = articles.find(
+    (a) => !a.draft && a.slugAsParams === WEBRTC_ARTICLE_SLUG
+  );
 
   const otherArticles = articles
     .filter(
       (a) =>
         !a.draft &&
         a.slugAsParams !== FEATURED_ARTICLE_SLUG &&
-        !isVoiceInternalsSlug(a.slugAsParams)
+        a.slugAsParams !== WEBRTC_ARTICLE_SLUG
     )
     .sort((a, b) => +new Date(b.publishedAt) - +new Date(a.publishedAt));
 
@@ -54,6 +52,13 @@ export function buildLlmsTxt() {
     .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
   const featured = [
+    webrtcArticle
+      ? line(
+          webrtcArticle.title,
+          webrtcArticle.url,
+          webrtcArticle.description
+        )
+      : "",
     featuredArticle
       ? line(
           featuredArticle.title,
@@ -70,10 +75,6 @@ export function buildLlmsTxt() {
       : "",
   ]
     .filter(Boolean)
-    .join("\n");
-
-  const series = internals
-    .map((a) => line(a.title, a.url, a.description))
     .join("\n");
 
   const also = [
@@ -101,12 +102,6 @@ Canonical HTML is at the paths below. Each piece also has a \`.md\` URL for agen
 ## Writing
 
 ${featured}
-
-## Voice AI internals
-
-WebRTC, VAD, STT/TTS streaming, asyncio and LiveKit job processes.
-
-${series}
 
 ## Also
 

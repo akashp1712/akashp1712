@@ -111,8 +111,8 @@ export default function ArticlePage({ params }: Props) {
         <article className="min-w-0">
           <header className="mb-14">
             <p className="tut-kicker mb-4">
-              {post.tags.includes("voice-internals")
-                ? "Voice internals"
+              {post.slugAsParams === "webrtc-for-voice-agents"
+                ? "Deep dive"
                 : "Essay"}
             </p>
             <h1 className="tut-title text-4xl sm:text-5xl">{post.title}</h1>
