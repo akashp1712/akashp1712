@@ -2,7 +2,7 @@
   <title id="t">WebRTC vs HTTP for voice agents</title>
   <desc id="d">Three transports: HTTP and WebSocket stall on TCP. WebRTC keeps a 20ms media clock on UDP.</desc>
   <rect width="1200" height="630" fill="#f8fafc"/>
-  <text x="48" y="56" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#94a3b8" letter-spacing="0.18em" font-weight="700">VOICE INTERNALS / 01</text>
+  <text x="48" y="56" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#94a3b8" letter-spacing="0.18em" font-weight="700">DEEP DIVE</text>
   <text x="48" y="100" font-family="ui-sans-serif,system-ui,sans-serif" font-size="28" fill="#0f172a" font-weight="700">The media clock is 20ms. TCP is not.</text>
 
   <rect x="48" y="156" width="352" height="396" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>

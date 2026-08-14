@@ -5,6 +5,7 @@ import { BsArrowRight } from "react-icons/bs";
 import {
   FEATURED_ARTICLE_SLUG,
   FEATURED_TUTORIAL_SLUG,
+  WEBRTC_ARTICLE_SLUG,
 } from "@/lib/content-focus";
 
 function formatDate(d: string) {
@@ -22,13 +23,13 @@ export default function Writing() {
     (t) => !t.draft && t.slugAsParams === FEATURED_TUTORIAL_SLUG
   );
 
-  const internalsLatest = articles
-    .filter((a) => !a.draft && a.tags.includes("voice-internals"))
-    .sort((a, b) => +new Date(b.publishedAt) - +new Date(a.publishedAt))[0];
+  const webrtcArticle = articles.find(
+    (a) => !a.draft && a.slugAsParams === WEBRTC_ARTICLE_SLUG
+  );
 
   const featured = [
-    internalsLatest
-      ? { ...internalsLatest, kind: "Essay" as const }
+    webrtcArticle
+      ? { ...webrtcArticle, kind: "Essay" as const }
       : voiceArticle
         ? { ...voiceArticle, kind: "Essay" as const }
         : null,
@@ -53,8 +54,7 @@ export default function Writing() {
           Voice, then the rest
         </h2>
         <p className="tut-lede mt-3 max-w-xl text-base">
-          Internals when the demo stops working — WebRTC, VAD, STT, TTS, the
-          process under the loop.
+          Transport, timing, and the engineering that survives a real call.
         </p>
       </div>
 

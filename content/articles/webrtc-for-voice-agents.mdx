@@ -1,39 +1,81 @@
 ---
-title: "WebRTC Is Why Voice Agents Don't Feel Like HTTP"
-description: "A voice agent is not a POST with a WAV attached. Audio arrives as 20ms Opus packets over UDP, through a jitter buffer, as a LiveKit track. If you model the transport like a chat API, the rest of the pipeline inherits the lag."
-publishedAt: "2026-08-11"
-tags: ["voice-internals", "webrtc", "livekit", "audio"]
+title: "WebRTC from First Principles: Why Voice Agents Run on UDP, Not HTTP"
+description: "Sound is a 20ms clock. TCP was built for documents. This is a ground-up tour of WebRTC — sampling, RTP, ICE, jitter buffers — and why every serious voice agent ends up as a media participant, not a server behind a POST."
+publishedAt: "2026-08-14"
+tags: ["webrtc", "voice-agents", "livekit", "real-time"]
 coverImage: "/cover-webrtc-for-voice-agents.svg"
 draft: false
 ---
 
-You can wire STT → LLM → TTS in an afternoon. The thing that still feels
-wrong on the first real call is usually not the model. It is the network
-assumption you brought from HTTP.
+You can wire speech-to-text → LLM → text-to-speech in an afternoon. The thing
+that still feels wrong on the first real call is usually not the model. It is
+the transport assumption you brought from HTTP.
 
 A chat bot waits for a request, thinks, returns a body. A voice agent is a
-participant in a media session. Audio is already moving before anyone has
+participant in a **media session**. Audio is already moving before anyone has
 "sent" anything, and it keeps moving while you are still deciding what to say.
+That difference is not cosmetic. It changes every architectural choice
+downstream — what you buffer, when you transcribe, how you interrupt, where you
+run your Python.
 
-This is part 1 of a four-part internals series. Transport first, because every
-later number — VAD windows, STT partials, TTS time-to-first-byte — is measured
-against packets that already exist.
+This piece starts from zero: what sound *is* on a wire, why the web's default
+transports fail at carrying it, how WebRTC fixes that, and why frameworks like
+[LiveKit](https://docs.livekit.io/agents/) treat your agent as one more
+participant in a room instead of a handler behind an API route.
 
 <Callout type="info">
-**Series**
-1. WebRTC (this piece)
-2. [VAD vs turn detection](/articles/vad-vs-turn-detection)
-3. [STT and TTS streaming](/articles/stt-tts-streaming)
-4. [Asyncio, threads, LiveKit jobs](/articles/asyncio-threads-livekit)
+**You'll learn**
+- How analog speech becomes 20ms PCM frames — the clock everything else inherits
+- Why TCP and WebSockets stall live audio, and what UDP + RTP do differently
+- The WebRTC stack: signaling, ICE, SRTP, codecs, jitter buffers
+- What arrives in a voice-agent process, and what that forces you to build
 </Callout>
 
-## Three ways to move audio, only one of them is a conversation
+## Sound is a stream, not a file
+
+Before packets and protocols: **audio is a time series**.
+
+A microphone membrane moves. That motion is sampled at a fixed rate — typically
+48,000 times per second for WebRTC — and each sample is a number. One channel
+of 48 kHz audio for one second is 48,000 numbers. String those samples
+together in order and you have a waveform. Play them back at the same rate and
+you hear the original sound.
+
+Real-time systems do not wait for the whole waveform. They ship **frames**:
+small slices of the timeline, played or processed as they arrive. WebRTC's
+default audio frame is **20 milliseconds** — 960 samples at 48 kHz, 1,920 bytes
+of 16-bit PCM per channel. Fifty frames per second. That number will show up
+everywhere once you build a voice agent.
+
+```python
+# Typical decoded frame from a LiveKit audio track
+frame.sample_rate          # 48000
+frame.num_channels         # 1
+frame.samples_per_channel  # 960   → 20ms at 48kHz
+frame.data                 # int16 PCM, 1920 bytes
+```
+
+Why 20ms? It is a compromise baked into decades of telephony and VoIP. Shorter
+frames mean lower latency but more overhead per packet. Longer frames mean
+fewer packets but you feel the delay. Twenty milliseconds is where most humans
+stop noticing frame boundaries and networks stop drowning in headers.
+
+The important mental shift: **you are not uploading a recording.** You are
+joining a clock. Every stage in your pipeline — VAD, STT, TTS — either keeps
+that clock or fights it.
+
+## Why HTTP and WebSockets are the wrong shape
+
+The web was built around a brilliant abstraction: request a resource, get bytes
+back. TCP delivers those bytes reliably and in order. Byte 401 does not arrive
+until byte 400 has been acknowledged. That is correctness for documents. It is
+poison for live speech.
 
 <CompareDiagram
-  caption="Same words, three transports. Only WebRTC was designed for live speech."
+  caption="Same conversation, three transports. Only one was designed for 20ms media frames."
   left={{
     title: "HTTP / WebSocket",
-    subtitle: "TCP · request or stream",
+    subtitle: "TCP · reliable, ordered",
     variant: "bad",
     items: [
       {
@@ -41,12 +83,12 @@ against packets that already exist.
         sub: "One lost packet stalls everything behind it",
       },
       {
-        label: "No audio semantics",
-        sub: "You invent timestamps, jitter, and loss yourself",
+        label: "No media clock",
+        sub: "You invent timestamps, jitter, and loss recovery",
       },
       {
-        label: "Fine for transcripts",
-        sub: "Wrong for 20ms media frames",
+        label: "Request-shaped",
+        sub: "Fine for transcripts and JSON — wrong for Opus frames",
       },
     ],
   }}
@@ -57,48 +99,182 @@ against packets that already exist.
     items: [
       {
         label: "Late packet = skip",
-        sub: "Conceal the gap, keep the timeline",
+        sub: "Keep the timeline; conceal the gap",
       },
       {
-        label: "Opus + jitter buffer",
-        sub: "Codec, clock, and loss recovery are the protocol",
+        label: "Built-in audio semantics",
+        sub: "Codec, clock, jitter buffer, PLC are the protocol",
       },
       {
         label: "Bidirectional at once",
-        sub: "Caller audio in while TTS audio is already out",
+        sub: "Caller audio in while agent audio is already out",
       },
     ],
   }}
 />
 
-HTTP is excellent at "here is a document." TCP will not deliver byte 401 until
-byte 400 has been acknowledged. That is correctness. It is also why a dropped
-packet on a phone network turns into a stall you can hear.
+Consider what happens on a flaky mobile network. A single dropped TCP segment
+blocks the entire stream until retransmission completes. For a web page, you
+wait 200ms and the image finishes loading. For a phone call, you hear a
+**gap** — or worse, everything after the gap arrives in a burst, then another
+gap. Humans interpret gaps longer than ~200ms as "they didn't hear me" or "the
+call is broken."
 
-WebSockets fix the request/response shape — the socket stays open — but they
-still ride TCP. Under loss, you wait. Live speech cannot wait. A 200ms gap
-between turns already feels like a bad satellite call. Retransmitting a stale
-20ms frame so it arrives 180ms late is worse than dropping it.
+WebSockets fix the *shape* of HTTP — the socket stays open, data can flow both
+ways — but they still ride TCP. Under loss, you wait. Live speech cannot wait.
+Retransmitting a stale 20ms frame so it arrives 180ms late is worse than
+dropping it and moving on.
 
-WebRTC starts from the opposite bet: **the timeline matters more than the
-bytes.** Media rides RTP over UDP. Packets have timestamps and sequence
-numbers. A jitter buffer holds a few frames so they can be released on a
-steady clock. Packet-loss concealment invents a plausible 20ms of audio
-instead of inserting silence. NACK and FEC recover what they can; the rest is
-gone on purpose.
+WebRTC makes the opposite bet: **the timeline matters more than the bytes.**
 
-That is the whole argument for [LiveKit](https://docs.livekit.io/agents/) as
-the transport for a voice agent. You are not "uploading audio." You are
-joining a room.
+## The WebRTC stack, bottom to top
 
-## The agent is a participant, not a server behind a POST
+WebRTC is not a single protocol. It is a **system** of protocols and APIs that
+together solve: capture audio, find a path through NAT, encrypt it, compress it,
+ship it on time, and play it back with tolerable quality under loss.
 
-LiveKit is an SFU. Callers publish tracks. The server forwards those tracks to
-subscribers. Your Python process is one more participant: it subscribes to the
-caller's microphone track and publishes a TTS track back.
+<LayerDiagram
+  caption="Each layer owns one problem. Voice agents live at the top; the rest is why calls work on real networks."
+  layers={[
+    { label: "Your agent", sub: "STT · LLM · TTS · tools", accent: true },
+    { label: "Media SDK", sub: "tracks · subscribe · publish" },
+    { label: "WebRTC API", sub: "RTCPeerConnection · getUserMedia" },
+    { label: "SRTP / RTP", sub: "encrypted media packets + timestamps" },
+    { label: "UDP", sub: "no head-of-line blocking" },
+    { label: "ICE + STUN + TURN", sub: "find a path through NAT and firewalls" },
+  ]}
+/>
+
+**UDP** ships datagrams without guaranteeing order or delivery. A lost packet
+does not block the next one. That is the foundation.
+
+**RTP** (Real-time Transport Protocol) adds what UDP lacks for media: sequence
+numbers, timestamps, payload types. Each packet knows where it belongs on the
+timeline. **SRTP** encrypts those packets. Keys are negotiated via **DTLS**, a
+TLS-like handshake that runs over the same UDP path.
+
+**Opus** is the default audio codec — adaptive bitrate, wideband, built for
+speech. It can shrink under bad networks and still sound intelligible. Your STT
+word-error rate may suffer before the caller notices the compression.
+
+**ICE** (Interactive Connectivity Establishment) is how two peers find each
+other across NAT. Your laptop does not have a public IP; neither does the
+caller's phone. **STUN** servers tell you your public address. **TURN** relays
+traffic when direct UDP fails. If media falls all the way back to TCP via TURN,
+you are back in head-of-line blocking territory — the agent will feel drunk on
+bad Wi-Fi even when the LLM is fast.
+
+The **WebRTC API** in the browser (`getUserMedia`, `RTCPeerConnection`) wraps
+all of this. Frameworks like LiveKit expose the same concepts as **rooms**,
+**tracks**, and **participants** — because that is what is actually happening
+underneath.
+
+## How two peers start talking
+
+Before any audio flows, the peers need to agree on codecs, encryption keys, and
+network paths. That negotiation is **signaling** — and critically, signaling
+is *not* the media path.
+
+<SequenceDiagram
+  caption="Signaling runs once per session over a reliable channel. Media runs continuously over UDP."
+  actors={[
+    { id: "caller", label: "Caller" },
+    { id: "sig", label: "Signaling" },
+    { id: "sfu", label: "SFU / peer" },
+    { id: "agent", label: "Agent" },
+  ]}
+  steps={[
+    { from: "caller", to: "sig", label: "join room" },
+    { from: "sig", to: "sfu", label: "SDP offer" },
+    { from: "sfu", to: "sig", label: "SDP answer" },
+    { from: "caller", to: "sfu", label: "ICE candidates", dashed: true },
+    { from: "sfu", to: "agent", label: "ICE candidates", dashed: true },
+    { from: "caller", to: "sfu", label: "Opus RTP · 20ms", dashed: true },
+    { from: "sfu", to: "agent", label: "subscribe mic track", dashed: true },
+    { from: "agent", to: "sfu", label: "publish TTS track", dashed: true },
+    { from: "sfu", to: "caller", label: "playout", dashed: true },
+  ]}
+/>
+
+**SDP** (Session Description Protocol) is the offer/answer exchange: which
+codecs, which SSRCs, which fingerprint for DTLS. It looks like opaque text. You
+rarely write it by hand.
+
+**ICE candidates** are the possible network paths — host, server-reflexive
+(STUN), relay (TURN). The peers try them in priority order until one works.
+
+Once the DTLS handshake completes, **SRTP media flows**. From this point on,
+the conversation is a stream of timestamped packets, not a series of HTTP
+requests. Signaling can take a second. That is fine — it runs once. Media
+cannot take a second per frame.
+
+Two channels, easy to conflate:
+
+- **Signaling** (WebSocket, TLS): join, publish, mute, hang up.
+- **Media** (UDP, SRTP): the actual samples, fifty times a second, forever.
+
+## The media plane: jitter, loss, and the buffer you did not write
+
+Packets do not arrive on a metronome. Wi-Fi, LTE, VPNs — they all introduce
+**jitter**: variance in delivery time. Packet 47 might arrive 5ms late. Packet
+48 might arrive 35ms late. If you play packets the instant they arrive, speech
+sounds like it is stuttering through a broken MP3 player.
+
+WebRTC's answer is a **jitter buffer**: hold a few packets, release them on a
+steady clock. You pay a small latency tax — typically 20–80ms — to sound
+continuous. That tax is almost always worth it.
+
+Three different failures get called "latency" on voice calls:
+
+| What you hear | What it actually is | What WebRTC does |
+| --- | --- | --- |
+| Words arrive in a clump, then a gap | Jitter (delay variance) | Buffer a few packets, release on a clock |
+| A syllable disappears | Packet loss | PLC invents plausible audio; NACK/FEC recover if there is time |
+| Everything is late but intact | One-way delay / RTT | Nothing. Physics. Move compute closer. |
+
+**PLC** (Packet Loss Concealment) synthesizes a plausible 20ms of audio when a
+packet never arrives — better than silence, worse than the real syllable.
+**NACK** asks the sender to retransmit; **FEC** sends redundant data ahead of
+time. Both help, but WebRTC's core stance remains: if a packet is too late to
+matter, drop it.
 
 <FlowDiagram
-  caption="Signaling is a WebSocket. Media is not. The agent never sees a WAV file."
+  caption="Inbound audio crosses the jitter buffer before your agent ever sees a PCM frame."
+  nodes={[
+    { id: "net", label: "Network", sub: "jitter + loss", col: 0, row: 0 },
+    { id: "jb", label: "Jitter buffer", sub: "steady 20ms clock", col: 1, row: 0, accent: true },
+    { id: "dec", label: "Opus decode", sub: "→ PCM int16", col: 2, row: 0 },
+    { id: "sdk", label: "SDK frame", sub: "960 samples", col: 3, row: 0 },
+    { id: "vad", label: "Your pipeline", sub: "VAD · STT · LLM", col: 3, row: 1 },
+  ]}
+  edges={[
+    { from: "net", to: "jb", label: "RTP" },
+    { from: "jb", to: "dec" },
+    { from: "dec", to: "sdk" },
+    { from: "sdk", to: "vad", label: "every 20ms" },
+  ]}
+/>
+
+You almost never tune the jitter buffer yourself — the WebRTC stack does. But
+you *do* choose whether to add a second buffer in your STT client. Most "my STT
+is slow" bugs I have seen were an extra queue of frames sitting in Python,
+waiting for a WebSocket that was already ready.
+
+Adaptive bitrate is the other half. Opus can drop from ~24 kbps toward a
+narrowband trickle when the path is dying. Intelligibility survives; your
+transcript may not. That is a product decision: a slightly wrong transcript on
+a bad network beats a two-second freeze.
+
+## From browser WebRTC to a voice agent
+
+In a [LiveKit](https://docs.livekit.io/agents/) deployment, the SFU (Selective
+Forwarding Unit) sits in the middle. Callers publish tracks. The server
+forwards those tracks to subscribers. Your Python process is **one more
+participant**: it subscribes to the caller's microphone track and publishes a
+TTS track back.
+
+<FlowDiagram
+  caption="The agent never sees a WAV file. It lives on tracks in a room."
   nodes={[
     { id: "mic", label: "Caller mic", sub: "getUserMedia", col: 0, row: 0 },
     { id: "sfu", label: "LiveKit SFU", sub: "room + tracks", col: 1, row: 0, accent: true },
@@ -114,69 +290,22 @@ caller's microphone track and publishes a TTS track back.
   ]}
 />
 
-Two channels, easy to conflate:
+Decoded, the SDK hands you PCM frames — not Opus packets. VAD scores *this*
+frame. STT consumes a stream of these frames. TTS publishes the same shape
+going the other way. If any stage buffers "until I have a complete utterance,"
+you have converted a 20ms media pipeline into a file upload that happens to use
+WebRTC as a fancy socket.
 
-- **Signaling** (WebSocket, TLS): join the room, publish a track, mute, hang
-  up. This can be slow. It runs once per session, not once per syllable.
-- **Media** (UDP, SRTP): the actual samples. This cannot be slow.
-
-ICE, STUN, and TURN exist so the UDP path can punch through NAT. If media
-falls back to TURN, you added a relay hop. If it falls all the way back to
-TCP, you are back in head-of-line blocking and the agent will feel drunk on
-bad Wi-Fi even when the LLM is fast.
-
-The [LiveKit voice workshop](https://worksh.app/tutorials/livekit-voice-agent/foundations)
-puts this in one sentence: WebRTC is designed for media; HTTP is not. The rest
-of this piece is what that sentence hides.
-
-## What actually arrives in your process
-
-Decoded, the SDK hands you PCM frames, not Opus packets. A typical LiveKit
-audio frame looks like this:
-
-```python
-frame.sample_rate          # 48000
-frame.num_channels         # 1
-frame.samples_per_channel  # 960   → 20ms at 48kHz
-frame.data                 # int16 PCM, 1920 bytes
-```
-
-Twenty milliseconds. Fifty times a second. That is the clock everything else
-has to keep.
-
-VAD scores *this* frame. STT consumes a stream of these frames. TTS publishes
-the same shape going the other way. If any stage buffers "until I have a
-complete utterance," you have converted a 20ms media pipeline into a file
-upload that happens to use WebRTC as a fancy socket.
-
-Telephony adds a second clock. PSTN audio is often 8kHz μ-law. LiveKit
+Telephony adds a second clock. PSTN audio is often 8 kHz μ-law. LiveKit
 resamples into the room clock before your agent sees it. That resample is
-cheap compared to STT, but it is why a "phone agent" and a "browser agent"
-are the same job in the SDK: both become 48kHz frames in a room.
+cheap compared to STT, but it is why a "phone agent" and a "browser agent" are
+the same job in the SDK: both become 48 kHz frames in a room.
 
-## Jitter is not lag, and lag is not loss
+The [LiveKit voice tutorial](/tutorials/livekit-voice-agents) builds a hotel
+receptionist on top of this transport. It never downloads a recording. It lives
+on the track. The task/state-machine layer assumes audio is already flowing.
 
-Three different failures get called "latency" on voice calls:
-
-| What you hear | What it actually is | What WebRTC does |
-| --- | --- | --- |
-| Words arrive in a clump, then a gap | Jitter (delay variance) | Buffer a few packets, release on a clock |
-| A syllable disappears | Loss | PLC, then NACK/FEC if there is time |
-| Everything is late but intact | RTT / one-way delay | Nothing. Physics. Move the agent closer |
-
-The jitter buffer is a latency tax you pay to sound continuous. Too small and
-you get robotic clips. Too large and you added 80ms before VAD even ran. You
-almost never tune this yourself in LiveKit — the WebRTC stack does — but you
-*do* choose whether to add a second buffer on top in your STT client. Most
-"my STT is slow" bugs I have seen were an extra queue of frames sitting in
-Python, waiting for a websocket that was already ready.
-
-Adaptive bitrate is the other half. Opus can drop from ~24kbps toward a
-narrowband trickle when the path is dying. Intelligibility survives; your
-STT word-error rate may not. That is a product decision: a slightly wrong
-transcript on a bad network is still better than a two-second freeze.
-
-## Why this changes the agent, not just the network
+## What WebRTC forces you to build differently
 
 Once audio is a live track, several "obvious" architectures become wrong.
 
@@ -185,9 +314,8 @@ entire reason you used WebRTC. Streaming STT exists because frames already
 stream.
 
 **Do not block the publish path.** If TTS has the next 20ms of PCM and your
-tool call is doing sync HTTP on the same thread, the caller hears a hitch.
-The [asyncio piece](/articles/asyncio-threads-livekit) is about that in
-detail. The transport constraint comes first: the track has a clock.
+tool call is doing synchronous HTTP on the same thread, the caller hears a
+hitch. The track has a clock whether your code is ready or not.
 
 **Barge-in is a track operation.** Interrupting the agent means stopping
 playout of the outbound audio track *now*, not waiting for the TTS HTTP
@@ -195,20 +323,56 @@ response to finish. WebRTC gives you that handle. A file-based pipeline does
 not.
 
 **Echo is a room problem.** The caller hears the agent on a speaker, the
-microphone records it, VAD thinks the user started talking. Browser clients
-get AEC from the WebRTC stack; phones and speakerphones need help (LiveKit's
-BVC / noise cancellation sits on the inbound track for this reason). If you
-skip it, your "turn detector" will fight the agent's own voice.
+microphone records it, VAD thinks the user started talking. Browser clients get
+AEC from the WebRTC stack; phones and speakerphones need help. If you skip
+acoustic echo cancellation, your turn detector will fight the agent's own voice.
 
-## What to take into the next piece
+**Latency budgets compound.** Research on conversation puts the comfortable gap
+between turns around 200ms. That budget must cover STT, LLM, TTS, *and* the
+transport you already chose. WebRTC does not make the models faster — it stops
+the network from adding hundreds of milliseconds of avoidable stall on top.
 
-You now have a 20ms PCM clock, in both directions, in a room. The next
-question is not "how do I transcribe." It is "which of these frames are
-speech, and when is the human actually done."
+<LatencyBar
+  caption="Illustrative per-turn budget (ms). Transport is the floor; everything else stacks on top."
+  unit="ms"
+  rows={[
+    {
+      name: "Where the milliseconds go",
+      segments: [
+        { label: "Jitter buffer", ms: 40 },
+        { label: "STT", ms: 120 },
+        { label: "LLM", ms: 350 },
+        { label: "TTS", ms: 200 },
+        { label: "Network", ms: 30 },
+      ],
+    },
+  ]}
+/>
 
-That is [VAD and turn detection](/articles/vad-vs-turn-detection) — energy
-versus meaning, and why silence is a terrible end-of-turn signal.
+## Why WebRTC is the first choice for voice agents
 
-The hotel-receptionist walkthrough in
-[LiveKit Voice Agents](/tutorials/livekit-voice-agents) assumes this
-transport. It never downloads a recording. It lives on the track.
+None of this is about fashion. Voice agents have a specific problem shape:
+
+- **Bidirectional audio** flowing continuously, not request/response
+- **Tight timing** — 20ms frames, ~200ms turn gaps
+- **Loss tolerance** — skip late data, don't stall the timeline
+- **NAT traversal** — callers are on phones, laptops, behind corporate firewalls
+- **Encryption by default** — SRTP is not optional in production
+
+HTTP solves documents. WebSockets solve persistent connections. WebRTC solves
+**live media between peers**. Every serious voice-agent platform — LiveKit,
+Daily, Twilio's WebRTC paths, browser-native calling — converges on the same
+stack because the problem is the stack's problem.
+
+When you build on WebRTC (directly or through an SFU), you inherit decades of
+work on jitter buffers, codecs, echo cancellation, and NAT punching. When you
+fight it — batching audio over REST, streaming WAV over WebSocket, polling for
+"is the user done talking" — you reimplement the hard parts badly.
+
+The practical takeaway: **treat your agent as a media participant, not an API
+handler.** Subscribe to a track. Publish a track. Keep the 20ms clock. Let the
+protocol do what it was built for.
+
+That is the foundation. Everything else — when to transcribe, when to speak,
+how to interrupt — is engineering on top of a transport that already decided
+audio is a stream.
