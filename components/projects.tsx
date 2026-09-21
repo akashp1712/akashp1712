@@ -1,20 +1,18 @@
-"use client";
-
 import React from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
 import SectionHeading from "./section-heading";
 import { projectsData, projectTimelineData } from "@/lib/data";
 import Project from "./project";
-import { useSectionInView } from "@/lib/hooks";
 import { BsArrowRight } from "react-icons/bs";
 
 export default function Projects() {
-  const { ref } = useSectionInView("Projects", 0.5);
-
   return (
-    <section ref={ref} id="projects" className="mb-24 w-full max-w-3xl scroll-mt-28 px-4 sm:px-6">
-      <SectionHeading eyebrow="02 / Selected work">The company</SectionHeading>
+    <section id="projects" className="mb-24 w-full max-w-3xl scroll-mt-28 px-4 sm:px-6">
+      <SectionHeading eyebrow="Selected apps">Things I&apos;ve put into the world</SectionHeading>
+      <p className="tut-lede mb-8 max-w-2xl text-lg">
+        I care about the full path from an unclear problem to a reliable,
+        inspectable product. These are the clearest examples.
+      </p>
       <div>
         {projectsData.map((project, index) => (
           <React.Fragment key={index}>
@@ -25,19 +23,15 @@ export default function Projects() {
 
       <div className="mt-10">
         <h3 className="ed-meta mb-3" style={{ color: "var(--ink)" }}>
-          Also shipped
+          More shipped work
         </h3>
         <ul
           className="ed-card flex flex-col"
           style={{ borderRadius: 14 }}
         >
           {projectTimelineData.map((item, index) => (
-            <motion.li
+            <li
               key={item.title}
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.05 }}
               style={{
                 borderTop: index === 0 ? "none" : "1px solid var(--line-soft)",
               }}
@@ -61,7 +55,7 @@ export default function Projects() {
                   style={{ color: "var(--accent)" }}
                 />
               </Link>
-            </motion.li>
+            </li>
           ))}
         </ul>
       </div>

@@ -5,6 +5,7 @@ import Experience from "@/components/experience";
 import Header from "@/components/header";
 import Intro from "@/components/intro";
 import Projects from "@/components/projects";
+import AgentProfile from "@/components/agent-profile";
 
 export default function Home() {
   return (
@@ -13,6 +14,7 @@ export default function Home() {
       <Intro />
       <About />
       <Projects />
+      <AgentProfile />
       <Experience />
       <Writing />
       <Contact />

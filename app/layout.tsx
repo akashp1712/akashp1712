@@ -1,11 +1,9 @@
 import "./globals.css";
 import "./_reading/reading.css";
 import { fraunces, jetbrainsMono, hankenGrotesk } from "./_reading/fonts";
-import ActiveSectionContextProvider from "@/context/active-section-context";
 import Footer from "@/components/footer";
 import ThemeSwitch from "@/components/theme-switch";
 import ThemeContextProvider from "@/context/theme-context";
-import { Toaster } from "react-hot-toast";
 import { siteConfig } from "@/lib/site";
 
 export const metadata = {
@@ -136,7 +134,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="!scroll-smooth overflow-x-hidden">
+    <html lang="en" className="overflow-x-hidden">
       <body
         className={`${fraunces.variable} ${jetbrainsMono.variable} ${hankenGrotesk.variable} reading-root relative pt-28 sm:pt-36 overflow-x-hidden`}
       >
@@ -148,15 +146,11 @@ export default function RootLayout({
         <div aria-hidden className="reading-backdrop" />
 
         <ThemeContextProvider>
-          <ActiveSectionContextProvider>
-            {children}
-            <Footer />
-            <Toaster position="top-right" />
-            <ThemeSwitch />
-          </ActiveSectionContextProvider>
+          {children}
+          <Footer />
+          <ThemeSwitch />
         </ThemeContextProvider>
       </body>
     </html>
   );
 }
-

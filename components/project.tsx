@@ -1,9 +1,5 @@
-"use client";
-
-import { useRef } from "react";
 import { projectsData } from "@/lib/data";
 import Image from "next/image";
-import { motion, useScroll, useTransform } from "framer-motion";
 import { BsArrowRight } from "react-icons/bs";
 
 type ProjectProps = (typeof projectsData)[number];
@@ -13,24 +9,16 @@ export default function Project({
   description,
   hyperlink,
   tags,
+  kind,
+  outcome,
+  cta,
   imageUrl,
 }: ProjectProps) {
-  const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["0 1", "1.33 1"],
-  });
-  const opacityProgess = useTransform(scrollYProgress, [0, 1], [0.5, 1]);
-  const yProgress = useTransform(scrollYProgress, [0, 1], [24, 0]);
-
   return (
-    <motion.div
-      ref={ref}
-      style={{ opacity: opacityProgess, y: yProgress }}
-      className="ed-card group mb-8 overflow-hidden last:mb-0 flex flex-col"
-    >
+    <article className="ed-card project-card group mb-8 overflow-hidden last:mb-0 flex flex-col">
       {/* Text block */}
       <div className="flex flex-col p-6 sm:p-8">
+        <p className="ed-meta" style={{ color: "var(--accent)" }}>{kind}</p>
         <h3
           className="font-display text-2xl"
           style={{ color: "var(--ink)", fontWeight: 500 }}
@@ -43,6 +31,8 @@ export default function Project({
         >
           {description}
         </p>
+
+        <p className="project-outcome mt-5 text-sm">{outcome}</p>
 
         <ul className="mt-5 flex flex-wrap gap-2">
           {tags.map((tag, index) => (
@@ -58,29 +48,35 @@ export default function Project({
             target="_blank"
             className="ed-link group/link inline-flex items-center gap-1.5"
           >
-            Visit
+            {cta}
             <BsArrowRight className="transition group-hover/link:translate-x-0.5" />
           </a>
         </div>
       </div>
 
-      {/* Image column — full-width, framed under the text and clickable */}
-      <a
-        href={hyperlink}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="relative w-full aspect-video block overflow-hidden cursor-pointer"
-        style={{ borderTop: "1px solid var(--line)" }}
-      >
-        <Image
-          src={imageUrl}
-          alt={`${title} preview`}
-          quality={95}
-          fill
-          sizes="(min-width: 768px) 720px, 100vw"
-          className="object-contain object-top transition duration-500 group-hover:scale-[1.015]"
-        />
-      </a>
-    </motion.div>
+      {imageUrl ? (
+        <a
+          href={hyperlink}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="relative w-full aspect-video block overflow-hidden cursor-pointer"
+          style={{ borderTop: "1px solid var(--line)" }}
+        >
+          <Image
+            src={imageUrl}
+            alt={`${title} preview`}
+            quality={75}
+            fill
+            sizes="(min-width: 768px) 720px, 100vw"
+            className="object-contain object-top transition duration-500 group-hover:scale-[1.015]"
+          />
+        </a>
+      ) : (
+        <div className="project-private" aria-label="Product screenshots are not public">
+          <span>Product work</span>
+          <p>Screenshots are not public. The implementation details and role are documented above.</p>
+        </div>
+      )}
+    </article>
   );
 }

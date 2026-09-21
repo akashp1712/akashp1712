@@ -47,7 +47,7 @@ export default function Writing() {
     >
       <div className="mb-10">
         <p className="ed-eyebrow mb-4">
-          <span className="ed-eyebrow-label">04 / Writing</span>
+          <span className="ed-eyebrow-label">Writing</span>
           <span className="ed-eyebrow-rule" />
         </p>
         <h2 className="ed-section-title text-3xl sm:text-4xl">

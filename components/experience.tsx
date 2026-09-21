@@ -1,11 +1,7 @@
-"use client";
-
-import React, { useState } from "react";
+import React from "react";
 import SectionHeading from "./section-heading";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { experiencesData } from "@/lib/data";
-import { useSectionInView } from "@/lib/hooks";
-import { motion } from "framer-motion";
 
 // Helper function to bold numbers and impactful words
 function highlightImpact(text: string) {
@@ -25,19 +21,10 @@ function highlightImpact(text: string) {
 }
 
 // Sub-component for an individual experience card
-function ExperienceItem({ experience, index }: { experience: any; index: number }) {
-  const [isExpanded, setIsExpanded] = useState(false);
-
+function ExperienceItem({ experience }: { experience: (typeof experiencesData)[number] }) {
   return (
-    <motion.div
-      className="ed-card group relative cursor-pointer p-5 sm:p-6"
-      initial={{ opacity: 0, y: 40 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ delay: Math.min(index, 4) * 0.08 }}
-      onClick={() => setIsExpanded(!isExpanded)}
-    >
-      <div className="flex items-start gap-4">
+    <details className="ed-card experience-item group p-5 sm:p-6">
+      <summary className="flex cursor-pointer list-none items-start gap-4">
         <div className="text-3xl sm:text-4xl shrink-0" style={{ color: experience.brandColor }}>
           {experience.logo}
         </div>
@@ -50,10 +37,16 @@ function ExperienceItem({ experience, index }: { experience: any; index: number 
               {experience.title}
             </h3>
             <span
-              className="mt-1 shrink-0 transition"
+              className="mt-1 shrink-0 transition group-open:hidden"
               style={{ color: "var(--ink-faint)" }}
             >
-              {isExpanded ? <FaChevronUp /> : <FaChevronDown />}
+              <FaChevronDown />
+            </span>
+            <span
+              className="mt-1 hidden shrink-0 transition group-open:inline"
+              style={{ color: "var(--ink-faint)" }}
+            >
+              <FaChevronUp />
             </span>
           </div>
           <div className="ed-meta mt-1.5 flex flex-col gap-0.5 sm:flex-row sm:items-center sm:gap-3">
@@ -62,64 +55,56 @@ function ExperienceItem({ experience, index }: { experience: any; index: number 
             <span>{experience.location}</span>
           </div>
 
-          <motion.div
-            initial={false}
-            animate={{ height: isExpanded ? "auto" : 0, opacity: isExpanded ? 1 : 0 }}
-            className="overflow-hidden"
-          >
-            <div className="pt-4">
-              <p className="mb-4" style={{ color: "var(--ink-soft)", lineHeight: 1.65 }}>
-                {experience.description}
-              </p>
-
-              {experience.achievements && (
-                <div className="mb-4">
-                  <h4 className="ed-meta mb-2" style={{ color: "var(--ink)" }}>
-                    Key achievements
-                  </h4>
-                  <ul
-                    className="list-disc space-y-1.5 pl-5 text-sm"
-                    style={{ color: "var(--ink-soft)", lineHeight: 1.6 }}
-                  >
-                    {experience.achievements.map((achievement: string, i: number) => (
-                      <li key={i} dangerouslySetInnerHTML={{ __html: highlightImpact(achievement) }} />
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {experience.technologies && (
-                <div>
-                  <h4 className="ed-meta mb-2" style={{ color: "var(--ink)" }}>
-                    Stack
-                  </h4>
-                  <div className="flex flex-wrap gap-2">
-                    {experience.technologies.map((tech: string, i: number) => (
-                      <span key={i} className="ed-chip px-2.5 py-1 text-xs">
-                        {tech}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </motion.div>
         </div>
+      </summary>
+      <div className="experience-detail pt-4 pl-[3.25rem] sm:pl-[3.75rem]">
+        <p className="mb-4" style={{ color: "var(--ink-soft)", lineHeight: 1.65 }}>
+          {experience.description}
+        </p>
+
+        {experience.achievements && (
+          <div className="mb-4">
+            <h4 className="ed-meta mb-2" style={{ color: "var(--ink)" }}>
+              Key achievements
+            </h4>
+            <ul
+              className="list-disc space-y-1.5 pl-5 text-sm"
+              style={{ color: "var(--ink-soft)", lineHeight: 1.6 }}
+            >
+              {experience.achievements.map((achievement, i) => (
+                <li key={i} dangerouslySetInnerHTML={{ __html: highlightImpact(achievement) }} />
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {experience.technologies && (
+          <div>
+            <h4 className="ed-meta mb-2" style={{ color: "var(--ink)" }}>
+              Stack
+            </h4>
+            <div className="flex flex-wrap gap-2">
+              {experience.technologies.map((tech, i) => (
+                <span key={i} className="ed-chip px-2.5 py-1 text-xs">
+                  {tech}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
-    </motion.div>
+    </details>
   );
 }
 
 export default function Experience() {
-  const { ref } = useSectionInView("Experience");
-
   return (
-    <section id="experience" ref={ref} className="mb-24 w-full max-w-3xl scroll-mt-28 px-4 sm:px-6">
-      <SectionHeading eyebrow="03 / Experience">Where I&apos;ve worked</SectionHeading>
+    <section id="experience" className="mb-24 w-full max-w-3xl scroll-mt-28 px-4 sm:px-6">
+      <SectionHeading eyebrow="Experience">Where I&apos;ve worked</SectionHeading>
 
       <div className="grid grid-cols-1 gap-4">
         {experiencesData.map((experience, index) => (
-          <ExperienceItem key={index} experience={experience} index={index} />
+          <ExperienceItem key={index} experience={experience} />
         ))}
       </div>
     </section>

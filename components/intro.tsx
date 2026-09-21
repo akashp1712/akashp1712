@@ -1,11 +1,8 @@
-"use client";
-
 import React from "react";
-import { motion } from "framer-motion";
 import Link from "next/link";
-import { BsArrowRight } from "react-icons/bs";
-import { useSectionInView } from "@/lib/hooks";
-import { useActiveSectionContext } from "@/context/active-section-context";
+import Image from "next/image";
+import { BsArrowRight, BsFiletypeJson } from "react-icons/bs";
+import headshot from "@/public/akash-headshot-tshirt.jpg";
 
 // Quiet, mono, underline-on-hover text links — the "engineer, not vendor"
 // treatment. Replaces the old row of social pill buttons + resume CTA.
@@ -19,92 +16,77 @@ const quietLinks = [
 ];
 
 export default function Intro() {
-  const { ref } = useSectionInView("Home", 0.5);
-  const { setActiveSection, setTimeOfLastClick } = useActiveSectionContext();
-
   return (
     <section
-      ref={ref}
       id="home"
       className="mb-24 w-full max-w-3xl px-4 scroll-mt-[100rem] sm:mb-8 sm:px-6"
     >
-      <motion.p
-        className="ed-eyebrow mb-6"
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        <span className="ed-eyebrow-label">Portfolio · 2026</span>
+      <p className="ed-eyebrow mb-6">
+        <span className="ed-eyebrow-label">Akash Panchal / portfolio</span>
         <span className="ed-eyebrow-rule" />
-      </motion.p>
+      </p>
 
-      <motion.h1
-        className="ed-section-title text-5xl leading-[1.0] sm:text-7xl"
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.04 }}
-      >
-        Akash Panchal
-      </motion.h1>
+      <div className="hero-identity">
+        <div>
+          <h1 className="ed-section-title text-5xl leading-[1.0] sm:text-7xl">
+            Akash Panchal
+          </h1>
+          <p
+            className="mt-4 font-mono text-sm uppercase sm:text-base"
+            style={{ letterSpacing: "0.14em", color: "var(--accent)" }}
+          >
+            Engineer · agentic products · production software
+          </p>
+        </div>
+        <Image
+          src={headshot}
+          alt="Akash Panchal"
+          className="hero-headshot"
+          priority
+          quality={85}
+          sizes="(max-width: 640px) 88px, 132px"
+        />
+      </div>
 
-      <motion.p
-        className="mt-4 font-mono text-sm uppercase sm:text-base"
-        style={{ letterSpacing: "0.14em", color: "var(--accent)" }}
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.08 }}
-      >
-        AI Systems Engineer &amp; Founder
-      </motion.p>
+      <p className="hero-statement mt-8 max-w-2xl text-3xl sm:text-4xl">
+        I build the systems behind useful agents.
+      </p>
 
-      <motion.p
+      <p
         className="tut-lede mt-7 max-w-2xl text-lg sm:text-xl"
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.12 }}
       >
-        I build production AI agents and write about the hard problems —
-        latency, barge-in, tool timing, evals. Currently:{" "}
-        <span className="ed-strong">Evercall</span> — when an Australian
-        emergency plumber can&apos;t answer, we book the job. Day job is
-        agent runtimes at Salesforce.
-      </motion.p>
+        I solve messy product and systems problems, then turn the answer into
+        software people can use. I build agent runtimes at Salesforce and
+        independent apps such as <span className="ed-strong">Evercall</span>{" "}
+        and <span className="ed-strong">VibeFrames</span>.
+      </p>
 
       {/* Primary path: read the series. */}
-      <motion.div
+      <div
         className="mt-9 flex flex-wrap items-center gap-x-6 gap-y-4"
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.16 }}
       >
         <Link
-          href="/articles/voice-agents-hard-problems"
-          onClick={() => {
-            setActiveSection("Writing");
-            setTimeOfLastClick(Date.now());
-          }}
+          href="#projects"
           className="ed-btn group inline-flex items-center gap-2 px-6 py-3 text-sm font-medium"
         >
-          Voice agents: the hard problems
+          Browse selected apps
           <BsArrowRight className="transition group-hover:translate-x-1" />
         </Link>
         <Link
-          href="/building-evercall"
+          href="/about.md"
           className="ed-btn-ghost inline-flex items-center px-6 py-3 text-sm font-medium"
         >
-          Building Evercall
+          <BsFiletypeJson className="mr-2" /> Readable profile
         </Link>
-      </motion.div>
+      </div>
 
       {/* Quiet text links — no pills, no icons-as-buttons. */}
-      <motion.nav
+      <nav
         className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2 ed-meta"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.24 }}
       >
         {quietLinks.map((l, i) => (
           <React.Fragment key={l.label}>
-            {i > 0 && <span style={{ color: "var(--line)" }}>/</span>}
+          {i > 0 && <span style={{ color: "var(--line)" }}>·</span>}
             <a
               href={l.href}
               target={l.href.startsWith("http") ? "_blank" : undefined}
@@ -115,7 +97,7 @@ export default function Intro() {
             </a>
           </React.Fragment>
         ))}
-      </motion.nav>
+      </nav>
     </section>
   );
 }

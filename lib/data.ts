@@ -1,6 +1,8 @@
 import React from "react";
 import { CgWorkAlt } from "react-icons/cg";
 import evercallImg from "@/public/evercall.png";
+import vibeframesImg from "@/public/vibeframes.png";
+import oncecueImg from "@/public/oncecue.png";
 
 export const links = [
   {
@@ -8,24 +10,16 @@ export const links = [
     hash: "#home",
   },
   {
-    name: "Writing",
-    hash: "#blog",
-  },
-  {
-    name: "About",
-    hash: "#about",
-  },
-  {
-    name: "Skills",
-    hash: "#skills",
-  },
-  {
-    name: "Projects",
+    name: "Apps",
     hash: "#projects",
   },
   {
     name: "Experience",
     hash: "#experience",
+  },
+  {
+    name: "Writing",
+    hash: "#blog",
   },
   {
     name: "Contact",
@@ -167,36 +161,59 @@ export const experiencesData = [
 
 export const projectsData = [
   {
+    title: "Content Studio",
+    description:
+      "A multi-turn agent workspace for Marketing Cloud: turns a marketer's goal into useful campaign content while keeping the user in control of consequential steps.",
+    hyperlink: "https://www.salesforce.com/marketing/",
+    tags: ["Agent runtimes", "React", "FastAPI", "Mastra", "Human in the loop"],
+    kind: "At Salesforce",
+    outcome: "Designed the harness primitive: threads, memory, skills, tools, and approval points.",
+    cta: "Salesforce Marketing",
+    imageUrl: null,
+  },
+  {
     title: "Evercall",
     description:
-      "When you can't answer, Evercall books the job. Divert for Australian emergency plumbers: triage, book, SMS the owner. Browser agent is live; the phone wire (DID → SIP → Neon) is what I'm closing now.",
+      "An AI call handler for Australian emergency plumbers. It catches missed calls, triages the job, books the next step, and keeps the owner in the loop by SMS.",
     hyperlink: "https://evercall.app",
-    tags: ["Voice AI", "LiveKit", "Production agents", "AU trades"],
+    tags: ["Voice AI", "LiveKit", "WebRTC", "Tool calling", "Production agents"],
+    kind: "Founder project",
+    outcome: "Built for the unglamorous moment that matters: a customer calling when no one can answer.",
+    cta: "Open app",
     imageUrl: evercallImg,
+  },
+  {
+    title: "VibeFrames",
+    description:
+      "An agentic video workspace that turns a creative direction into an editable Remotion timeline. The agent plans, calls the right tools, and makes the composition inspectable.",
+    hyperlink: "https://vibeframes.vercel.app",
+    tags: ["Agent harness", "Remotion", "TypeScript", "Tool execution", "Creative tools"],
+    kind: "Experimental app",
+    outcome: "A practical exploration of agents that change real artifacts, not just generate chat responses.",
+    cta: "Open app",
+    imageUrl: vibeframesImg,
+  },
+  {
+    title: "OneCue",
+    description:
+      "A low-friction idea inbox: capture a thought in two seconds, return to the work, and let OneCue surface one cue when the timing is right.",
+    hyperlink: "https://onecue.sh",
+    tags: ["Fast capture", "Contextual recall", "AI utility"],
+    kind: "Independent app",
+    outcome:
+      "Designed to reduce the cost of remembering without turning every idea into another task.",
+    cta: "Open OneCue",
+    imageUrl: oncecueImg,
   },
 ] as const;
 
 // Smaller shipped work — shown as a compact timeline under the flagship projects.
 export const projectTimelineData = [
   {
-    title: "OneCue",
-    description: "Capture in two seconds; surface one cue when context matches. Parked.",
-    hyperlink: "https://onecue.app",
-  },
-  {
-    title: "VibeFrames",
-    description: "Mastra harness agent that mutates Remotion timelines.",
-    hyperlink: "https://vibeframes.vercel.app",
-  },
-  {
-    title: "Paymint",
-    description: "Drop-in Paddle payments for indie developers.",
-    hyperlink: "https://paymint.dev",
-  },
-  {
-    title: "AI SDK Patterns",
-    description: "Production patterns for the Vercel AI SDK.",
-    hyperlink: "https://ai-sdk-patterns.dev",
+    title: "AI SDK Patterns · Learn",
+    description:
+      "A 16-chapter course on building agents from first principles with TypeScript and AI SDK v6.",
+    hyperlink: "https://ai-sdk-patterns.dev/learn",
   },
 ] as const;
 

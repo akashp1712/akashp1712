@@ -1,35 +1,13 @@
-"use client";
-
 import React from "react";
 import SectionHeading from "./section-heading";
-import { motion } from "framer-motion";
-import { useSectionInView } from "@/lib/hooks";
-import { sendEmail } from "@/actions/sendEmail";
-import SubmitBtn from "./submit-btn";
-import toast from "react-hot-toast";
 
 export default function Contact() {
-  const { ref } = useSectionInView("Contact");
-
   return (
-    <motion.section
+    <section
       id="contact"
-      ref={ref}
       className="mb-24 w-full max-w-3xl px-4 sm:mb-32 sm:px-6"
-      initial={{
-        opacity: 0,
-      }}
-      whileInView={{
-        opacity: 1,
-      }}
-      transition={{
-        duration: 1,
-      }}
-      viewport={{
-        once: true,
-      }}
     >
-      <SectionHeading eyebrow="05 / Contact">Say hi</SectionHeading>
+      <SectionHeading eyebrow="Contact">Say hi</SectionHeading>
 
       <p className="tut-lede text-lg">
         Building in this space, or want to compare notes on agents? Reach me at{" "}
@@ -69,6 +47,6 @@ export default function Contact() {
         />
         <SubmitBtn />
       </form> */}
-    </motion.section>
+    </section>
   );
 }
