@@ -21,7 +21,7 @@ Akash is an AI Systems Engineer and product-minded software builder with 10 year
 - Content Studio (Salesforce): multi-turn agent workspace for Marketing Cloud. Designed runtime harness primitives for threads, observational memory, skills, tools, image generation, and human-in-the-loop workflows.
 - [Evercall](https://evercall.app): AI call handler for Australian emergency plumbers. Captures missed calls, triages jobs, books follow-up, and SMSes the owner.
 - [VibeFrames](https://vibeframes.vercel.app): agentic video workspace that changes editable Remotion compositions with observable tool execution.
-- [OneCue](https://onecue.sh): capture a thought in two seconds and surface one cue when its context becomes relevant.
+- [OneCue](https://onecue.sh): a decision layer that surfaces the prior decision a coding-agent change could break, with the reason behind it.
 - [AI SDK Patterns · Learn](https://ai-sdk-patterns.dev/learn): a 16-chapter course on building agents from first principles with TypeScript and AI SDK v6.
 
 ## Evidence

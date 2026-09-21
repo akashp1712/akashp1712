@@ -16,7 +16,7 @@ const profile = {
     { name: "Content Studio", context: "Salesforce", focus: "Agent runtime for Marketing Cloud", url: "https://www.salesforce.com/marketing/" },
     { name: "Evercall", focus: "AI phone agent for Australian emergency plumbers", url: "https://evercall.app" },
     { name: "VibeFrames", focus: "Agentic Remotion video workspace", url: "https://vibeframes.vercel.app" },
-    { name: "OneCue", focus: "Fast idea capture with contextual recall", url: "https://onecue.sh" },
+    { name: "OneCue", focus: "Decision memory for coding agents", url: "https://onecue.sh" },
     { name: "AI SDK Patterns · Learn", focus: "Course on building agents from first principles with TypeScript and AI SDK v6", url: "https://ai-sdk-patterns.dev/learn" },
   ],
   experience: ["Salesforce", "Amazon", "McAfee"],

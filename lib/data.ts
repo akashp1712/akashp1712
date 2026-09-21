@@ -196,12 +196,12 @@ export const projectsData = [
   {
     title: "OneCue",
     description:
-      "A low-friction idea inbox: capture a thought in two seconds, return to the work, and let OneCue surface one cue when the timing is right.",
+      "A decision layer for coding agents. OneCue surfaces the prior decision a proposed change could break — and the reason behind it — right before the edit, then stays silent when nothing is relevant.",
     hyperlink: "https://onecue.sh",
-    tags: ["Fast capture", "Contextual recall", "AI utility"],
+    tags: ["Coding agents", "Decision memory", "Context retrieval", "CLI", "Agent skills"],
     kind: "Independent app",
     outcome:
-      "Designed to reduce the cost of remembering without turning every idea into another task.",
+      "Gives coding agents the decisions behind a codebase, not just more context.",
     cta: "Open OneCue",
     imageUrl: oncecueImg,
   },
