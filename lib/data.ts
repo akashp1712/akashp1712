@@ -3,6 +3,7 @@ import { CgWorkAlt } from "react-icons/cg";
 import evercallImg from "@/public/evercall.png";
 import vibeframesImg from "@/public/vibeframes.png";
 import oncecueImg from "@/public/oncecue.png";
+import patternsImg from "@/public/api-sdk-patterns.png";
 
 export const links = [
   {
@@ -10,12 +11,12 @@ export const links = [
     hash: "#home",
   },
   {
-    name: "Apps",
-    hash: "#projects",
-  },
-  {
     name: "Experience",
     hash: "#experience",
+  },
+  {
+    name: "Work",
+    hash: "#projects",
   },
   {
     name: "Writing",
@@ -163,57 +164,62 @@ export const projectsData = [
   {
     title: "Content Studio",
     description:
-      "A multi-turn agent workspace for Marketing Cloud: turns a marketer's goal into useful campaign content while keeping the user in control of consequential steps.",
+      "Multi-turn agent workspace for Marketing Cloud. A marketer states a goal; the runtime produces campaign content and stops for approval on consequential steps.",
     hyperlink: "https://www.salesforce.com/marketing/",
-    tags: ["Agent runtimes", "React", "FastAPI", "Mastra", "Human in the loop"],
-    kind: "At Salesforce",
-    outcome: "Designed the harness primitive: threads, memory, skills, tools, and approval points.",
+    tags: ["Agent runtimes", "React", "FastAPI", "Mastra", "HITL"],
+    kind: "Salesforce",
+    cadence: "Day job",
+    outcome: "Harness primitives: threads, observational memory, skills, tools, image generation, approvals.",
     cta: "Salesforce Marketing",
     imageUrl: null,
   },
   {
     title: "Evercall",
     description:
-      "An AI call handler for Australian emergency plumbers. It catches missed calls, triages the job, books the next step, and keeps the owner in the loop by SMS.",
+      "AI call handler for Australian emergency plumbers. Catches missed calls, triages the job, books the next step, SMSes the owner.",
     hyperlink: "https://evercall.app",
-    tags: ["Voice AI", "LiveKit", "WebRTC", "Tool calling", "Production agents"],
-    kind: "Founder project",
-    outcome: "Built for the unglamorous moment that matters: a customer calling when no one can answer.",
-    cta: "Open app",
+    tags: ["Voice AI", "LiveKit", "WebRTC", "Tool calling"],
+    kind: "Independent",
+    cadence: "Low-touch",
+    outcome: "Production voice agent for the call that happens when no one can answer.",
+    cta: "Open Evercall",
     imageUrl: evercallImg,
-  },
-  {
-    title: "VibeFrames",
-    description:
-      "An agentic video workspace that turns a creative direction into an editable Remotion timeline. The agent plans, calls the right tools, and makes the composition inspectable.",
-    hyperlink: "https://vibeframes.vercel.app",
-    tags: ["Agent harness", "Remotion", "TypeScript", "Tool execution", "Creative tools"],
-    kind: "Experimental app",
-    outcome: "A practical exploration of agents that change real artifacts, not just generate chat responses.",
-    cta: "Open app",
-    imageUrl: vibeframesImg,
   },
   {
     title: "OneCue",
     description:
-      "A decision layer for coding agents. OneCue surfaces the prior decision a proposed change could break — and the reason behind it — right before the edit, then stays silent when nothing is relevant.",
+      "Decision layer for coding agents. Surfaces the prior decision a change could break, with the reason, then stays silent when nothing applies.",
     hyperlink: "https://onecue.sh",
-    tags: ["Coding agents", "Decision memory", "Context retrieval", "CLI", "Agent skills"],
-    kind: "Independent app",
-    outcome:
-      "Gives coding agents the decisions behind a codebase, not just more context.",
+    tags: ["Coding agents", "Decision memory", "CLI", "Agent skills"],
+    kind: "Independent",
+    cadence: "Low-touch",
+    outcome: "Gives agents the decisions behind a codebase, not another blob of context.",
     cta: "Open OneCue",
     imageUrl: oncecueImg,
   },
-] as const;
-
-// Smaller shipped work — shown as a compact timeline under the flagship projects.
-export const projectTimelineData = [
   {
-    title: "AI SDK Patterns · Learn",
+    title: "VibeFrames",
     description:
-      "A 16-chapter course on building agents from first principles with TypeScript and AI SDK v6.",
-    hyperlink: "https://ai-sdk-patterns.dev/learn",
+      "Agentic video workspace. A Mastra harness turns a brief into an editable Remotion composition with typed, inspectable tool calls.",
+    hyperlink: "https://vibeframes.vercel.app",
+    tags: ["Agent harness", "Mastra", "Remotion", "TypeScript"],
+    kind: "Independent",
+    cadence: "Low-touch",
+    outcome: "An agent that changes a real artifact, not a chat transcript.",
+    cta: "Open VibeFrames",
+    imageUrl: vibeframesImg,
+  },
+  {
+    title: "AI SDK Patterns",
+    description:
+      "Open-source TypeScript patterns for the AI SDK, a composer that turns a selection into a Next.js app, and a 16-chapter course on building agents from first principles.",
+    hyperlink: "https://ai-sdk-patterns.dev",
+    tags: ["AI SDK", "TypeScript", "Next.js", "Open source"],
+    kind: "Open source",
+    cadence: "Low-touch",
+    outcome: "16 installable patterns plus a learn track. Still maintained.",
+    cta: "Open site",
+    imageUrl: patternsImg,
   },
 ] as const;
 

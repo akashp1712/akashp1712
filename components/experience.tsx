@@ -101,6 +101,10 @@ export default function Experience() {
   return (
     <section id="experience" className="mb-24 w-full max-w-3xl scroll-mt-28 px-4 sm:px-6">
       <SectionHeading eyebrow="Experience">Where I&apos;ve worked</SectionHeading>
+      <p className="tut-lede mb-8 max-w-2xl text-lg">
+        Ten years of production software. Agent runtimes now. SMS platforms,
+        app certification, and home-network security before that.
+      </p>
 
       <div className="grid grid-cols-1 gap-4">
         {experiencesData.map((experience, index) => (

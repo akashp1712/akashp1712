@@ -32,6 +32,14 @@ const nextConfig = {
         source: "/tutorials/:slug.md",
         destination: "/md/tutorials/:slug",
       },
+      {
+        source: "/.well-known/llms.txt",
+        destination: "/llms.txt",
+      },
+      {
+        source: "/index.md",
+        destination: "/about.md",
+      },
     ];
   },
 };

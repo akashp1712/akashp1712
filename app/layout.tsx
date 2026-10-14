@@ -5,22 +5,25 @@ import Footer from "@/components/footer";
 import ThemeSwitch from "@/components/theme-switch";
 import ThemeContextProvider from "@/context/theme-context";
 import { siteConfig } from "@/lib/site";
+import { profile } from "@/lib/profile";
 
 export const metadata = {
   metadataBase: new URL(siteConfig.url),
   title: {
-    default: "Akash Panchal — AI Systems Engineer & Founder",
+    default: siteConfig.name,
     template: "%s | Akash Panchal",
   },
   description: siteConfig.description,
   keywords: [
     "AI Systems Engineer",
-    "Evercall",
+    "Salesforce",
+    "Agent runtimes",
     "Voice AI",
     "LiveKit",
-    "Production agents",
-    "Voice agents",
-    "Salesforce AI Engineer",
+    "OneCue",
+    "Evercall",
+    "VibeFrames",
+    "AI SDK Patterns",
     "TypeScript",
     "Python",
     "Next.js",
@@ -32,20 +35,20 @@ export const metadata = {
     locale: "en_US",
     url: siteConfig.url,
     siteName: siteConfig.name,
-    title: "Akash Panchal — AI Systems Engineer & Founder",
+    title: siteConfig.name,
     description: siteConfig.description,
     images: [
       {
         url: "/cover-voice-agents.png",
         width: 1200,
         height: 630,
-        alt: "Akash Panchal — AI Systems Engineer & Founder",
+        alt: siteConfig.name,
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Akash Panchal — AI Systems Engineer & Founder",
+    title: siteConfig.name,
     description: siteConfig.description,
     creator: "@akashp1712",
     images: ["/cover-voice-agents.png"],
@@ -54,7 +57,13 @@ export const metadata = {
     canonical: siteConfig.url,
     types: {
       "application/rss+xml": `${siteConfig.url}/rss.xml`,
+      "text/markdown": `${siteConfig.url}/about.md`,
+      "application/json": `${siteConfig.url}/profile.json`,
+      "text/plain": `${siteConfig.url}/llms.txt`,
     },
+  },
+  other: {
+    "llms-txt": `${siteConfig.url}/llms.txt`,
   },
   robots: {
     index: true,
@@ -69,61 +78,55 @@ const jsonLd = {
     {
       "@type": "Person",
       "@id": `${siteConfig.url}/#person`,
-      name: "Akash Panchal",
-      jobTitle: "AI Systems Engineer & Founder",
-      worksFor: [
-        {
-          "@type": "Organization",
-          name: "Evercall",
-          sameAs: "https://evercall.app",
-        },
-        {
-          "@type": "Organization",
-          name: "Salesforce",
-          sameAs: "https://www.salesforce.com",
-        },
-      ],
+      name: profile.name,
+      jobTitle: profile.jobTitle,
+      worksFor: {
+        "@type": "Organization",
+        name: "Salesforce",
+        sameAs: "https://www.salesforce.com",
+      },
       alumniOf: [
         { "@type": "Organization", name: "Amazon" },
         { "@type": "Organization", name: "McAfee" },
       ],
       knowsAbout: [
+        "Agent runtimes",
         "Voice AI",
         "LiveKit",
-        "Production agents",
-        "Evercall",
         "TypeScript",
         "Python",
         "Next.js",
+        "Mastra",
+        ...profile.projects.map((p) => p.name),
       ],
       sameAs: [
-        "https://github.com/akashp1712",
-        "https://www.linkedin.com/in/akashp1712",
-        "https://twitter.com/akashp1712",
+        profile.representations.github,
+        profile.representations.linkedin,
+        profile.representations.x,
       ],
       url: siteConfig.url,
-      description:
-        "AI systems engineer building Evercall — when an Australian emergency plumber can't answer, we book the job. Day job: agent runtimes at Salesforce.",
+      description: siteConfig.description,
     },
     {
       "@type": "WebSite",
       "@id": `${siteConfig.url}/#website`,
       url: siteConfig.url,
-      name: "Akash Panchal — Voice Agents & Evercall",
+      name: siteConfig.name,
       description: siteConfig.description,
       publisher: {
         "@id": `${siteConfig.url}/#person`,
       },
     },
     {
-      "@type": "SoftwareApplication",
-      name: "Evercall",
-      url: "https://evercall.app",
-      applicationCategory: "BusinessApplication",
-      operatingSystem: "Web",
-      description:
-        "When an Australian emergency plumber can't answer, Evercall books the job. Divert, triage, book, SMS the owner.",
-      author: { "@id": `${siteConfig.url}/#person` },
+      "@type": "ItemList",
+      name: "Selected work",
+      itemListElement: profile.projects.map((project, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        name: project.name,
+        url: project.url,
+        description: project.focus,
+      })),
     },
   ],
 };

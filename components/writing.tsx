@@ -51,10 +51,10 @@ export default function Writing() {
           <span className="ed-eyebrow-rule" />
         </p>
         <h2 className="ed-section-title text-3xl sm:text-4xl">
-          Voice, then the rest
+          Engineering notes
         </h2>
         <p className="tut-lede mt-3 max-w-xl text-base">
-          Transport, timing, and the engineering that survives a real call.
+          Latency, barge-in, harnesses, and the work most tutorials skip.
         </p>
       </div>
 

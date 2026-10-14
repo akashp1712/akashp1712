@@ -11,9 +11,15 @@ export default function Footer() {
       className="ed-meta mx-auto mb-12 w-full max-w-3xl px-4 sm:px-6"
       style={{ borderTop: "1px solid var(--line)", paddingTop: "2rem" }}
     >
-      <nav className="mb-4 flex items-center gap-5">
-        <Link href="/building-evercall" className="ed-link">
-          Building Evercall
+      <nav className="mb-4 flex flex-wrap items-center gap-x-5 gap-y-2">
+        <Link href="/about.md" className="ed-link">
+          about.md
+        </Link>
+        <Link href="/profile.json" className="ed-link">
+          profile.json
+        </Link>
+        <Link href="/llms.txt" className="ed-link">
+          llms.txt
         </Link>
         <Link href="/tutorials" className="ed-link">
           Tutorials

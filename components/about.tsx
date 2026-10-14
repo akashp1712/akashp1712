@@ -10,19 +10,22 @@ export default function About() {
       <SectionHeading eyebrow="About">The short version</SectionHeading>
       <div className="tut-prose text-lg" style={{ lineHeight: 1.7 }}>
         <p>
-          Right now I am building <span className="ed-strong">Evercall</span>:
-          when an Australian emergency plumber can&apos;t answer, we book the
-          job. Divert the line, triage, book, SMS the owner. The demo is easy.
-          The hard problems are latency, barge-in, tool timing, and a write
-          that must not lie.
+          I am an AI systems engineer at{" "}
+          <span className="ed-strong">Salesforce</span>, working on the agent
+          runtime under Marketing Cloud&apos;s Content Studio: per-thread
+          state, observational memory, skills, tools, and human approval
+          points. Before that I shipped SMS platforms, app-certification
+          systems, and home-network security at Amazon and McAfee.
         </p>
         <p>
-          At <span className="ed-strong">Salesforce</span>, I build Agentic
-          Content Studio for Marketing Cloud: a multi-turn workspace that
-          helps marketers move from a goal to campaign content. My work is in
-          the runtime beneath it — per-thread state, observational memory,
-          skills, tools, image generation, and human approval points — so
-          agents can act usefully without becoming a black box.
+          Independently I design and ship agent products:{" "}
+          <span className="ed-strong">Evercall</span> (voice),{" "}
+          <span className="ed-strong">OneCue</span> (decision memory for
+          coding agents), <span className="ed-strong">VibeFrames</span>{" "}
+          (agentic video), and{" "}
+          <span className="ed-strong">AI SDK Patterns</span> (open-source
+          TypeScript). They stay on a low-touch cadence. They are live,
+          documented, and still moving.
         </p>
       </div>
     </section>

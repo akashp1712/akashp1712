@@ -90,13 +90,14 @@ export function buildLlmsTxt() {
 
 > ${siteConfig.description}
 
-- [Home](${siteConfig.url}): Production AI agents. Currently Evercall.
-- [Profile JSON](${siteConfig.url}/profile.json): Structured career, skills, and selected apps.
+- [Home](${siteConfig.url}): AI systems engineer at Salesforce. Independent agent products on a low-touch cadence.
+- [Profile JSON](${siteConfig.url}/profile.json): Structured career, skills, and selected work.
 - [About Markdown](${siteConfig.url}/about.md): Concise profile for agent retrieval.
-- [Evercall](https://evercall.app): When an Australian emergency plumber can't answer, we book the job.
-- [VibeFrames](https://vibeframes.vercel.app): Agentic video workspace for editable Remotion compositions.
+- [Résumé](${siteConfig.url}/CV.pdf)
+- [Evercall](https://evercall.app): AI call handler for Australian emergency plumbers.
 - [OneCue](https://onecue.sh): Decision memory that surfaces the prior decision a coding-agent change could break.
-- [AI SDK Patterns · Learn](https://ai-sdk-patterns.dev/learn): A 16-chapter course on building agents from first principles with TypeScript and AI SDK v6.
+- [VibeFrames](https://vibeframes.vercel.app): Agentic video workspace for editable Remotion compositions.
+- [AI SDK Patterns](https://ai-sdk-patterns.dev): Open-source TypeScript patterns, composer, and a 16-chapter learn track.
 - [Building Evercall](${siteConfig.url}/building-evercall): One line per week that actually shipped.
 - [Articles](${siteConfig.url}/articles)
 - [Tutorials](${siteConfig.url}/tutorials)

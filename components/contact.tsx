@@ -10,7 +10,11 @@ export default function Contact() {
       <SectionHeading eyebrow="Contact">Say hi</SectionHeading>
 
       <p className="tut-lede text-lg">
-        Building in this space, or want to compare notes on agents? Reach me at{" "}
+        Hiring managers can start with the{" "}
+        <a className="ed-link" href="/CV.pdf" download>
+          résumé
+        </a>
+        . For everything else, email{" "}
         <a className="ed-link" href="mailto:akashp1712@gmail.com">
           akashp1712@gmail.com
         </a>
