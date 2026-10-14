@@ -20,30 +20,25 @@ export default function ThemeContextProvider({
 }: ThemeContextProviderProps) {
   const [theme, setTheme] = useState<Theme>("light");
 
+  const applyTheme = (next: Theme) => {
+    setTheme(next);
+    window.localStorage.setItem("theme", next);
+    document.documentElement.classList.toggle("dark", next === "dark");
+  };
+
   const toggleTheme = () => {
-    if (theme === "light") {
-      setTheme("dark");
-      window.localStorage.setItem("theme", "dark");
-      document.documentElement.classList.add("dark");
-    } else {
-      setTheme("light");
-      window.localStorage.setItem("theme", "light");
-      document.documentElement.classList.remove("dark");
-    }
+    applyTheme(theme === "light" ? "dark" : "light");
   };
 
   useEffect(() => {
     const localTheme = window.localStorage.getItem("theme") as Theme | null;
 
-    if (localTheme) {
-      setTheme(localTheme);
-
-      if (localTheme === "dark") {
-        document.documentElement.classList.add("dark");
-      }
+    if (localTheme === "dark" || localTheme === "light") {
+      applyTheme(localTheme);
     } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-      setTheme("dark");
-      document.documentElement.classList.add("dark");
+      applyTheme("dark");
+    } else {
+      applyTheme("light");
     }
   }, []);
 

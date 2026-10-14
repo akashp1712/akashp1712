@@ -4,18 +4,34 @@
    Scoped under .reading-root so the rest of the site is untouched.
    ============================================================ */
 
-.reading-root {
-  /* light: Tailwind Slate colors */
-  --paper: #f8fafc; /* slate-50 background */
-  --paper-raised: #ffffff; /* white card background */
-  --ink: #0f172a; /* slate-900 text */
-  --ink-soft: #475569; /* slate-600 soft text */
-  --ink-faint: #64748b; /* slate-500 faint metadata */
-  --line: rgba(15, 23, 42, 0.08); /* slate-900 outline border */
+:root {
+  --paper: #f8fafc;
+  --paper-raised: #ffffff;
+  --ink: #0f172a;
+  --ink-soft: #475569;
+  --ink-faint: #64748b;
+  --line: rgba(15, 23, 42, 0.08);
   --line-soft: rgba(15, 23, 42, 0.04);
-  --accent: #0f172a; /* slate-900 accent */
+  --accent: #0f172a;
   --accent-soft: rgba(15, 23, 42, 0.05);
+  color-scheme: light;
+  background-color: var(--paper);
+}
 
+html.dark {
+  --paper: #0b0f19;
+  --paper-raised: #151b26;
+  --ink: #f1f5f9;
+  --ink-soft: #cbd5e1;
+  --ink-faint: #94a3b8;
+  --line: rgba(241, 245, 249, 0.1);
+  --line-soft: rgba(241, 245, 249, 0.05);
+  --accent: #f1f5f9;
+  --accent-soft: rgba(241, 245, 249, 0.08);
+  color-scheme: dark;
+}
+
+.reading-root {
   background-color: var(--paper);
   color: var(--ink);
   font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
@@ -31,19 +47,6 @@
   z-index: -5;
   background-color: var(--paper);
   pointer-events: none;
-}
-
-html.dark .reading-root {
-  /* dark: deep slate colors */
-  --paper: #0b0f19; /* rich dark background */
-  --paper-raised: #151b26; /* slate-900 raised surface */
-  --ink: #f1f5f9; /* slate-100 text */
-  --ink-soft: #cbd5e1; /* slate-300 soft text */
-  --ink-faint: #94a3b8; /* slate-400 metadata */
-  --line: rgba(241, 245, 249, 0.1);
-  --line-soft: rgba(241, 245, 249, 0.05);
-  --accent: #f1f5f9; /* slate-100 accent */
-  --accent-soft: rgba(241, 245, 249, 0.08);
 }
 
 /* ---- Type scale ---- */
