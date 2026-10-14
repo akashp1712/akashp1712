@@ -1,15 +1,7 @@
 import React from "react";
 import { CgWorkAlt } from "react-icons/cg";
-import evercallImg from "@/public/evercall.png";
-import vibeframesImg from "@/public/vibeframes.png";
-import oncecueImg from "@/public/oncecue.png";
-import patternsImg from "@/public/api-sdk-patterns.png";
 
 export const links = [
-  {
-    name: "Home",
-    hash: "#home",
-  },
   {
     name: "Experience",
     hash: "#experience",
@@ -17,6 +9,10 @@ export const links = [
   {
     name: "Work",
     hash: "#projects",
+  },
+  {
+    name: "Skills",
+    hash: "#skills",
   },
   {
     name: "Writing",
@@ -31,8 +27,6 @@ export const links = [
 // Icons used by experience logos + the focused skills list.
 import { FaSalesforce } from "react-icons/fa";
 import { SiAmazon, SiMcafee, SiBroadcom } from "react-icons/si";
-import { FaAws, FaPython, FaMicrophone, FaRobot } from "react-icons/fa";
-import { SiNextdotjs, SiTypescript } from "react-icons/si";
 
 // Then in your experiencesData array, add logo property to each item:
 // In your experiencesData array, add brandColor property to each item:
@@ -95,7 +89,7 @@ export const experiencesData = [
     title: "Backend Software Engineer - Secure Home Platform, McAfee",
     location: "Bengaluru, Karnataka, India",
     description:
-      "Spearheaded the development of a custom home security solution for an ISP partner, leveraging a comprehensive tech stack including Python, Go, Cassandra, Redis, DynamoDB, Kafka, AWS, and Terraform.",
+      "Spearheaded a custom home security solution for an ISP partner, on Python, Cassandra, Redis, DynamoDB, Kafka, AWS, and Terraform.",
     icon: React.createElement(CgWorkAlt),
     logo: React.createElement(SiMcafee),
     brandColor: "#C01818", // McAfee red
@@ -106,7 +100,7 @@ export const experiencesData = [
       "Designed and implemented a scalable custom feature-set module to seamlessly support various router models and versions, enabling broader compatibility and ease of integration.",
       "Optimized the data flow design, resulting in a remarkable reduction of up to 40% in DB storage and network calls for the Router API, significantly improving efficiency and performance."
     ],
-    technologies: ["Python", "Go", "Cassandra", "Redis", "DynamoDB", "Kafka", "AWS", "Terraform"]
+    technologies: ["Python", "Cassandra", "Redis", "DynamoDB", "Kafka", "AWS", "Terraform"]
   },
   {
     title: "Android Software Engineer - Safe Connect (VPN client), McAfee",
@@ -162,72 +156,87 @@ export const experiencesData = [
 
 export const projectsData = [
   {
-    title: "Content Studio",
-    description:
-      "Multi-turn agent workspace for Marketing Cloud. A marketer states a goal; the runtime produces campaign content and stops for approval on consequential steps.",
-    hyperlink: "https://www.salesforce.com/marketing/",
-    tags: ["Agent runtimes", "React", "FastAPI", "Mastra", "HITL"],
-    kind: "Salesforce",
-    cadence: "Day job",
-    outcome: "Harness primitives: threads, observational memory, skills, tools, image generation, approvals.",
-    cta: "Salesforce Marketing",
-    imageUrl: null,
-  },
-  {
-    title: "Evercall",
-    description:
-      "AI call handler for Australian emergency plumbers. Catches missed calls, triages the job, books the next step, SMSes the owner.",
-    hyperlink: "https://evercall.app",
-    tags: ["Voice AI", "LiveKit", "WebRTC", "Tool calling"],
-    kind: "Independent",
-    cadence: "Low-touch",
-    outcome: "Production voice agent for the call that happens when no one can answer.",
-    cta: "Open Evercall",
-    imageUrl: evercallImg,
-  },
-  {
     title: "OneCue",
     description:
-      "Decision layer for coding agents. Surfaces the prior decision a change could break, with the reason, then stays silent when nothing applies.",
+      "Decision memory for coding agents. Surfaces the prior call, then stays silent.",
     hyperlink: "https://onecue.sh",
-    tags: ["Coding agents", "Decision memory", "CLI", "Agent skills"],
+    tags: ["CLI", "Agent skills", "TypeScript"],
     kind: "Independent",
-    cadence: "Low-touch",
-    outcome: "Gives agents the decisions behind a codebase, not another blob of context.",
-    cta: "Open OneCue",
-    imageUrl: oncecueImg,
-  },
-  {
-    title: "VibeFrames",
-    description:
-      "Agentic video workspace. A Mastra harness turns a brief into an editable Remotion composition with typed, inspectable tool calls.",
-    hyperlink: "https://vibeframes.vercel.app",
-    tags: ["Agent harness", "Mastra", "Remotion", "TypeScript"],
-    kind: "Independent",
-    cadence: "Low-touch",
-    outcome: "An agent that changes a real artifact, not a chat transcript.",
-    cta: "Open VibeFrames",
-    imageUrl: vibeframesImg,
+    imageUrl: "/oncecue.png",
   },
   {
     title: "AI SDK Patterns",
     description:
-      "Open-source TypeScript patterns for the AI SDK, a composer that turns a selection into a Next.js app, and a 16-chapter course on building agents from first principles.",
+      "Open-source TypeScript patterns, a composer, and a 16-chapter agent course.",
     hyperlink: "https://ai-sdk-patterns.dev",
-    tags: ["AI SDK", "TypeScript", "Next.js", "Open source"],
+    tags: ["AI SDK", "Next.js", "Open source"],
     kind: "Open source",
-    cadence: "Low-touch",
-    outcome: "16 installable patterns plus a learn track. Still maintained.",
-    cta: "Open site",
-    imageUrl: patternsImg,
+    imageUrl: "/api-sdk-patterns.png",
+  },
+  {
+    title: "VibeFrames",
+    description:
+      "Agentic Remotion workspace. A harness that edits a real composition.",
+    hyperlink: "https://vibeframes.vercel.app",
+    tags: ["Mastra", "Remotion", "TypeScript"],
+    kind: "Independent",
+    imageUrl: "/vibeframes.png",
+  },
+  {
+    title: "Evercall",
+    description:
+      "Voice agent that answers missed plumber calls, books the job, and texts the owner.",
+    hyperlink: "https://evercall.app",
+    tags: ["LiveKit", "WebRTC", "Python"],
+    kind: "Independent",
+    imageUrl: "/evercall.png",
   },
 ] as const;
 
-export const skillsData = [
-  { name: "Voice AI (LiveKit)", icon: React.createElement(FaMicrophone) },
-  { name: "Agents", icon: React.createElement(FaRobot) },
-  { name: "Python", icon: React.createElement(FaPython) },
-  { name: "TypeScript", icon: React.createElement(SiTypescript) },
-  { name: "NextJS", icon: React.createElement(SiNextdotjs) },
-  { name: "AWS", icon: React.createElement(FaAws) },
+export const skillGroups = [
+  {
+    name: "Agent systems",
+    detail:
+      "Production runtimes: threads that keep state, tools that write, and a human stop before anything consequential.",
+    items: [
+      "Harnesses",
+      "Tool execution",
+      "Observational memory",
+      "Skills catalogs",
+      "Evals",
+      "Human-in-the-loop",
+      "Mastra",
+    ],
+  },
+  {
+    name: "Voice",
+    detail:
+      "Low-latency duplex: VAD, barge-in, streaming STT/TTS, and tools that must not lie mid-call.",
+    items: ["LiveKit", "WebRTC", "VAD", "Barge-in", "Streaming STT/TTS"],
+  },
+  {
+    name: "Languages",
+    detail: "The stack I actually ship in, across Salesforce, Amazon, and McAfee.",
+    items: ["TypeScript", "Python", "Java"],
+  },
+  {
+    name: "Frontend",
+    detail: "Product surfaces for multi-turn agents and operator consoles.",
+    items: ["React", "Next.js"],
+  },
+  {
+    name: "Backend",
+    detail: "Services, queues, and the unglamorous path from request to durable write.",
+    items: ["FastAPI", "Node.js", "Kafka", "Redis", "Microservices"],
+  },
+  {
+    name: "Cloud & data",
+    detail: "AWS-heavy production systems: messaging platforms, scanners, home-network backends.",
+    items: ["AWS", "Terraform", "Lambda", "DynamoDB", "Cassandra", "MySQL", "MongoDB"],
+  },
+  {
+    name: "Mobile",
+    detail: "Earlier career: Android clients, VPN state machines, Bluetooth stack work.",
+    items: ["Android", "Java", "AOSP"],
+  },
 ] as const;

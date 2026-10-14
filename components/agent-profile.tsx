@@ -71,7 +71,7 @@ export default function AgentProfile() {
             </div>
             <div className="agent-capability">
               <span>Build</span>
-              <p>{profile.skills.languages_and_platforms.join(", ")}</p>
+              <p>{[...profile.skills.languages, ...profile.skills.frontend, ...profile.skills.backend].join(", ")}</p>
             </div>
             <div className="agent-capability">
               <span>Agents</span>

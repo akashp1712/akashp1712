@@ -5,14 +5,12 @@ import Project from "./project";
 
 export default function Projects() {
   return (
-    <section id="projects" className="mb-24 w-full max-w-3xl scroll-mt-28 px-4 sm:px-6">
-      <SectionHeading eyebrow="Selected work">Things I&apos;ve put into the world</SectionHeading>
-      <p className="tut-lede mb-8 max-w-2xl text-lg">
-        Salesforce work first. Independent products next, kept on a low-touch
-        cadence so they stay in production without becoming a second full-time
-        job.
+    <section id="projects" className="home-col mb-24 scroll-mt-28">
+      <SectionHeading eyebrow="Work">Side projects</SectionHeading>
+      <p className="tut-lede mb-8 text-lg">
+        Independent products I still run, on a low-touch cadence.
       </p>
-      <div className="projects-grid">
+      <div className="work-list">
         {projectsData.map((project) => (
           <Project key={project.title} {...project} />
         ))}
