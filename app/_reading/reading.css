@@ -743,8 +743,12 @@ html.dark .tut-prose [data-line] span {
   position: relative;
 }
 .work-row__shot img {
+  height: 100%;
+  inset: 0;
   object-fit: cover;
   object-position: top center;
+  position: absolute;
+  width: 100%;
 }
 .work-row__copy {
   display: flex;
@@ -801,19 +805,13 @@ html.dark .tut-prose [data-line] span {
 }
 .experience-row {
   border-bottom: 1px solid var(--line);
+  padding: 1.15rem 0 1.35rem;
 }
-.experience-row summary {
+.experience-row__heading {
   align-items: flex-start;
-  cursor: pointer;
   display: flex;
   gap: 1rem;
-  list-style: none;
-  padding: 1.15rem 0;
 }
-.experience-row[open] summary {
-  padding-bottom: 0.35rem;
-}
-.experience-row summary::-webkit-details-marker { display: none; }
 .experience-row__logo {
   font-size: 1.6rem;
   line-height: 1;
@@ -825,11 +823,6 @@ html.dark .tut-prose [data-line] span {
   font-size: 1.12rem;
   font-weight: 500;
   letter-spacing: -0.015em;
-}
-.experience-row__chevron {
-  color: var(--ink-faint);
-  flex-shrink: 0;
-  margin-top: 0.2rem;
 }
 .experience-row__meta {
   color: var(--ink-faint);

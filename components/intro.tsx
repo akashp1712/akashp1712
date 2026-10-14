@@ -1,6 +1,4 @@
 import React from "react";
-import Image from "next/image";
-import headshot from "@/public/akash-headshot-tshirt.jpg";
 
 const quietLinks = [
   { label: "Résumé", href: "/CV.pdf", download: true },
@@ -31,13 +29,13 @@ export default function Intro() {
             Salesforce · previously Amazon, McAfee
           </p>
         </div>
-        <Image
-          src={headshot}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/akash-headshot-tshirt.jpg"
           alt="Akash Panchal"
           className="hero-headshot"
-          priority
-          quality={85}
-          sizes="(max-width: 640px) 88px, 140px"
+          width={140}
+          height={140}
         />
       </div>
 

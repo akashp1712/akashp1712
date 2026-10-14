@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { projectsData } from "@/lib/data";
 import { BsArrowRight } from "react-icons/bs";
 
@@ -20,13 +19,9 @@ export default function Project({
       className="work-row work-row--shot group"
     >
       <div className="work-row__shot">
-        <Image
-          src={imageUrl}
-          alt=""
-          fill
-          sizes="(min-width: 900px) 288px, 92vw"
-          quality={70}
-        />
+        {/* Native img so crawlers and agents see the file in first HTML. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={imageUrl} alt={`${title} product screenshot`} />
       </div>
       <div className="work-row__copy">
         <div className="work-row__meta">
