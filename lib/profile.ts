@@ -13,22 +13,21 @@ export const profile = {
   summary:
     "Akash is an AI systems engineer with 10 years of experience across Salesforce, Amazon, and McAfee. He builds agent runtimes, voice agents, and independent products in TypeScript, Python, React, FastAPI, and AWS.",
   skills: {
-    languages_and_platforms: [
-      "TypeScript",
-      "Python",
-      "React",
-      "Next.js",
-      "FastAPI",
-      "AWS",
-    ],
     agent_systems: [
-      "Agent harnesses",
+      "Harnesses",
       "Tool execution",
-      "Memory",
-      "Evaluation",
+      "Observational memory",
+      "Skills catalogs",
+      "Evals",
       "Human-in-the-loop",
+      "Mastra",
     ],
-    voice: ["LiveKit", "WebRTC", "VAD", "Streaming STT/TTS", "Barge-in"],
+    voice: ["LiveKit", "WebRTC", "VAD", "Barge-in", "Streaming STT/TTS"],
+    languages: ["TypeScript", "Python", "Java"],
+    frontend: ["React", "Next.js"],
+    backend: ["FastAPI", "Node.js", "Kafka", "Redis", "Microservices"],
+    cloud_and_data: ["AWS", "Terraform", "Lambda", "DynamoDB", "Cassandra", "MySQL", "MongoDB"],
+    mobile: ["Android", "Java", "AOSP"],
   },
   projects: [
     {
@@ -40,18 +39,19 @@ export const profile = {
       status: "day-job" as const,
     },
     {
-      name: "Evercall",
-      focus:
-        "AI call handler for Australian emergency plumbers. Captures missed calls, triages jobs, books follow-up, SMSes the owner.",
-      url: "https://evercall.app",
-      status: "independent" as const,
-    },
-    {
       name: "OneCue",
       focus:
         "Decision layer for coding agents. Surfaces the prior decision a change could break, with the reason, then stays silent when nothing applies.",
       url: "https://onecue.sh",
       status: "independent" as const,
+    },
+    {
+      name: "AI SDK Patterns",
+      focus:
+        "Open-source TypeScript patterns for the AI SDK, a composer that turns them into a Next.js app, and a 16-chapter learn track.",
+      url: "https://ai-sdk-patterns.dev",
+      github: "https://github.com/akashp1712/ai-sdk-patterns",
+      status: "open-source" as const,
     },
     {
       name: "VibeFrames",
@@ -62,12 +62,11 @@ export const profile = {
       status: "independent" as const,
     },
     {
-      name: "AI SDK Patterns",
+      name: "Evercall",
       focus:
-        "Open-source TypeScript patterns for the AI SDK, a composer that turns them into a Next.js app, and a 16-chapter learn track.",
-      url: "https://ai-sdk-patterns.dev",
-      github: "https://github.com/akashp1712/ai-sdk-patterns",
-      status: "open-source" as const,
+        "AI call handler for Australian emergency plumbers. Captures missed calls, triages jobs, books follow-up, SMSes the owner.",
+      url: "https://evercall.app",
+      status: "independent" as const,
     },
   ],
   representations: {

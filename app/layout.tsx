@@ -138,8 +138,16 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="overflow-x-hidden">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap"
+          rel="stylesheet"
+        />
+      </head>
       <body
-        className={`${fraunces.variable} ${jetbrainsMono.variable} ${hankenGrotesk.variable} reading-root relative pt-28 sm:pt-36 overflow-x-hidden`}
+        className={`${fraunces.variable} ${jetbrainsMono.variable} ${hankenGrotesk.variable} reading-root relative pt-24 sm:pt-32 overflow-x-hidden`}
       >
         <script
           type="application/ld+json"
