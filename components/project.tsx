@@ -6,6 +6,7 @@ type ProjectProps = (typeof projectsData)[number];
 export default function Project({
   title,
   description,
+  engineering,
   hyperlink,
   tags,
   kind,
@@ -29,6 +30,7 @@ export default function Project({
           <span>{kind}</span>
         </div>
         <p className="work-row__desc">{description}</p>
+        <p className="project-engineering">{engineering}</p>
         <ul className="work-row__tags">
           {tags.map((tag) => (
             <li key={tag}>{tag}</li>

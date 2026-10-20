@@ -157,6 +157,7 @@ export const experiencesData = [
 export const projectsData = [
   {
     title: "OneCue",
+    engineering: "Local-first decision memory, delivered through CLI hooks and agent skills. Relevant prior decisions surface alongside the proposed change.",
     description:
       "Decision memory for coding agents. Surfaces the prior call, then stays silent.",
     hyperlink: "https://onecue.sh",
@@ -166,6 +167,7 @@ export const projectsData = [
   },
   {
     title: "AI SDK Patterns",
+    engineering: "Runnable patterns for tools, human approval, retrieval, and MCP, with a composer that assembles a Next.js application.",
     description:
       "Open-source TypeScript patterns, a composer, and a 16-chapter agent course.",
     hyperlink: "https://ai-sdk-patterns.dev",
@@ -175,6 +177,7 @@ export const projectsData = [
   },
   {
     title: "VibeFrames",
+    engineering: "A Mastra harness plans and calls typed tools to edit a Remotion composition, keeping the generated artifact inspectable.",
     description:
       "Agentic Remotion workspace. A harness that edits a real composition.",
     hyperlink: "https://vibeframes.vercel.app",
@@ -184,6 +187,7 @@ export const projectsData = [
   },
   {
     title: "Evercall",
+    engineering: "Ready to onboard customers. Built with LiveKit, WebRTC, and Python to handle missed calls, triage jobs, and book follow-up.",
     description:
       "Voice agent that answers missed plumber calls, books the job, and texts the owner.",
     hyperlink: "https://evercall.app",
@@ -197,7 +201,7 @@ export const skillGroups = [
   {
     name: "Agent systems",
     detail:
-      "Production runtimes: threads that keep state, tools that write, and a human stop before anything consequential.",
+      "Production runtimes with conversation state, tool execution, and human approval before consequential actions.",
     items: [
       "Harnesses",
       "Tool execution",

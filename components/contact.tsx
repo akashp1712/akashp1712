@@ -3,9 +3,9 @@ import SectionHeading from "./section-heading";
 export default function Contact() {
   return (
     <section id="contact" className="home-col mb-24 sm:mb-32">
-      <SectionHeading eyebrow="Contact">Email me</SectionHeading>
+      <SectionHeading eyebrow="Contact">Let’s build something useful.</SectionHeading>
       <p className="tut-lede text-lg">
-        The résumé is{" "}
+        Hiring for AI or software engineering? View my résumé{" "}
         <a className="ed-link" href="/CV.pdf" download>
           here
         </a>

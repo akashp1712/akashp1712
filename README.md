@@ -28,7 +28,7 @@ Before Salesforce: SMS platforms serving billions of messages, app-certification
 
 ### [Evercall](https://evercall.app) — miss the call, keep the job
 
-AI call handler for Australian emergency plumbers. Divert the line, triage, book, SMS the owner. Voice AI, LiveKit, WebRTC, tool calling.
+AI call handler for Australian emergency plumbers, ready to onboard customers. Divert the line, triage, book, SMS the owner. Voice AI, LiveKit, WebRTC, tool calling.
 
 `Voice AI` · `LiveKit` · `Python` · `Next.js`
 

@@ -1,3 +1,5 @@
+import { experiencesData } from "./data";
+
 export const profile = {
   name: "Akash Panchal",
   headline: "AI systems engineer at Salesforce. Ten years shipping production software.",
@@ -64,7 +66,7 @@ export const profile = {
     {
       name: "Evercall",
       focus:
-        "AI call handler for Australian emergency plumbers. Captures missed calls, triages jobs, books follow-up, SMSes the owner.",
+        "AI call handler for Australian emergency plumbers, ready to onboard customers. Captures missed calls, triages jobs, books follow-up, SMSes the owner.",
       url: "https://evercall.app",
       status: "independent" as const,
     },
@@ -84,8 +86,8 @@ export type ProfileProject = (typeof profile.projects)[number];
 
 export function cadenceLabel(status: ProfileProject["status"]) {
   if (status === "day-job") return "Day job";
-  if (status === "open-source") return "Open source · low-touch";
-  return "Independent · low-touch";
+  if (status === "open-source") return "Open source";
+  return "Independent";
 }
 
 export function buildAboutMarkdown() {
@@ -103,7 +105,7 @@ export function buildAboutMarkdown() {
 
 ## Summary
 
-${profile.summary} Independent products stay on a low-touch cadence. They are live and still moving.
+${profile.summary}
 
 ## What he builds
 
@@ -114,6 +116,19 @@ ${profile.summary} Independent products stay on a low-touch cadence. They are li
 ## Selected work
 
 ${independent}
+
+## Experience
+
+${experiencesData.map((role) => `### ${role.title}
+${role.date}
+
+${role.description}
+
+${role.achievements.map((item) => `- ${item}`).join("\n")}`).join("\n\n")}
+
+## Contact
+
+Email: akashp1712@gmail.com
 
 ## Machine-readable
 
@@ -136,6 +151,14 @@ export function buildPublicProfileJson() {
     years_experience: profile.yearsExperience,
     roles: ["AI Systems Engineer", "Product Engineer"],
     employers: profile.employers,
+    experience: experiencesData.map((role) => ({
+      title: role.title,
+      dates: role.date,
+      summary: role.description,
+      contributions: role.achievements,
+      technologies: role.technologies,
+    })),
+    contact: { email: "akashp1712@gmail.com" },
     skills: profile.skills,
     projects: profile.projects.map((p) => {
       const row: {

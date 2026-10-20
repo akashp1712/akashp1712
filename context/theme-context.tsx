@@ -22,6 +22,7 @@ export default function ThemeContextProvider({
 
   const applyTheme = (next: Theme) => {
     setTheme(next);
+    setTheme(next);
     window.localStorage.setItem("theme", next);
     document.documentElement.classList.toggle("dark", next === "dark");
   };

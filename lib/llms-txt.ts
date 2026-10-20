@@ -90,7 +90,7 @@ export function buildLlmsTxt() {
 
 > ${siteConfig.description}
 
-- [Home](${siteConfig.url}): AI systems engineer at Salesforce. Independent agent products on a low-touch cadence.
+- [Home](${siteConfig.url}): Software engineer building production AI systems at Salesforce. Agent runtimes, voice applications, and open-source tools.
 - [Profile JSON](${siteConfig.url}/profile.json): Structured career, skills, and selected work.
 - [About Markdown](${siteConfig.url}/about.md): Concise profile for agent retrieval.
 - [Résumé](${siteConfig.url}/CV.pdf)

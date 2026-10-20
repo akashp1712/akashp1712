@@ -1,65 +1,15 @@
-import React from "react";
-
-const quietLinks = [
-  { label: "Résumé", href: "/CV.pdf", download: true },
-  { label: "GitHub", href: "https://github.com/akashp1712" },
-  { label: "LinkedIn", href: "https://www.linkedin.com/in/akashp1712" },
-  { label: "Writing", href: "/articles" },
-];
-
 export default function Intro() {
   return (
-    <section
-      id="home"
-      className="home-col mb-20 scroll-mt-[100rem] sm:mb-28"
-    >
-      <div className="hero-wide">
-        <div>
-          <p className="ed-eyebrow mb-6">
-            <span className="ed-eyebrow-label">Akash Panchal</span>
-            <span className="ed-eyebrow-rule" />
-          </p>
-          <h1 className="ed-section-title text-5xl leading-[0.95] sm:text-6xl lg:text-7xl">
-            AI systems engineer
-          </h1>
-          <p
-            className="mt-5 font-mono text-sm uppercase"
-            style={{ letterSpacing: "0.14em", color: "var(--accent)" }}
-          >
-            Salesforce · previously Amazon, McAfee
-          </p>
-        </div>
+    <section id="home" className="home-col portfolio-hero">
+      <div className="hero-identity">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/akash-headshot-tshirt.jpg"
-          alt="Akash Panchal"
-          className="hero-headshot"
-          width={140}
-          height={140}
-        />
+        <img src="/akash-headshot-tshirt.jpg" alt="Akash Panchal" width={64} height={64} />
+        <div><p>Akash Panchal</p><span>Salesforce · previously Amazon & McAfee</span></div>
       </div>
-
-      <p className="hero-lede mt-10 text-lg sm:text-xl">
-        I design the runtimes behind production agents: state, tools, memory,
-        voice, and the human stop before a write. Ten years of backend and
-        product engineering. TypeScript, Python, React, FastAPI, AWS.
-      </p>
-
-      <nav className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2 ed-meta">
-        {quietLinks.map((l, i) => (
-          <React.Fragment key={l.label}>
-            {i > 0 && <span style={{ color: "var(--line)" }}>·</span>}
-            <a
-              href={l.href}
-              target={l.href.startsWith("http") ? "_blank" : undefined}
-              {...(l.download ? { download: true } : {})}
-              className="ed-link"
-            >
-              {l.label}
-            </a>
-          </React.Fragment>
-        ))}
-      </nav>
+      <h1>Software engineer building production AI systems.</h1>
+      <p className="hero-summary">I build agent runtimes, voice applications, and the backend systems behind them. Ten years of engineering, from messaging platforms at scale to tools that turn a conversation into action.</p>
+      <div className="hero-actions"><a className="portfolio-button" href="#projects">Explore my work</a><a href="/CV.pdf">View résumé</a><a href="mailto:akashp1712@gmail.com">Get in touch</a></div>
+      <div className="hero-context"><span>Currently building agent infrastructure at Salesforce</span><a href="/harness">My harness</a><a href="https://github.com/akashp1712">GitHub</a><a href="https://www.linkedin.com/in/akashp1712">LinkedIn</a></div>
     </section>
   );
 }

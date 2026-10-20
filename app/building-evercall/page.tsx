@@ -19,6 +19,10 @@ export const metadata = {
 
 const weeks = [
   {
+    week: "20 Oct 2026",
+    line: "Evercall is ready to onboard customers.",
+  },
+  {
     week: "Week of 13 Aug 2026",
     line: "Closing DID → SIP → Neon. Browser agent is live; the phone wire is the work.",
   },
@@ -38,7 +42,7 @@ export default function BuildingEvercallPage() {
         <p className="tut-kicker mb-4">Build log</p>
         <h1 className="tut-title text-5xl sm:text-6xl">Building Evercall</h1>
         <p className="tut-lede mt-6 text-lg">
-          One line per week that actually shipped. When an Australian emergency
+          Evercall is ready to onboard customers. When an Australian emergency
           plumber can&apos;t answer, we book the job.
         </p>
       </header>
