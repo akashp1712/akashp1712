@@ -26,18 +26,19 @@ export function GET(
   { params }: { params: { kind: string; slug: string } }
 ) {
   if (params.kind !== "articles" && params.kind !== "tutorials") {
-    return new NextResponse("Not found", { status: 404 });
+    return new NextResponse("# Page not found\n\nThis page does not exist. Browse [the agent index](/llms.txt) or [the sitemap](/sitemap.xml).", { status: 404, headers: { "Content-Type": "text/markdown; charset=utf-8" } });
   }
 
   const kind = params.kind as Kind;
   const post = collections[kind].find((p) => p.slugAsParams === params.slug);
   if (!post || post.draft) {
-    return new NextResponse("Not found", { status: 404 });
+    return new NextResponse("# Page not found\n\nThis page does not exist. Browse [the agent index](/llms.txt) or [the sitemap](/sitemap.xml).", { status: 404, headers: { "Content-Type": "text/markdown; charset=utf-8" } });
   }
 
   return new NextResponse(post.raw, {
     headers: {
       "Content-Type": "text/markdown; charset=utf-8",
+      Vary: "Accept",
       "Cache-Control": "public, max-age=3600, s-maxage=86400",
     },
   });

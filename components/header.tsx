@@ -12,6 +12,7 @@ export default function Header() {
               <Link href={`/${link.hash}`}>{link.name}</Link>
             </li>
           ))}
+          <li><Link href="/work-with-me">Work with me</Link></li>
         </ul>
       </nav>
     </header>

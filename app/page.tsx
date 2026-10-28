@@ -1,3 +1,7 @@
+// Next 13 overwrites HTML Vary headers. Avoid shared-cache variant collisions
+// on URLs that also negotiate Markdown; explicit .md routes stay cacheable.
+export const dynamic = "force-dynamic";
+
 import AgentWalkthrough from "@/components/agent-walkthrough";
 import "./portfolio.css";
 import Writing from "@/components/writing";

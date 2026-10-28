@@ -4,13 +4,16 @@
 // (Guarded so it only initializes a single watcher in dev.)
 const isDev = process.argv.indexOf("dev") !== -1;
 const isBuild = process.argv.indexOf("build") !== -1;
+let contentBuild;
 if (!process.env.VELITE_STARTED && (isDev || isBuild)) {
   process.env.VELITE_STARTED = "1";
   const { build } = require("velite");
-  build({ watch: isDev, clean: !isDev });
+  contentBuild = build({ watch: isDev, clean: !isDev });
 }
 
 const nextConfig = {
+  // Keep the browser stylesheet; avoid an unbounded external fetch at build time.
+  optimizeFonts: false,
   images: {
     remotePatterns: [
       {
@@ -23,7 +26,8 @@ const nextConfig = {
     serverActions: true,
   },
   async rewrites() {
-    return [
+    return { beforeFiles: [
+      { source: "/work/:slug.md", destination: "/md/work/:slug" },
       {
         source: "/articles/:slug.md",
         destination: "/md/articles/:slug",
@@ -40,8 +44,15 @@ const nextConfig = {
         source: "/index.md",
         destination: "/about.md",
       },
-    ];
+    ], fallback: [{
+      source: "/:path*",
+      has: [{ type: "header", key: "x-portfolio-format", value: "markdown" }],
+      destination: "/agent-not-found",
+    }] };
   },
 };
 
-module.exports = nextConfig;
+module.exports = async () => {
+  await contentBuild;
+  return nextConfig;
+};

@@ -6,8 +6,8 @@
 
   <p>Agent runtimes by day. Independent agent products on a low-touch cadence — live, documented, still moving.</p>
 
-  [![Website](https://img.shields.io/badge/Portfolio-akashpanchal.com-111?style=flat-square&logo=google-chrome&logoColor=white)](https://akashpanchal.com)
-  [![Résumé](https://img.shields.io/badge/Résumé-PDF-111?style=flat-square)](https://akashpanchal.com/CV.pdf)
+  [![Website](https://img.shields.io/badge/Portfolio-akashpanchal.com-111?style=flat-square&logo=google-chrome&logoColor=white)](https://www.akashpanchal.com)
+  [![Résumé](https://img.shields.io/badge/Résumé-PDF-111?style=flat-square)](https://www.akashpanchal.com/CV.pdf)
   [![LinkedIn](https://img.shields.io/badge/LinkedIn-akashpanchal-0A66C2?style=flat-square&logo=linkedin&logoColor=white)](https://linkedin.com/in/akashp1712)
   [![Twitter](https://img.shields.io/badge/X-akashp1712-000?style=flat-square&logo=x&logoColor=white)](https://twitter.com/akashp1712)
 </div>
@@ -68,11 +68,11 @@ Open-source TypeScript patterns for the AI SDK (chat, tools, HITL, RAG, MCP), a 
 
 The parts most tutorials skip: latency, barge-in, turn-taking, tools that must not lie — with runnable code.
 
-- **[Voice Agents: The Hard Problems](https://akashpanchal.com/articles/voice-agents-hard-problems)** — latency, barge-in, turn-taking
-- **[LiveKit Voice Agents](https://akashpanchal.com/tutorials/livekit-voice-agents)** — the state machine you were about to write already exists
-- **[WebRTC for Voice Agents](https://akashpanchal.com/articles/webrtc-for-voice-agents)** — the transport underneath the agent
+- **[Voice Agents: The Hard Problems](https://www.akashpanchal.com/articles/voice-agents-hard-problems)** — latency, barge-in, turn-taking
+- **[LiveKit Voice Agents](https://www.akashpanchal.com/tutorials/livekit-voice-agents)** — the state machine you were about to write already exists
+- **[WebRTC for Voice Agents](https://www.akashpanchal.com/articles/webrtc-for-voice-agents)** — the transport underneath the agent
 
-**→ [akashpanchal.com](https://akashpanchal.com)** · [about.md](https://akashpanchal.com/about.md) · [profile.json](https://akashpanchal.com/profile.json) · [llms.txt](https://akashpanchal.com/llms.txt)
+**→ [akashpanchal.com](https://www.akashpanchal.com)** · [about.md](https://www.akashpanchal.com/about.md) · [profile.json](https://www.akashpanchal.com/profile.json) · [llms.txt](https://www.akashpanchal.com/llms.txt)
 
 ---
 
@@ -80,5 +80,11 @@ The parts most tutorials skip: latency, barge-in, turn-taking, tools that must n
   <sub>Hiring managers: start with the résumé. Agents: start with about.md.</sub>
 
   [![Email](https://img.shields.io/badge/Email-akashp1712@gmail.com-111?style=flat-square&logo=gmail&logoColor=white)](mailto:akashp1712@gmail.com)
-  [![Website](https://img.shields.io/badge/Website-akashpanchal.com-111?style=flat-square&logo=google-chrome&logoColor=white)](https://akashpanchal.com)
+  [![Website](https://img.shields.io/badge/Website-akashpanchal.com-111?style=flat-square&logo=google-chrome&logoColor=white)](https://www.akashpanchal.com)
 </div>
+
+## Engineering roles and project evidence
+
+- [Discuss an AI engineering role](https://www.akashpanchal.com/work-with-me)
+- [VibeFrames engineering brief](https://www.akashpanchal.com/work/vibeframes)
+- [Evercall project brief and status](https://www.akashpanchal.com/work/evercall)
