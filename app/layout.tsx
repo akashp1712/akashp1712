@@ -15,6 +15,7 @@ export const metadata = {
   },
   description: siteConfig.description,
   keywords: [
+    "AI Engineer",
     "AI Systems Engineer",
     "Salesforce",
     "Agent runtimes",
@@ -79,7 +80,8 @@ const jsonLd = {
       "@type": "Person",
       "@id": `${siteConfig.url}/#person`,
       name: profile.name,
-      jobTitle: profile.jobTitle,
+      jobTitle: profile.currentRole.title,
+      image: `${siteConfig.url}/akash-headshot-tshirt.jpg`,
       worksFor: {
         "@type": "Organization",
         name: "Salesforce",
@@ -156,7 +158,7 @@ export default function RootLayout({
       >
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
         />
         {/* Warm paper backdrop pinned to the viewport */}
         <div aria-hidden className="reading-backdrop" />

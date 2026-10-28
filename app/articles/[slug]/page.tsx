@@ -1,3 +1,7 @@
+// Next 13 overwrites HTML Vary headers. Avoid shared-cache variant collisions
+// on URLs that also negotiate Markdown; explicit .md routes stay cacheable.
+export const dynamic = "force-dynamic";
+
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { CoverImage } from "@/components/cover-image";
@@ -29,7 +33,7 @@ export function generateMetadata({ params }: Props) {
     title: post.title,
     description: post.description,
     keywords: post.tags,
-    alternates: { canonical: `${siteConfig.url}${post.url}` },
+    alternates: { canonical: `${siteConfig.url}${post.url}`, types: { "text/markdown": `${siteConfig.url}${post.url}.md` } },
     authors: [{ name: "Akash Panchal", url: siteConfig.url }],
     openGraph: {
       title: post.title,
@@ -97,7 +101,7 @@ export default function ArticlePage({ params }: Props) {
     <main className="mx-auto w-full max-w-7xl px-5 py-16 sm:px-8 sm:py-24">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
       />
 
       <Link

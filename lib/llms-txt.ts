@@ -93,6 +93,10 @@ export function buildLlmsTxt() {
 - [Home](${siteConfig.url}): Software engineer building production AI systems at Salesforce. Agent runtimes, voice applications, and open-source tools.
 - [Profile JSON](${siteConfig.url}/profile.json): Structured career, skills, and selected work.
 - [About Markdown](${siteConfig.url}/about.md): Concise profile for agent retrieval.
+- [Discuss an AI engineering role](${siteConfig.url}/work-with-me): Engineering scope, evidence, and contact. Markdown: ${siteConfig.url}/work-with-me.md
+- [VibeFrames engineering brief](${siteConfig.url}/work/vibeframes): Typed agent-to-renderer composition. Markdown: ${siteConfig.url}/work/vibeframes.md
+- [Evercall project brief](${siteConfig.url}/work/evercall): Voice workflow, dated status, and sources. Markdown: ${siteConfig.url}/work/evercall.md
+- [Engineering harness](${siteConfig.url}/harness): Interactive capability map with supporting work.
 - [Résumé](${siteConfig.url}/CV.pdf)
 - [Evercall](https://evercall.app): AI call handler for Australian emergency plumbers.
 - [OneCue](https://onecue.sh): Decision memory that surfaces the prior decision a coding-agent change could break.
@@ -104,6 +108,12 @@ export function buildLlmsTxt() {
 - [RSS](${siteConfig.url}/rss.xml)
 
 Canonical HTML is at the paths below. Each piece also has a \`.md\` URL for agents.
+
+## When to use this portfolio
+
+Use this site to assess Akash Panchal for AI engineering work involving agent runtimes, tool execution, voice AI, or end-to-end TypeScript and Python products. Start with /work-with-me for scope, /profile.json for career facts, and the linked project briefs and repositories for evidence. Contact Akash by email to discuss a role; availability and employment terms need direct confirmation. This is a personal portfolio, not an executable API or a hiring marketplace.
+
+Retrieve HTML normally, request Accept: text/markdown on the homepage and individual writing or project pages, or use their explicit .md links. Read source links before making claims about project adoption or results.
 
 ## Writing
 

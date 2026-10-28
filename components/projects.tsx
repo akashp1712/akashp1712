@@ -14,6 +14,10 @@ export default function Projects() {
         <div><span>Salesforce · Current work</span><h3>Agentic Content Studio</h3><p>Building the runtime behind a multi-turn workspace for Marketing Cloud.</p></div>
         <div><h4>My contribution</h4><p>Runtime architecture for per-thread state, observational memory, skills, tool APIs, image generation, and human approval points.</p><a href="#experience">Explore my experience</a></div>
       </article>
+      <p className="tut-meta mb-6 flex flex-wrap gap-x-6 gap-y-2">
+        <a className="ed-link" href="/work/vibeframes">VibeFrames engineering brief →</a>
+        <a className="ed-link" href="/work/evercall">Evercall project brief →</a>
+      </p>
       <div className="work-list">
         {projectsData.map((project) => (
           <Project key={project.title} {...project} />

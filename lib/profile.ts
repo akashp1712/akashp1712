@@ -1,9 +1,11 @@
 import { experiencesData } from "./data";
+import { siteConfig } from "./site";
+import { hiring, caseStudies } from "./work";
 
 export const profile = {
   name: "Akash Panchal",
-  headline: "AI systems engineer at Salesforce. Ten years shipping production software.",
-  url: "https://akashpanchal.com",
+  headline: "AI engineer at Salesforce. Ten years shipping production software.",
+  url: siteConfig.url,
   jobTitle: "AI Systems Engineer",
   currentRole: {
     title: "AI Software Engineer",
@@ -72,10 +74,10 @@ export const profile = {
     },
   ],
   representations: {
-    markdown: "https://akashpanchal.com/about.md",
-    json: "https://akashpanchal.com/profile.json",
-    llms_txt: "https://akashpanchal.com/llms.txt",
-    resume: "https://akashpanchal.com/CV.pdf",
+    markdown: `${siteConfig.url}/about.md`,
+    json: `${siteConfig.url}/profile.json`,
+    llms_txt: `${siteConfig.url}/llms.txt`,
+    resume: `${siteConfig.url}/CV.pdf`,
     github: "https://github.com/akashp1712",
     linkedin: "https://www.linkedin.com/in/akashp1712",
     x: "https://twitter.com/akashp1712",
@@ -126,7 +128,16 @@ ${role.description}
 
 ${role.achievements.map((item) => `- ${item}`).join("\n")}`).join("\n\n")}
 
+## Engineering roles and project evidence
+
+${hiring.scopes.map(s => `- ${s.title}: ${s.description}`).join("\n")}
+
+Discuss a role: ${siteConfig.url}/work-with-me
+${caseStudies.map(p => `- [${p.title}](${siteConfig.url}/work/${p.slug}): ${p.status}`).join("\n")}
+
 ## Contact
+
+${hiring.contactNote}
 
 Email: akashp1712@gmail.com
 
@@ -150,6 +161,9 @@ export function buildPublicProfileJson() {
     current_role: profile.currentRole,
     years_experience: profile.yearsExperience,
     roles: ["AI Systems Engineer", "Product Engineer"],
+    engineering_focus: hiring.scopes.map(s => ({ name: s.title, description: s.description })),
+    hiring: { url: `${siteConfig.url}/work-with-me`, contact_note: hiring.contactNote },
+    project_briefs: caseStudies.map(p => ({ name: p.name, url: `${siteConfig.url}/work/${p.slug}`, markdown: `${siteConfig.url}/work/${p.slug}.md`, status: p.status, sources: p.sources })),
     employers: profile.employers,
     experience: experiencesData.map((role) => ({
       title: role.title,

@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "check:discovery": "node scripts/check-discovery.mjs"
   },
   "dependencies": {
     "@react-email/components": "^0.0.11",
