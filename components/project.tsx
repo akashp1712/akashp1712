@@ -14,7 +14,7 @@ export default function Project(project: ProjectProps) {
       <figure className="project-panel__preview">
         <figcaption>{new URL(hyperlink).hostname}</figcaption>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={imageUrl} alt={`${title} product screenshot`} loading="lazy" decoding="async" />
+        <img src={imageUrl} alt={"imageAlt" in project ? project.imageAlt : `${title} product screenshot`} loading="lazy" decoding="async" />
       </figure>
       <div className="project-panel__copy">
         <p className="project-panel__kind">{kind}</p>

@@ -1,3 +1,4 @@
+import AuthoredSkills from "@/components/authored-skills";
 import AgentWalkthrough from "@/components/agent-walkthrough";
 import "./portfolio.css";
 import Writing from "@/components/writing";
@@ -31,6 +32,7 @@ export default function Home() {
       </section>
       <Skills />
       <Projects />
+      <AuthoredSkills />
       <AgentWalkthrough />
       <Writing />
       <Contact />

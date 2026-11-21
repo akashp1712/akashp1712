@@ -156,6 +156,17 @@ export const experiencesData = [
 
 export const projectsData = [
   {
+    title: "MicAway",
+    description: "Turn away during a call and your Mac mutes the microphone. Face the screen to come back.",
+    contribution: { lead: "I connected ", focus: "AirPods head motion to Core Audio", detail: "so the Mac can mute locally and restore only the inputs MicAway muted." },
+    hyperlink: "https://micaway.akashpanchal.com",
+    source: "https://github.com/akashp1712/micaway",
+    tags: ["Swift", "Core Audio", "macOS"],
+    kind: "Open source",
+    imageUrl: "/micaway.jpg",
+    imageAlt: "An AirPods user turns away from a Mac during a call",
+  },
+  {
     title: "OneCue",
     contribution: { lead: "I built the ", focus: "local decision store and CLI hooks", detail: "that surface relevant context during a coding session." },
     description:
