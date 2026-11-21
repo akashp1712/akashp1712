@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { LazyMotion, domAnimation, m, useReducedMotion } from "framer-motion";
 
 const steps = [
   { name: "Listen", event: "speech.received", title: "A request becomes context.", description: "A caller describes a burst pipe. Capture the problem and location before taking action.", decision: "Keep conversation state separate from tool results so an assumption never becomes a confirmed booking." },
@@ -14,23 +15,37 @@ export default function AgentWalkthrough() {
   const [active, setActive] = useState(0);
   const [failure, setFailure] = useState(false);
   const step = steps[active];
+  const showTimeout = failure && active === 4;
+  const reduceMotion = useReducedMotion();
   return (
-    <section className="home-col runtime-section" aria-labelledby="runtime-heading">
+    <section id="runtime" className="home-col runtime-section" aria-labelledby="runtime-heading">
       <div className="runtime-intro">
-        <div><h2 id="runtime-heading">Inside the runtime</h2><p>An agent is only as useful as what happens between the prompt and the result.</p></div>
+        <div><h2 id="runtime-heading">Inside the runtime</h2></div>
         <span className="example-label">Illustrative voice-agent flow</span>
       </div>
       <div className="runtime-panel">
         <nav className="trace-steps" aria-label="Explore the execution trace">
           {steps.map((item, index) => <button key={item.name} type="button" aria-pressed={active === index} onClick={() => setActive(index)}><span>{String(index + 1).padStart(2, "0")}</span>{item.name}</button>)}
         </nav>
-        <div className="trace-detail" aria-live="polite" aria-atomic="true">
-          <code>{failure && active === 4 ? "booking.timeout" : step.event}</code>
-          <h3>{failure && active === 4 ? "Uncertain is a real state." : step.title}</h3>
-          <p>{failure && active === 4 ? "The booking tool timed out. Tell the caller the booking is unconfirmed and arrange a human follow-up." : step.description}</p>
-          <div className="trace-decision"><strong>Engineering decision</strong><p>{failure && active === 4 ? "Check the existing request before retrying: a timeout does not prove that the write failed. Never turn an unknown result into a success message." : step.decision}</p></div>
+        <div className="trace-progress" aria-hidden="true">
+          <div style={{ transform: `scaleX(${(active + 1) / steps.length})` }} />
         </div>
-        <div className="trace-controls"><button type="button" aria-pressed={failure} onClick={() => { setFailure(!failure); setActive(4); }}>{failure ? "Restore successful response" : "Explore a tool timeout"}</button><span>Design example, not live telemetry.</span></div>
+        <div className="trace-detail" aria-live="polite" aria-atomic="true">
+          <LazyMotion features={domAnimation}>
+            <m.div
+              key={`${active}-${showTimeout}`}
+              initial={reduceMotion ? false : { opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: reduceMotion ? 0 : 0.18 }}
+            >
+              <code>{showTimeout ? "booking.timeout" : step.event}</code>
+              <h3>{showTimeout ? "Uncertain is a real state." : step.title}</h3>
+              <p>{showTimeout ? "The booking tool timed out. Tell the caller the booking is unconfirmed and arrange a human follow-up." : step.description}</p>
+              <div className="trace-decision"><strong>Engineering decision</strong><p>{showTimeout ? "Check the existing request before retrying: a timeout does not prove that the write failed. Never turn an unknown result into a success message." : step.decision}</p></div>
+            </m.div>
+          </LazyMotion>
+        </div>
+        <div className="trace-controls"><button type="button" aria-pressed={failure} onClick={() => { setFailure(!failure); setActive(4); }}>{failure ? "Restore successful response" : "Explore a tool timeout"}</button></div>
       </div>
       <p className="runtime-note">Explore the underlying problems in <a href="/articles/voice-agents-hard-problems">Voice Agents: The Hard Problems</a>.</p>
     </section>

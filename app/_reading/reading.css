@@ -5,29 +5,29 @@
    ============================================================ */
 
 :root {
-  --paper: #f8fafc;
-  --paper-raised: #ffffff;
-  --ink: #0f172a;
-  --ink-soft: #475569;
-  --ink-faint: #64748b;
-  --line: rgba(15, 23, 42, 0.08);
-  --line-soft: rgba(15, 23, 42, 0.04);
-  --accent: #0f172a;
-  --accent-soft: rgba(15, 23, 42, 0.05);
+  --paper: #f6f5f1;
+  --paper-raised: #fffefa;
+  --ink: #252624;
+  --ink-soft: #50524e;
+  --ink-faint: #5f625c;
+  --line: rgba(38, 40, 36, 0.08);
+  --line-soft: rgba(38, 40, 36, 0.04);
+  --accent: #9c3526;
+  --accent-soft: rgba(38, 40, 36, 0.05);
   color-scheme: light;
   background-color: var(--paper);
 }
 
 html.dark {
-  --paper: #0b0f19;
-  --paper-raised: #151b26;
-  --ink: #f1f5f9;
-  --ink-soft: #cbd5e1;
-  --ink-faint: #94a3b8;
-  --line: rgba(241, 245, 249, 0.1);
-  --line-soft: rgba(241, 245, 249, 0.05);
-  --accent: #f1f5f9;
-  --accent-soft: rgba(241, 245, 249, 0.08);
+  --paper: #1b1d1a;
+  --paper-raised: #252822;
+  --ink: #f5f3eb;
+  --ink-soft: #d3d4ca;
+  --ink-faint: #b5b9ae;
+  --line: rgba(235, 236, 227, 0.1);
+  --line-soft: rgba(235, 236, 227, 0.05);
+  --accent: #ffab95;
+  --accent-soft: rgba(235, 236, 227, 0.08);
   color-scheme: dark;
 }
 

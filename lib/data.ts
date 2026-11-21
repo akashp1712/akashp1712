@@ -157,9 +157,9 @@ export const experiencesData = [
 export const projectsData = [
   {
     title: "OneCue",
-    engineering: "Local-first decision memory, delivered through CLI hooks and agent skills. Relevant prior decisions surface alongside the proposed change.",
+    contribution: { lead: "I built the ", focus: "local decision store and CLI hooks", detail: "that surface relevant context during a coding session." },
     description:
-      "Decision memory for coding agents. Surfaces the prior call, then stays silent.",
+      "Surfaces past engineering decisions when coding agents need them.",
     hyperlink: "https://onecue.sh",
     tags: ["CLI", "Agent skills", "TypeScript"],
     kind: "Independent",
@@ -167,29 +167,31 @@ export const projectsData = [
   },
   {
     title: "AI SDK Patterns",
-    engineering: "Runnable patterns for tools, human approval, retrieval, and MCP, with a composer that assembles a Next.js application.",
+    contribution: { lead: "I built a ", focus: "composer", detail: "that assembles runnable tool use, retrieval and approval patterns into a Next.js app." },
     description:
       "Open-source TypeScript patterns, a composer, and a 16-chapter agent course.",
     hyperlink: "https://ai-sdk-patterns.dev",
-    tags: ["AI SDK", "Next.js", "Open source"],
+    source: "https://github.com/akashp1712/ai-sdk-patterns",
+    tags: ["AI SDK", "Next.js", "TypeScript"],
     kind: "Open source",
     imageUrl: "/api-sdk-patterns.png",
   },
   {
     title: "VibeFrames",
-    engineering: "A Mastra harness plans and calls typed tools to edit a Remotion composition, keeping the generated artifact inspectable.",
+    contribution: { lead: "I built a ", focus: "Mastra agent", detail: "that calls typed tools to edit a Remotion composition." },
     description:
-      "Agentic Remotion workspace. A harness that edits a real composition.",
+      "Turns a video brief into an editable Remotion composition.",
     hyperlink: "https://vibeframes.vercel.app",
+    source: "https://github.com/akashp1712/vibeframes",
     tags: ["Mastra", "Remotion", "TypeScript"],
     kind: "Independent",
     imageUrl: "/vibeframes.png",
   },
   {
     title: "Evercall",
-    engineering: "Ready to onboard customers. Built with LiveKit, WebRTC, and Python to handle missed calls, triage jobs, and book follow-up.",
+    contribution: { lead: "I built the ", focus: "LiveKit call flow", detail: "for missed calls, job triage, booking and owner notifications." },
     description:
-      "Voice agent that answers missed plumber calls, books the job, and texts the owner.",
+      "Answers missed calls for Australian plumbers, books jobs and texts the owner.",
     hyperlink: "https://evercall.app",
     tags: ["LiveKit", "WebRTC", "Python"],
     kind: "Independent",

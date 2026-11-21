@@ -1,15 +1,18 @@
 export default function Intro() {
   return (
     <section id="home" className="home-col portfolio-hero">
-      <div className="hero-identity">
+      <div className="profile-greeting">
+        <div>
+          <h1>Hi, I’m Akash</h1>
+          <p>AI systems engineer at Salesforce. I build <mark className="ink-highlight">agent runtimes</mark>, real-time voice products, and the services behind them.</p>
+        </div>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/akash-headshot-tshirt.jpg" alt="Akash Panchal" width={64} height={64} />
-        <div><p>Akash Panchal</p><span>Salesforce · previously Amazon & McAfee</span></div>
+        <img src="/akash-headshot-tshirt.jpg" alt="Akash Panchal" width={96} height={96} />
       </div>
-      <h1>Software engineer building production AI systems.</h1>
-      <p className="hero-summary">I build agent runtimes, voice applications, and the backend systems behind them. Ten years of engineering, from messaging platforms at scale to tools that turn a conversation into action.</p>
-      <div className="hero-actions"><a className="portfolio-button" href="#projects">Explore my work</a><a href="/CV.pdf">View résumé</a><a href="mailto:akashp1712@gmail.com">Get in touch</a></div>
-      <div className="hero-context"><span>Currently building agent infrastructure at Salesforce</span><a href="/harness">My harness</a><a href="https://github.com/akashp1712">GitHub</a><a href="https://www.linkedin.com/in/akashp1712">LinkedIn</a></div>
+      <div className="profile-about">
+        <h2>About</h2>
+        <p>I’m based in Bengaluru and open to roles in the UK, Ireland and Australia. Across ten years at Salesforce, Amazon and McAfee, I’ve worked on messaging, app infrastructure and voice AI. Today I lead development of the agent runtime for Marketing Cloud Content Studio. <a className="ed-link" href="/CV.pdf">View CV</a> or <a className="ed-link" href="#contact">get in touch</a>.</p>
+      </div>
     </section>
   );
 }

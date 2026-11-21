@@ -1,43 +1,37 @@
-import { projectsData } from "@/lib/data";
-import { BsArrowRight } from "react-icons/bs";
+import type { projectsData } from "@/lib/data";
+import Link from "next/link";
+import { ProjectDetail } from "./portfolio-motion";
+import { BsArrowUpRight } from "react-icons/bs";
 
 type ProjectProps = (typeof projectsData)[number];
 
-export default function Project({
-  title,
-  description,
-  engineering,
-  hyperlink,
-  tags,
-  kind,
-  imageUrl,
-}: ProjectProps) {
+export default function Project(project: ProjectProps) {
+  const { title, description, contribution, hyperlink, tags, kind, imageUrl } = project;
+  const isEvercall = title === "Evercall";
+
   return (
-    <a
-      href={hyperlink}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="work-row work-row--shot group"
-    >
-      <div className="work-row__shot">
-        {/* Native img so crawlers and agents see the file in first HTML. */}
+    <article className="project-panel">
+      <figure className="project-panel__preview">
+        <figcaption>{new URL(hyperlink).hostname}</figcaption>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={imageUrl} alt={`${title} product screenshot`} />
-      </div>
-      <div className="work-row__copy">
-        <div className="work-row__meta">
-          <h3>{title}</h3>
-          <span>{kind}</span>
-        </div>
-        <p className="work-row__desc">{description}</p>
-        <p className="project-engineering">{engineering}</p>
-        <ul className="work-row__tags">
-          {tags.map((tag) => (
-            <li key={tag}>{tag}</li>
-          ))}
+        <img src={imageUrl} alt={`${title} product screenshot`} loading="lazy" decoding="async" />
+      </figure>
+      <div className="project-panel__copy">
+        <p className="project-panel__kind">{kind}</p>
+        <h3>{title}</h3>
+        <p>{description}</p>
+        <ProjectDetail title={title}>
+          {contribution.lead}<mark className="ink-highlight">{contribution.focus}</mark>{" "}{contribution.detail}
+        </ProjectDetail>
+        <ul aria-label="Technologies">
+          {tags.map((tag) => <li key={tag}>{tag}</li>)}
         </ul>
+        <div className="project-panel__links">
+          {isEvercall && <Link href="/building-evercall">Read the case study</Link>}
+          {"source" in project && <a href={project.source}>View source</a>}
+          <a href={hyperlink} target="_blank" rel="noopener noreferrer">Visit {title} <BsArrowUpRight aria-hidden /></a>
+        </div>
       </div>
-      <BsArrowRight className="work-row__arrow" aria-hidden />
-    </a>
+    </article>
   );
 }
