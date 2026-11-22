@@ -1,0 +1,56 @@
+---
+title: "MCP from the wire up: give an assistant project memory"
+description: "Follow a decision lookup from tool discovery to a usable answer, then see what changes when the same assistant can write."
+publishedAt: "2026-11-22"
+tags: ["MCP", "agent skills", "developer tools"]
+draft: false
+---
+
+A developer asks, “Why does this service use a queue?” The answer lives in a decision note from six months ago. An assistant with repository access could inspect the current implementation and still miss the reason it exists.
+
+My [OneCue skill](https://github.com/akashp1712/skills/tree/HEAD/onecue) teaches a coding agent when a previous decision is worth surfacing. Imagine exposing the underlying lookup to a second editor. The **Model Context Protocol (MCP)** gives that editor a way to discover and invoke a tool. The lookup below is a proposed adapter for this example, separate from the published skill.
+
+## Where the lookup runs
+
+<LayerDiagram layers={[
+  { label: "Editor host", sub: "Conversation, user controls and model" },
+  { label: "MCP client", sub: "Connection to the memory server", accent: true },
+  { label: "Memory server", sub: "Schema, access checks and lookup" },
+  { label: "Decision notes", sub: "Repository-scoped Markdown" }
+]} caption="The editor owns the interaction. The server decides which repository records this connection can read." />
+
+Put the matching logic beside the data. A result can carry the decision, its rationale, and the path to the original record. The host can then offer a source link. A model that gets only “use a queue” has no way to tell whether that advice still applies.
+
+## Discover, then call
+
+This trace uses the 2025-11-25 protocol revision. Initialization negotiates the version and capabilities. After the server responds and the client sends its initialized notification, a client can list the tools advertised by a server with the tools capability. A paginated listing can require more than one request. [Lifecycle](https://modelcontextprotocol.io/specification/2025-11-25/basic/lifecycle) · [Tools](https://modelcontextprotocol.io/specification/2025-11-25/server/tools)
+
+<SequenceDiagram actors={[{id:"c",label:"Editor client"},{id:"s",label:"Memory server"}]} steps={[
+  {from:"c",to:"s",label:"initialize"},
+  {from:"s",to:"c",label:"version + capabilities",dashed:true},
+  {from:"c",to:"s",label:"notifications/initialized"},
+  {from:"c",to:"s",label:"tools/list"},
+  {from:"s",to:"c",label:"names + schemas",dashed:true},
+  {from:"c",to:"s",label:"tools/call"},
+  {from:"s",to:"c",label:"decision + source",dashed:true}
+]} caption="Only the last exchange searches the notes. Discovery tells the editor how to construct that request." />
+
+Suppose the listing describes a tool named `find_decision` with a required string argument named `query`. Here is one complete JSON-RPC request and its response. The tool name and record are illustrative.
+
+```json
+{"jsonrpc":"2.0","id":7,"method":"tools/call","params":{"name":"find_decision","arguments":{"query":"queue before sending notifications"}}}
+```
+
+```json
+{"jsonrpc":"2.0","id":7,"result":{"content":[{"type":"text","text":"Decision 14: queue notifications so a provider outage cannot block checkout. Source: decisions/014.md"}]}}
+```
+
+The host matches the response to request 7. It can show the rationale and let the developer open the note before changing the code. If no note matches, a successful empty lookup is useful information. Returning a vaguely related decision would quietly turn an evidence lookup into a recommendation.
+
+## What should a retry do?
+
+<PipelineDiagram stages={[{label:"Read",sub:"Find a note"},{label:"Propose",sub:"Preview an edit"},{label:"Write",sub:"Persist once"}]} caption="Adding a write tool introduces an application decision between finding evidence and changing it." />
+
+Consider a second tool, `save_decision`. The user approves a note, the server writes it, and the connection drops before the response arrives. Issuing another JSON-RPC request with a fresh ID can create two notes. Request IDs correlate responses. If duplicate writes matter, give the operation a durable application key and have the server check that key before inserting.
+
+Test three outcomes separately: an absent note, a tool execution failure reported in a result with `isError`, and a JSON-RPC error for an unknown method. They call for different UI: continue without a cue, explain why the lookup failed, or fix the client integration. For work that another agent owns over time, follow the [A2A task walkthrough](/articles/a2a-editorial-handoff).

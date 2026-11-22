@@ -43,9 +43,14 @@ export function SequenceDiagram({
         width={width}
         height={height}
         className="mx-auto block"
-        style={{ maxWidth: "100%", color: "var(--accent)" }}
+        style={{ minWidth: width, color: "var(--accent)" }}
         role="img"
+        aria-labelledby={`${uid}-title ${uid}-desc`}
       >
+        <title id={`${uid}-title`}>{caption || "Message sequence"}</title>
+        <desc id={`${uid}-desc`}>{steps.map(({ from, to, label }) =>
+          `${actors.find(actor => actor.id === from)?.label} to ${actors.find(actor => actor.id === to)?.label}: ${label}.`
+        ).join(" ")}</desc>
         <defs>
           <marker
             id={markerId}

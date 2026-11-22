@@ -1,0 +1,57 @@
+---
+title: "A2A by example: hand off a job and get an artifact back"
+description: "Trace a carousel brief across two agents, resume an interrupted task, and recover the finished artifact after a disconnect."
+publishedAt: "2026-11-22"
+tags: ["A2A", "agent skills", "distributed systems"]
+draft: false
+---
+
+An editor asks for a carousel based on an approved article. Rendering takes time, the intended platform changes the dimensions, and the editor wants the finished file. What should the calling agent remember if the connection closes halfway through?
+
+The **Agent2Agent Protocol (A2A)** supplies a vocabulary for this handoff. The example imagines a publishing agent that runs my [carousel-press skill](https://github.com/akashp1712/skills/tree/HEAD/carousel-press). The skill already turns text into slides. The A2A service around it is a design exercise.
+
+## Find an agent that accepts the job
+
+<LayerDiagram layers={[
+  {label:"Agent Card",sub:"Interfaces, capabilities and skills"},
+  {label:"A2A service",sub:"Receives messages and owns tasks",accent:true},
+  {label:"Renderer",sub:"Runs the publishing workflow"}
+]} caption="The Agent Card describes what a caller can request. The service chooses how to perform it." />
+
+Start with the publisher’s Agent Card, commonly discovered at `/.well-known/agent-card.json`. Check its supported interface, authentication requirements and advertised skills. An A2A skill entry describes a service capability. A local SKILL.md is one possible implementation detail. The caller can work with the publisher without installing its rendering instructions. This article follows [A2A version 1.0](https://a2a-protocol.org/v1.0.0/specification/).
+
+## Keep the three IDs straight
+
+A client creates a message ID for each new message. The server can return an immediate message or a task. When it returns a task, persist both the task ID and its context ID. The task identifies this particular job. The context lets related exchanges belong together.
+
+<SequenceDiagram actors={[{id:"e",label:"Editor agent"},{id:"p",label:"Publisher"}]} steps={[
+  {from:"e",to:"p",label:"SendMessage: brief"},
+  {from:"p",to:"e",label:"Task: input required",dashed:true},
+  {from:"e",to:"p",label:"SendMessage: format"},
+  {from:"e",to:"p",label:"GetTask"},
+  {from:"p",to:"e",label:"Completed + artifact",dashed:true}
+]} caption="The publisher needs one missing input. The editor sends a new message on the existing task and can retrieve the result later." />
+
+Here is an illustrative follow-up message object, before wrapping it in the chosen transport. Its message ID is new. Its task and context IDs came from the publisher.
+
+```json
+{
+  "messageId": "msg-002",
+  "taskId": "render-041",
+  "contextId": "launch-brief",
+  "role": "ROLE_USER",
+  "parts": [{"text": "Use a square LinkedIn PDF. Keep the approved slide order."}]
+}
+```
+
+Suppose that the publisher produces a PDF and a thumbnail. Return them as artifacts with meaningful names and appropriate media types. The message “slides ready” is convenient for a person, but the next application step needs the actual file data or an accessible file reference.
+
+## Recover when the stream disappears
+
+<PipelineDiagram stages={[{label:"Disconnect",sub:"Keep task ID"},{label:"GetTask",sub:"Read state"},{label:"Resume UI",sub:"Show next action"}]} caption="Polling the known task distinguishes an interrupted connection from a renderer that actually failed." />
+
+For `TASK_STATE_INPUT_REQUIRED`, show the publisher’s question and collect a reply. For `TASK_STATE_WORKING`, keep the job accessible in the UI. For `TASK_STATE_COMPLETED`, inspect and present its artifacts. For a terminal failure, retain the failure information and let the editor decide whether to submit a fresh job.
+
+Try this acceptance test: disconnect the editor immediately after the publisher accepts the brief. Let the renderer finish. Reopen the editor and retrieve the stored task. The user should see one PDF from one job. A second PDF is a clue that reconnecting accidentally resubmitted the original brief.
+
+The distinction becomes especially useful across teams. The publisher can change its rendering stack while the editor keeps the same handoff contract. For a lookup that merely retrieves one decision, the [MCP example](/articles/mcp-project-memory) has fewer moving parts.

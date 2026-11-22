@@ -1,0 +1,63 @@
+---
+title: "Personal Agent Protocol: how an assistant acts for one customer"
+description: "Walk through Poppy discovery, a signed-out session, and consent for an account lookup using a missing-delivery example."
+publishedAt: "2026-11-22"
+tags: ["Poppy", "Personal Agent Protocol", "OAuth"]
+draft: false
+---
+
+“Can I return these headphones?” and “When were my headphones delivered?” sound like neighbouring questions. The first can often be answered from a public policy. The second requires a particular customer’s order history. A good personal assistant should notice the moment a public enquiry becomes an account operation.
+
+**Personal Agent Protocol**, also called **Poppy**, describes how a personal agent interacts with a participating company on a user’s behalf. This walkthrough uses the [version 1.0 specification](https://personalagentprotocol.org/docs/1.0/spec). The shop, URLs and order below are fictional.
+
+## Start at the company domain
+
+<PipelineDiagram stages={[{label:"Discover",sub:"poppy.json"},{label:"Choose",sub:"API or conversation"},{label:"Request",sub:"Signed session"}]} caption="Discovery gives the assistant a company-specific starting point and descriptions of the available interfaces." />
+
+For a store at `shop.example`, the discovery request starts here:
+
+```http
+GET /.well-known/poppy.json HTTP/1.1
+Host: shop.example
+```
+
+Read the supported protocol version and use the corresponding discovery information. If the company offers several conversation protocols, their descriptions help the agent choose a suitable one. A company might offer a returns conversation and a separate order API. The identity of the company and its authorization server matter even when another provider hosts an endpoint. [Company discovery and issuer identification](https://personalagentprotocol.org/docs/1.0/spec)
+
+My [agent-ready-nextjs skill](https://github.com/akashp1712/skills/tree/HEAD/agent-ready-nextjs) helps make site content discoverable to assistants. A readable returns page can answer the first question immediately. Supporting Poppy account access is a separate engineering commitment involving sessions, sign-in and authorization.
+
+## Three identities in one request
+
+<LayerDiagram layers={[
+  {label:"Personal agent",sub:"Which software is calling?"},
+  {label:"Pairwise user ID",sub:"Which user at this company?",accent:true},
+  {label:"Account grant",sub:"Which account actions were approved?"}
+]} caption="A company can recognise a returning session participant before the customer grants access to an account." />
+
+Poppy uses an opaque user identifier scoped to a user–company pair. Two unrelated companies receive different identifiers. Using the customer’s email address, even as input to a deterministic hash, would violate the protocol’s identity rules. Keep the mapping private. The company’s account identifier belongs to a different layer. [Sessions and user identifiers, section 5](https://personalagentprotocol.org/docs/1.0/spec)
+
+For API requests, the personal agent sends a signed `Poppy-Session` header. A delegated key signs the session JWT, and the delegation establishes the link to the personal agent. A company still needs an appropriate access token to release account data. A signed-out session can therefore ask about return windows while the order lookup waits for sign-in.
+
+## Ask for access at the boundary
+
+<SequenceDiagram actors={[{id:"u",label:"Customer"},{id:"a",label:"Personal agent"},{id:"c",label:"Company"}]} steps={[
+  {from:"u",to:"a",label:"Find delivery date"},
+  {from:"a",to:"c",label:"Start direct sign-in"},
+  {from:"u",to:"c",label:"Sign in and consent"},
+  {from:"c",to:"a",label:"Authorization code",dashed:true},
+  {from:"a",to:"c",label:"Exchange code"},
+  {from:"a",to:"c",label:"Read order"},
+  {from:"c",to:"a",label:"Delivery date",dashed:true}
+]} caption="Direct sign-in puts consent on the company’s page. The code returns through the redirect flow. Token exchange precedes the account request." />
+
+The order read below is a schematic HTTP example. The path is the fictional store’s API, and the angle-bracket values stand for credentials produced by the protocol flows.
+
+```http
+GET /orders/481/delivery HTTP/1.1
+Host: shop.example
+Poppy-Session: <session JWT signed for this request>
+Authorization: Bearer <company-issued access token>
+```
+
+Suppose the customer declines consent. The assistant can still explain the public return window and offer a link where the customer can check the delivery date themselves. Suppose the customer grants read access and then asks to initiate a refund. Recheck the grant and the company’s supported operations before attempting that separate action.
+
+A practical test uses two fictional retailers and one customer. Verify that the user IDs differ between retailers, that a signed-out request cannot read the order, and that declining the grant produces a useful response. For the complete sign-in exchange, including issuer validation and the requirements for pushed authorization requests, use the [implementation guides](https://personalagentprotocol.org/docs/1.0/guides) alongside the [normative specification](https://personalagentprotocol.org/docs/1.0/spec).

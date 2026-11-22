@@ -14,6 +14,7 @@ export default function Home() {
     <main className="portfolio flex flex-col items-center">
       <ProfileDock />
       <Intro />
+      <AuthoredSkills />
       <Experience />
       <section className="home-col" aria-labelledby="education-heading">
         <h2 id="education-heading">Education</h2>
@@ -32,7 +33,6 @@ export default function Home() {
       </section>
       <Skills />
       <Projects />
-      <AuthoredSkills />
       <AgentWalkthrough />
       <Writing />
       <Contact />
