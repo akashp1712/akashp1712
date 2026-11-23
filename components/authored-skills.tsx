@@ -33,11 +33,13 @@ export default function AuthoredSkills() {
     <section className="home-col" id="agent-skills">
       <h2>Agent skills I built</h2>
       <SkillList items={skills.slice(0, 3)} />
+      <a className="portfolio-button portfolio-button--secondary my-3" href={catalogue}>
+        See all {skills.length} agent skills <span aria-hidden="true">↗</span>
+      </a>
       <details className="build-detail">
         <summary>More skills ({skills.length - 3})<span aria-hidden className="build-chevron">⌄</span></summary>
         <SkillList items={skills.slice(3)} />
       </details>
-      <a className="ed-link mt-3 inline-block" href={catalogue}>Browse the collection ↗</a>
     </section>
   );
 }

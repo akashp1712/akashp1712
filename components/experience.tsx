@@ -8,7 +8,7 @@ export default function Experience() {
       {experiencesData.map((role) => (
         <details key={role.title}>
           <summary>
-            <span className="profile-employer" style={{ color: role.brandColor }}>{role.logo}</span>
+            <span aria-hidden="true" className="profile-employer" style={{ color: role.brandColor }}>{role.logo}</span>
             <span className="profile-role">
               <strong>{role.title.slice(role.title.lastIndexOf(", ") + 2)}<BsChevronRight className="role-chevron" aria-hidden /></strong>
               <small>{role.title.split(", ").slice(0, -1).join(", ")}</small>
@@ -18,6 +18,7 @@ export default function Experience() {
           <div className="profile-role-detail">
             <p>{role.description}</p>
             <ul>{role.achievements.map((item) => <li key={item}>{item}</li>)}</ul>
+            <a className="ed-link" href="/about.md">Full career record</a>
           </div>
         </details>
       ))}

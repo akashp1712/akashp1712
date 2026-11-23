@@ -156,36 +156,14 @@ export const experiencesData = [
 
 export const projectsData = [
   {
-    title: "MicAway",
-    description: "Turn away during a call and your Mac mutes the microphone. Face the screen to come back.",
-    contribution: { lead: "I connected ", focus: "AirPods head motion to Core Audio", detail: "so the Mac can mute locally and restore only the inputs MicAway muted." },
-    hyperlink: "https://micaway.akashpanchal.com",
-    source: "https://github.com/akashp1712/micaway",
-    tags: ["Swift", "Core Audio", "macOS"],
-    kind: "Open source",
-    imageUrl: "/micaway.jpg",
-    imageAlt: "An AirPods user turns away from a Mac during a call",
-  },
-  {
-    title: "OneCue",
-    contribution: { lead: "I built the ", focus: "local decision store and CLI hooks", detail: "that surface relevant context during a coding session." },
+    title: "Evercall",
+    contribution: { lead: "I built the ", focus: "LiveKit call flow", detail: "for missed calls, job triage, booking and owner notifications." },
     description:
-      "Surfaces past engineering decisions when coding agents need them.",
-    hyperlink: "https://onecue.sh",
-    tags: ["CLI", "Agent skills", "TypeScript"],
+      "Answers missed calls for plumbers, books jobs and texts the owner.",
+    hyperlink: "https://evercall.app",
+    tags: ["LiveKit", "WebRTC", "Python"],
     kind: "Independent",
-    imageUrl: "/oncecue.png",
-  },
-  {
-    title: "AI SDK Patterns",
-    contribution: { lead: "I built a ", focus: "composer", detail: "that assembles runnable tool use, retrieval and approval patterns into a Next.js app." },
-    description:
-      "Open-source TypeScript patterns, a composer, and a 16-chapter agent course.",
-    hyperlink: "https://ai-sdk-patterns.dev",
-    source: "https://github.com/akashp1712/ai-sdk-patterns",
-    tags: ["AI SDK", "Next.js", "TypeScript"],
-    kind: "Open source",
-    imageUrl: "/api-sdk-patterns.png",
+    imageUrl: "/evercall.png",
   },
   {
     title: "VibeFrames",
@@ -199,14 +177,36 @@ export const projectsData = [
     imageUrl: "/vibeframes.png",
   },
   {
-    title: "Evercall",
-    contribution: { lead: "I built the ", focus: "LiveKit call flow", detail: "for missed calls, job triage, booking and owner notifications." },
+    title: "AI SDK Patterns",
+    contribution: { lead: "I built a ", focus: "composer", detail: "that assembles runnable tool use, retrieval and approval patterns into a Next.js app." },
     description:
-      "Answers missed calls for Australian plumbers, books jobs and texts the owner.",
-    hyperlink: "https://evercall.app",
-    tags: ["LiveKit", "WebRTC", "Python"],
+      "Open-source TypeScript patterns, a composer, and a 16-chapter agent course.",
+    hyperlink: "https://ai-sdk-patterns.dev",
+    source: "https://github.com/akashp1712/ai-sdk-patterns",
+    tags: ["AI SDK", "Next.js", "TypeScript"],
+    kind: "Open source",
+    imageUrl: "/api-sdk-patterns.png",
+  },
+  {
+    title: "OneCue",
+    contribution: { lead: "I built the ", focus: "local decision store and CLI hooks", detail: "that surface relevant context during a coding session." },
+    description:
+      "Surfaces past engineering decisions when coding agents need them.",
+    hyperlink: "https://onecue.sh",
+    tags: ["CLI", "Agent skills", "TypeScript"],
     kind: "Independent",
-    imageUrl: "/evercall.png",
+    imageUrl: "/oncecue.png",
+  },
+  {
+    title: "MicAway",
+    description: "Turn away during a call and your Mac mutes the microphone. Face the screen to come back.",
+    contribution: { lead: "I connected ", focus: "AirPods head motion to Core Audio", detail: "so the Mac can mute locally and restore only the inputs MicAway muted." },
+    hyperlink: "https://micaway.akashpanchal.com",
+    source: "https://github.com/akashp1712/micaway",
+    tags: ["Swift", "Core Audio", "macOS"],
+    kind: "Open source",
+    imageUrl: "/micaway.jpg",
+    imageAlt: "An AirPods user turns away from a Mac during a call",
   },
 ] as const;
 

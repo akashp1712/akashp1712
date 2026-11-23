@@ -14,7 +14,7 @@ export default function ProfileDock() {
   return (
     <nav className="profile-dock" aria-label="Portfolio navigation">
       {destinations.map(({ href, label, icon: Icon }) => (
-        <Link key={href} href={href} aria-label={label}>
+        <Link key={href} href={href} className={label === "Contact" ? "dock-contact" : undefined} aria-label={label}>
           <Icon aria-hidden />
           <span className="dock-label" aria-hidden="true">{label}</span>
         </Link>

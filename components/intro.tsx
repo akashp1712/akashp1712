@@ -1,17 +1,28 @@
+import { PressLink } from "./portfolio-motion";
+
 export default function Intro() {
   return (
     <section id="home" className="home-col portfolio-hero">
       <div className="profile-greeting">
         <div>
-          <h1>Hi, I’m Akash</h1>
-          <p>AI systems engineer at Salesforce. I build <mark className="ink-highlight">agent runtimes</mark>, real-time voice products, and the services behind them.</p>
+          <div className="profile-byline">Akash Panchal · AI systems engineer at Salesforce</div>
+          <h1>I build AI agent harnesses for <mark className="ink-highlight">content generation</mark> and voice.</h1>
+          <p>My agents turn video briefs into editable scenes and phone calls into booked jobs.</p>
         </div>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/akash-headshot-tshirt.jpg" alt="Akash Panchal" width={96} height={96} />
       </div>
       <div className="profile-about">
         <h2>About</h2>
-        <p>I’m based in Bengaluru and open to roles in the UK, Ireland and Australia. Across ten years at Salesforce, Amazon and McAfee, I’ve worked on messaging, app infrastructure and voice AI. Today I lead development of the agent runtime for Marketing Cloud Content Studio. <a className="ed-link" href="/CV.pdf">View CV</a> or <a className="ed-link" href="#contact">get in touch</a>.</p>
+        <dl className="profile-facts">
+          <div><dt>Open to</dt><dd>AI agent and voice engineering roles.</dd></div>
+          <div><dt>Experience</dt><dd>Ten years across Salesforce, Amazon and McAfee.</dd></div>
+          <div><dt>Today</dt><dd>I lead development of the agent runtime for Salesforce Marketing Cloud Content Studio.</dd></div>
+        </dl>
+        <div className="hero-actions">
+          <PressLink className="portfolio-button" href="#contact">Get in touch</PressLink>
+          <PressLink className="portfolio-button portfolio-button--secondary" href="/CV.pdf">View CV</PressLink>
+        </div>
       </div>
     </section>
   );
